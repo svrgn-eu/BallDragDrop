@@ -1,0 +1,200 @@
+using System;
+using System.Windows;
+
+namespace BallDragDrop.Models
+{
+    /// <summary>
+    /// Represents the data model for a ball in the application.
+    /// Contains properties for position, velocity, size, and other physical attributes.
+    /// </summary>
+    public class BallModel
+    {
+        // Position properties
+        public double X { get; set; }
+        public double Y { get; set; }
+        
+        // Velocity properties
+        public double VelocityX { get; set; }
+        public double VelocityY { get; set; }
+        
+        // Physical properties
+        public double Radius { get; set; }
+        public double Mass { get; set; }
+        
+        // State properties
+        public bool IsMoving => Math.Abs(VelocityX) > 0.01 || Math.Abs(VelocityY) > 0.01;
+        
+        /// <summary>
+        /// Initializes a new instance of the BallModel class with default values.
+        /// </summary>
+        public BallModel()
+        {
+            // Default values
+            X = 0;
+            Y = 0;
+            VelocityX = 0;
+            VelocityY = 0;
+            Radius = 25; // Default radius in pixels
+            Mass = 1;    // Default mass (unitless)
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the BallModel class with specified position.
+        /// </summary>
+        /// <param name="x">Initial X position</param>
+        /// <param name="y">Initial Y position</param>
+        public BallModel(double x, double y) : this()
+        {
+            X = x;
+            Y = y;
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the BallModel class with specified position and radius.
+        /// </summary>
+        /// <param name="x">Initial X position</param>
+        /// <param name="y">Initial Y position</param>
+        /// <param name="radius">Ball radius</param>
+        public BallModel(double x, double y, double radius) : this(x, y)
+        {
+            Radius = radius;
+        }
+        
+        /// <summary>
+        /// Updates the ball's position based on its current velocity.
+        /// </summary>
+        /// <param name="timeStep">Time step for the update (in seconds)</param>
+        public void UpdatePosition(double timeStep = 1.0/60.0)
+        {
+            X += VelocityX * timeStep;
+            Y += VelocityY * timeStep;
+        }
+        
+        /// <summary>
+        /// Applies a force to the ball, changing its velocity.
+        /// </summary>
+        /// <param name="forceX">Force in X direction</param>
+        /// <param name="forceY">Force in Y direction</param>
+        /// <param name="timeStep">Time step for the force application (in seconds)</param>
+        public void ApplyForce(double forceX, double forceY, double timeStep = 1.0/60.0)
+        {
+            // F = ma, so a = F/m
+            double accelerationX = forceX / Mass;
+            double accelerationY = forceY / Mass;
+            
+            // v = v0 + at
+            VelocityX += accelerationX * timeStep;
+            VelocityY += accelerationY * timeStep;
+        }
+        
+        /// <summary>
+        /// Sets the ball's velocity directly.
+        /// </summary>
+        /// <param name="velocityX">New X velocity</param>
+        /// <param name="velocityY">New Y velocity</param>
+        public void SetVelocity(double velocityX, double velocityY)
+        {
+            VelocityX = velocityX;
+            VelocityY = velocityY;
+        }
+        
+        /// <summary>
+        /// Stops the ball's movement by setting its velocity to zero.
+        /// </summary>
+        public void Stop()
+        {
+            VelocityX = 0;
+            VelocityY = 0;
+        }
+        
+        /// <summary>
+        /// Checks if a point is inside the ball.
+        /// </summary>
+        /// <param name="pointX">X coordinate of the point</param>
+        /// <param name="pointY">Y coordinate of the point</param>
+        /// <returns>True if the point is inside the ball, false otherwise</returns>
+        public bool ContainsPoint(double pointX, double pointY)
+        {
+            // Calculate the distance from the center of the ball to the point
+            double distanceSquared = Math.Pow(pointX - X, 2) + Math.Pow(pointY - Y, 2);
+            
+            // Check if the distance is less than or equal to the radius
+            return distanceSquared <= Math.Pow(Radius, 2);
+        }
+        
+        /// <summary>
+        /// Gets the current position as a Point.
+        /// </summary>
+        /// <returns>A Point representing the ball's position</returns>
+        public Point GetPosition()
+        {
+            return new Point(X, Y);
+        }
+        
+        /// <summary>
+        /// Sets the ball's position.
+        /// </summary>
+        /// <param name="x">New X position</param>
+        /// <param name="y">New Y position</param>
+        public void SetPosition(double x, double y)
+        {
+            X = x;
+            Y = y;
+        }
+        
+        /// <summary>
+        /// Sets the ball's position from a Point.
+        /// </summary>
+        /// <param name="position">New position</param>
+        public void SetPosition(Point position)
+        {
+            X = position.X;
+            Y = position.Y;
+        }
+        
+        /// <summary>
+        /// Constrains the ball's position to be within the specified boundaries.
+        /// </summary>
+        /// <param name="minX">Minimum X coordinate</param>
+        /// <param name="minY">Minimum Y coordinate</param>
+        /// <param name="maxX">Maximum X coordinate</param>
+        /// <param name="maxY">Maximum Y coordinate</param>
+        /// <returns>True if the position was constrained, false otherwise</returns>
+        public bool ConstrainPosition(double minX, double minY, double maxX, double maxY)
+        {
+            bool wasConstrained = false;
+            
+            // Adjust for the ball's radius
+            double effectiveMinX = minX + Radius;
+            double effectiveMinY = minY + Radius;
+            double effectiveMaxX = maxX - Radius;
+            double effectiveMaxY = maxY - Radius;
+            
+            // Constrain X position
+            if (X < effectiveMinX)
+            {
+                X = effectiveMinX;
+                wasConstrained = true;
+            }
+            else if (X > effectiveMaxX)
+            {
+                X = effectiveMaxX;
+                wasConstrained = true;
+            }
+            
+            // Constrain Y position
+            if (Y < effectiveMinY)
+            {
+                Y = effectiveMinY;
+                wasConstrained = true;
+            }
+            else if (Y > effectiveMaxY)
+            {
+                Y = effectiveMaxY;
+                wasConstrained = true;
+            }
+            
+            return wasConstrained;
+        }
+    }
+}
