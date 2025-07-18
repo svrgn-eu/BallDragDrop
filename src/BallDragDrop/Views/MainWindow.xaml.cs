@@ -243,19 +243,42 @@ public partial class MainWindow : Window
             // Check if the click is inside the ball
             if (viewModel._ballModel.ContainsPoint(position.X, position.Y))
             {
+                // Stop the physics simulation first
+                _isPhysicsRunning = false;
+                viewModel._ballModel.Stop();
+                
                 // Execute the mouse down command
                 if (viewModel.MouseDownCommand.CanExecute(e))
                 {
                     viewModel.MouseDownCommand.Execute(e);
                 }
                 
-                // Stop the physics simulation
-                _isPhysicsRunning = false;
-                viewModel._ballModel.Stop();
+                // Immediately update the ball position to the mouse position
+                // This ensures the ball appears under the cursor right away
+                UpdateBallPositionToMouse(viewModel, position);
                 
                 Debug.WriteLine($"Ball grabbed at position ({position.X:F2}, {position.Y:F2})");
             }
         }
+    }
+    
+    /// <summary>
+    /// Updates the ball position to follow the mouse cursor
+    /// </summary>
+    /// <param name="viewModel">The ball view model</param>
+    /// <param name="mousePosition">The current mouse position</param>
+    private void UpdateBallPositionToMouse(BallViewModel viewModel, Point mousePosition)
+    {
+        // Update the ball position to the mouse position
+        viewModel.X = mousePosition.X;
+        viewModel.Y = mousePosition.Y;
+        
+        // Constrain the ball position to stay within the window boundaries
+        viewModel.ConstrainPosition(0, 0, MainCanvas.Width, MainCanvas.Height);
+        
+        // Force UI update by updating the Canvas.Left and Canvas.Top properties directly
+        Canvas.SetLeft(BallImage, viewModel.Left);
+        Canvas.SetTop(BallImage, viewModel.Top);
     }
     
     /// <summary>
@@ -268,6 +291,13 @@ public partial class MainWindow : Window
         if (DataContext is BallViewModel viewModel && viewModel.MouseMoveCommand.CanExecute(e))
         {
             viewModel.MouseMoveCommand.Execute(e);
+            
+            // If the ball is being dragged, ensure it follows the mouse cursor immediately
+            if (viewModel.IsDragging)
+            {
+                var position = e.GetPosition(null);
+                UpdateBallPositionToMouse(viewModel, position);
+            }
         }
     }
     
@@ -386,8 +416,14 @@ public partial class MainWindow : Window
         // Get the BallViewModel from the DataContext
         if (DataContext is BallViewModel viewModel)
         {
-            // Check if the ball is moving (has velocity) and not being dragged
-            if (!viewModel.IsDragging && _isPhysicsRunning)
+            // If the ball is being dragged, ensure it follows the mouse cursor
+            if (viewModel.IsDragging && Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed)
+            {
+                var mousePosition = Mouse.GetPosition(MainCanvas);
+                UpdateBallPositionToMouse(viewModel, mousePosition);
+            }
+            // Otherwise, check if the ball is moving (has velocity) and not being dragged
+            else if (!viewModel.IsDragging && _isPhysicsRunning)
             {
                 // Calculate time step
                 double timeStep = (currentTime - _lastPhysicsUpdate).TotalSeconds;
