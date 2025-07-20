@@ -1,0 +1,32 @@
+variables:
+  PROJECT_NAME: BallDragDrop
+  PROJECT_RESULTS_NAME: BallDragDrop.WPF
+before_script:
+  - echo "starting build for $PROJECT_NAME"
+  - echo "Restoring NuGet Packages..."
+  - dotnet restore "src/$PROJECT_NAME.sln"
+stages:
+  - build
+  - test
+build:
+  tags:
+  - c#
+  - windows
+  stage: build
+  script:
+  - echo "Release build..."
+  - dotnet build "src/$PROJECT_NAME.sln" --nologo -c Release /p:Platform="Any CPU"
+  artifacts:
+    paths:
+      - src/$PROJECT_RESULTS_NAME/bin/Release/**
+    name: "Build Results"
+test:
+  tags:
+  - c#
+  - windows
+  stage: test
+  script:
+  - echo "starting tests"
+  - dotnet test "src/$PROJECT_NAME.sln" --nologo -c Release /p:Platform="Any CPU"
+  dependencies:
+  - build
