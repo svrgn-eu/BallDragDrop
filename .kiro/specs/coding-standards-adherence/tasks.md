@@ -15,7 +15,8 @@
   - Update namespace and references for moved ServiceBootstrapper file
   - _Requirements: 3.1, 3.2, 3.3_
 
-- [ ] 3. Set up custom analyzer project infrastructure
+- [x] 3. Set up custom analyzer project infrastructure
+
   - Create BallDragDrop.CodeAnalysis class library project
   - Add Microsoft.CodeAnalysis.Analyzers and Microsoft.CodeAnalysis.CSharp packages
   - Create base analyzer infrastructure and diagnostic descriptor definitions
