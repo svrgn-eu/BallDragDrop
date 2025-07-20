@@ -23,6 +23,9 @@
   - _Requirements: 3.1, 4.1, 5.1, 6.1_
 
 - [ ] 4. Implement folder structure validation analyzer
+
+
+
   - Create FolderStructureAnalyzer class that validates file placement
   - Implement logic to check interfaces and abstract classes are in Contracts folder
   - Implement logic to check bootstrapper files are in Bootstrapper folder
