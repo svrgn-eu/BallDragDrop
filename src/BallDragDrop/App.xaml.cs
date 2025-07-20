@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using BallDragDrop.Services;
+using BallDragDrop.Bootstrapper;
 using BallDragDrop.Views;
 
 namespace BallDragDrop;
@@ -14,12 +16,8 @@ namespace BallDragDrop;
 /// </summary>
 public partial class App : Application
 {
-    // Application-wide logger for errors and diagnostics
-    private static readonly string LogFilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "BallDragDrop",
-        "logs",
-        $"app_{DateTime.Now:yyyyMMdd}.log");
+    // Logging service
+    private ILogService _logService;
         
     // Main window reference
     private MainWindow _mainWindow;
@@ -34,16 +32,22 @@ public partial class App : Application
     /// <param name="e">Event data</param>
     private void Application_Startup(object sender, StartupEventArgs e)
     {
-        // Set up global exception handling
-        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-        DispatcherUnhandledException += App_DispatcherUnhandledException;
-        TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+        // Initialize ServiceBootstrapper during application startup
+        ServiceBootstrapper.Initialize();
         
-        // Ensure log directory exists
-        Directory.CreateDirectory(Path.GetDirectoryName(LogFilePath));
+        // Get logging service from dependency injection
+        _logService = ServiceBootstrapper.GetService<ILogService>();
         
-        // Log application startup
-        LogMessage("Application starting");
+        // Log comprehensive startup information
+        LogStartupInformation();
+        
+        // Set up global exception handling with injected services
+        var exceptionHandlingService = ServiceBootstrapper.GetService<IExceptionHandlingService>();
+        AppDomain.CurrentDomain.UnhandledException += (s, ex) => CurrentDomain_UnhandledException(s, ex, exceptionHandlingService);
+        DispatcherUnhandledException += (s, ex) => App_DispatcherUnhandledException(s, ex, exceptionHandlingService);
+        TaskScheduler.UnobservedTaskException += (s, ex) => TaskScheduler_UnobservedTaskException(s, ex, exceptionHandlingService);
+        
+        _logService.LogInformation("Global exception handlers configured with dependency injection");
         
         // Process command line arguments if any
         ProcessCommandLineArguments(e.Args);
@@ -78,7 +82,7 @@ public partial class App : Application
                 catch (Exception ex)
                 {
                     // Log any errors during initialization
-                    LogException("Failed to initialize application", ex);
+                    _logService?.LogError(ex, "Failed to initialize application");
                     
                     // Update splash screen status
                     splashScreen.UpdateStatus("Initialization failed");
@@ -88,7 +92,7 @@ public partial class App : Application
         catch (Exception ex)
         {
             // Log any errors during splash screen creation
-            LogException("Failed to show splash screen", ex);
+            _logService?.LogError(ex, "Failed to show splash screen");
             
             // Fall back to direct initialization and main window creation
             InitializeSettings();
@@ -119,12 +123,12 @@ public partial class App : Application
             _mainWindow.Show();
             
             // Log successful startup
-            LogMessage("Application started successfully");
+            _logService?.LogInformation("Application started successfully");
         }
         catch (Exception ex)
         {
             // Log any errors during main window creation
-            LogException("Failed to create main window", ex);
+            _logService?.LogError(ex, "Failed to create main window");
             
             // Show error message to the user
             MessageBox.Show(
@@ -145,14 +149,22 @@ public partial class App : Application
     /// <param name="e">Event data</param>
     private void Application_Exit(object sender, ExitEventArgs e)
     {
+        _logService?.LogInformation("Application shutdown initiated");
+        
         // Save any application settings
         SaveSettings();
         
         // Clean up resources
         CleanupResources();
         
-        // Log application exit
-        LogMessage($"Application exiting with code: {e.ApplicationExitCode}");
+        // Log comprehensive shutdown information
+        LogShutdownInformation(e.ApplicationExitCode);
+        
+        // Flush any pending log entries
+        FlushLogs();
+        
+        // Ensure proper service disposal during application shutdown
+        ServiceBootstrapper.Dispose();
     }
     
     /// <summary>
@@ -164,7 +176,7 @@ public partial class App : Application
         if (args != null && args.Length > 0)
         {
             // Log the arguments
-            LogMessage($"Command line arguments: {string.Join(", ", args)}");
+            _logService.LogInformation("Command line arguments received: {Args}", string.Join(", ", args));
             
             // Process specific arguments if needed
             // For example: debug mode, specific file to open, etc.
@@ -173,9 +185,13 @@ public partial class App : Application
                 if (arg.Equals("--debug", StringComparison.OrdinalIgnoreCase))
                 {
                     // Enable debug mode
-                    LogMessage("Debug mode enabled");
+                    _logService.LogInformation("Debug mode enabled via command line");
                 }
             }
+        }
+        else
+        {
+            _logService.LogDebug("No command line arguments provided");
         }
     }
     
@@ -189,11 +205,11 @@ public partial class App : Application
             // Dispose of any resources that need explicit cleanup
             // For example: close file handles, release COM objects, etc.
             
-            LogMessage("Resources cleaned up successfully");
+            _logService?.LogInformation("Resources cleaned up successfully");
         }
         catch (Exception ex)
         {
-            LogException("Error during resource cleanup", ex);
+            _logService?.LogError(ex, "Error during resource cleanup");
         }
     }
     
@@ -202,17 +218,25 @@ public partial class App : Application
     /// </summary>
     /// <param name="sender">The source of the event</param>
     /// <param name="e">Event data</param>
-    private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    /// <param name="exceptionHandlingService">Injected exception handling service</param>
+    private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e, IExceptionHandlingService exceptionHandlingService)
     {
-        // Log the exception
-        LogException("Unhandled UI exception", e.Exception);
+        // Use injected exception handling service
+        exceptionHandlingService.HandleException(e.Exception, "UI thread exception");
+        
+        // Generate user-friendly error message
+        var userMessage = exceptionHandlingService.GenerateUserFriendlyMessage(e.Exception);
         
         // Show error message to the user
         MessageBox.Show(
-            $"An unexpected error occurred: {e.Exception.Message}\n\nThe application will continue running, but some features may not work correctly.",
+            $"{userMessage}\n\nThe application will continue running, but some features may not work correctly.",
             "Application Error",
             MessageBoxButton.OK,
             MessageBoxImage.Error);
+        
+        // Attempt recovery
+        bool recovered = exceptionHandlingService.AttemptRecovery(e.Exception);
+        _logService?.LogInformation("Recovery attempt result: {Recovered}", recovered);
         
         // Prevent the application from crashing
         e.Handled = true;
@@ -223,19 +247,27 @@ public partial class App : Application
     /// </summary>
     /// <param name="sender">The source of the event</param>
     /// <param name="e">Event data</param>
-    private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+    /// <param name="exceptionHandlingService">Injected exception handling service</param>
+    private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e, IExceptionHandlingService exceptionHandlingService)
     {
-        // Log the exception
-        LogException("Unhandled application exception", e.ExceptionObject as Exception);
+        var exception = e.ExceptionObject as Exception;
         
-        // For terminal exceptions, we can't prevent the application from crashing
         if (e.IsTerminating)
         {
+            // Capture application state for critical error reporting
+            var applicationState = exceptionHandlingService.CaptureApplicationContext();
+            exceptionHandlingService.ReportCriticalError(exception, applicationState);
+            
             MessageBox.Show(
                 "A fatal error has occurred and the application needs to close.",
                 "Fatal Error",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
+        }
+        else
+        {
+            // Handle non-terminal exceptions
+            exceptionHandlingService.HandleException(exception, "Background thread exception");
         }
     }
     
@@ -244,71 +276,86 @@ public partial class App : Application
     /// </summary>
     /// <param name="sender">The source of the event</param>
     /// <param name="e">Event data</param>
-    private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+    /// <param name="exceptionHandlingService">Injected exception handling service</param>
+    private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e, IExceptionHandlingService exceptionHandlingService)
     {
-        // Log the exception
-        LogException("Unobserved task exception", e.Exception);
+        // Use injected exception handling service
+        exceptionHandlingService.HandleException(e.Exception, "Unobserved task exception");
         
         // Mark the exception as observed to prevent it from crashing the application
         e.SetObserved();
     }
     
     /// <summary>
-    /// Logs an exception to the application log file
+    /// Logs comprehensive startup information including version and configuration
     /// </summary>
-    /// <param name="message">Message describing the context of the exception</param>
-    /// <param name="ex">The exception to log</param>
-    private void LogException(string message, Exception ex)
+    private void LogStartupInformation()
     {
         try
         {
-            string logMessage = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [ERROR] {message}: {ex?.Message}";
-            if (ex != null)
-            {
-                logMessage += $"\n{ex.GetType().Name}: {ex.Message}";
-                logMessage += $"\n{ex.StackTrace}";
-                
-                // Log inner exception if present
-                if (ex.InnerException != null)
-                {
-                    logMessage += $"\nInner Exception: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}";
-                    logMessage += $"\n{ex.InnerException.StackTrace}";
-                }
-            }
+            var assembly = Assembly.GetExecutingAssembly();
+            var version = assembly.GetName().Version?.ToString() ?? "Unknown";
+            var location = assembly.Location;
             
-            // Write to log file
-            File.AppendAllText(LogFilePath, logMessage + "\n\n");
-            
-            // Also output to debug console
-            Debug.WriteLine(logMessage);
+            _logService.LogInformation("=== Application Starting ===");
+            _logService.LogInformation("Application Version: {Version}", version);
+            _logService.LogInformation("Assembly Location: {Location}", location);
+            _logService.LogInformation("OS Version: {OSVersion}", Environment.OSVersion.ToString());
+            _logService.LogInformation(".NET Version: {DotNetVersion}", Environment.Version.ToString());
+            _logService.LogInformation("Machine Name: {MachineName}", Environment.MachineName);
+            _logService.LogInformation("User Name: {UserName}", Environment.UserName);
+            _logService.LogInformation("Working Directory: {WorkingDirectory}", Environment.CurrentDirectory);
+            _logService.LogInformation("Available Memory: {MemoryMB} MB", GC.GetTotalMemory(false) / (1024 * 1024));
+            _logService.LogInformation("Startup Time: {StartupTime}", DateTime.Now);
+            _logService.LogInformation("Process ID: {ProcessId}", Environment.ProcessId);
         }
-        catch
+        catch (Exception ex)
         {
-            // If logging fails, at least try to output to debug console
-            Debug.WriteLine($"Failed to log exception: {ex?.Message}");
+            _logService?.LogError(ex, "Failed to log startup information");
         }
     }
     
     /// <summary>
-    /// Logs a message to the application log file
+    /// Logs comprehensive shutdown information
     /// </summary>
-    /// <param name="message">The message to log</param>
-    private void LogMessage(string message)
+    /// <param name="exitCode">Application exit code</param>
+    private void LogShutdownInformation(int exitCode)
     {
         try
         {
-            string logMessage = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [INFO] {message}";
+            _logService?.LogInformation("=== Application Shutting Down ===");
+            _logService?.LogInformation("Exit Code: {ExitCode}", exitCode);
+            _logService?.LogInformation("Shutdown Time: {ShutdownTime}", DateTime.Now);
+            _logService?.LogInformation("Final Memory Usage: {MemoryMB} MB", GC.GetTotalMemory(false) / (1024 * 1024));
             
-            // Write to log file
-            File.AppendAllText(LogFilePath, logMessage + "\n");
+            // Force garbage collection to get accurate memory usage
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
             
-            // Also output to debug console
-            Debug.WriteLine(logMessage);
+            _logService?.LogInformation("Memory After GC: {MemoryMB} MB", GC.GetTotalMemory(false) / (1024 * 1024));
+            _logService?.LogInformation("=== Application Shutdown Complete ===");
         }
-        catch
+        catch (Exception ex)
         {
-            // If logging fails, at least try to output to debug console
-            Debug.WriteLine($"Failed to log message: {message}");
+            _logService?.LogError(ex, "Failed to log shutdown information");
+        }
+    }
+    
+    /// <summary>
+    /// Flushes any pending log entries
+    /// </summary>
+    private void FlushLogs()
+    {
+        try
+        {
+            // For the simple implementation, there's no explicit flush needed
+            // This method is a placeholder for when Log4NET is implemented
+            _logService?.LogDebug("Log flush completed");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to flush logs: {ex.Message}");
         }
     }
     
@@ -319,8 +366,8 @@ public partial class App : Application
     {
         try
         {
-            // Create settings manager
-            _settingsManager = new SettingsManager();
+            // Get settings manager from dependency injection
+            _settingsManager = ServiceBootstrapper.GetService<SettingsManager>();
             
             // Load existing settings
             bool settingsLoaded = _settingsManager.LoadSettings();
@@ -339,7 +386,7 @@ public partial class App : Application
                 // Save the default settings
                 _settingsManager.SaveSettings();
                 
-                LogMessage("Default settings created");
+                _logService?.LogInformation("Default settings created");
             }
             else
             {
@@ -350,16 +397,16 @@ public partial class App : Application
                 int runCount = _settingsManager.GetSetting<int>("RunCount", 0);
                 _settingsManager.SetSetting("RunCount", runCount + 1);
                 
-                LogMessage($"Settings loaded. Run count: {runCount + 1}");
+                _logService?.LogInformation("Settings loaded. Run count: {RunCount}", runCount + 1);
             }
             
             // Log successful initialization
-            LogMessage("Application settings initialized");
+            _logService?.LogInformation("Application settings initialized");
         }
         catch (Exception ex)
         {
             // Log any errors during initialization
-            LogException("Failed to initialize application settings", ex);
+            _logService?.LogError(ex, "Failed to initialize application settings");
         }
     }
     
@@ -373,7 +420,7 @@ public partial class App : Application
             // Check if settings manager is initialized
             if (_settingsManager == null)
             {
-                LogMessage("Settings manager not initialized, skipping settings save");
+                _logService?.LogWarning("Settings manager not initialized, skipping settings save");
                 return;
             }
             
@@ -398,17 +445,17 @@ public partial class App : Application
             // Log result
             if (saved)
             {
-                LogMessage("Application settings saved successfully");
+                _logService?.LogInformation("Application settings saved successfully");
             }
             else
             {
-                LogMessage("Failed to save application settings");
+                _logService?.LogWarning("Failed to save application settings");
             }
         }
         catch (Exception ex)
         {
             // Log any errors during save
-            LogException("Failed to save application settings", ex);
+            _logService?.LogError(ex, "Failed to save application settings");
         }
     }
     
@@ -419,5 +466,14 @@ public partial class App : Application
     public SettingsManager GetSettingsManager()
     {
         return _settingsManager;
+    }
+    
+    /// <summary>
+    /// Gets the logging service instance
+    /// </summary>
+    /// <returns>The logging service instance</returns>
+    public ILogService GetLogService()
+    {
+        return _logService;
     }
 }

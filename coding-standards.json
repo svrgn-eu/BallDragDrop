@@ -1,0 +1,94 @@
+{
+  "folderStructure": {
+    "requiredFolders": [
+      "Contracts",
+      "Bootstrapper",
+      "Models",
+      "Services",
+      "ViewModels",
+      "Views"
+    ],
+    "fileTypeToFolderMapping": {
+      "interfaces": ["Contracts"],
+      "abstractClasses": ["Contracts"],
+      "bootstrappers": ["Bootstrapper"],
+      "models": ["Models"],
+      "services": ["Services"],
+      "viewModels": ["ViewModels"],
+      "views": ["Views"]
+    },
+    "enforcementLevel": "warning"
+  },
+  "methodRegions": {
+    "enforceRegions": true,
+    "regionNameFormat": "#region {MethodName}",
+    "exemptMethodTypes": [
+      "PropertyAccessors",
+      "EventAccessors"
+    ],
+    "enforcementLevel": "warning"
+  },
+  "classRegions": {
+    "enforceClassRegions": true,
+    "requiredRegions": [
+      "Properties",
+      "Construction", 
+      "Methods"
+    ],
+    "regionFormat": {
+      "start": "#region {RegionName}",
+      "end": "#endregion {RegionName}"
+    },
+    "enforcementLevel": "warning"
+  },
+  "xmlDocumentation": {
+    "enforceDocumentation": true,
+    "requiredElements": [
+      "summary",
+      "param",
+      "returns",
+      "exception"
+    ],
+    "publicMembersOnly": true,
+    "enforcementLevel": "error"
+  },
+  "namingConventions": {
+    "classes": {
+      "convention": "PascalCase",
+      "enforcementLevel": "error"
+    },
+    "methods": {
+      "convention": "PascalCase", 
+      "enforcementLevel": "error"
+    },
+    "properties": {
+      "convention": "PascalCase",
+      "enforcementLevel": "error"
+    },
+    "privateFields": {
+      "convention": "camelCase",
+      "prefix": "_",
+      "enforcementLevel": "warning"
+    },
+    "interfaces": {
+      "convention": "PascalCase",
+      "prefix": "I",
+      "enforcementLevel": "error"
+    }
+  },
+  "codeQuality": {
+    "maxMethodComplexity": 10,
+    "maxMethodLength": 50,
+    "enforceNullChecks": true,
+    "detectUnusedVariables": true,
+    "enforcementLevel": "warning"
+  },
+  "buildIntegration": {
+    "failBuildOnCriticalViolations": true,
+    "generateQualityReport": true,
+    "criticalViolationTypes": [
+      "namingConventions",
+      "xmlDocumentation"
+    ]
+  }
+}

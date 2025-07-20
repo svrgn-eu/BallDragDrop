@@ -17,12 +17,20 @@ namespace BallDragDrop.Services
         // Current settings
         private Dictionary<string, object> _settings;
         
+        // Logging service
+        private readonly ILogService _logService;
+        
         /// <summary>
         /// Initializes a new instance of the SettingsManager class
         /// </summary>
+        /// <param name="logService">Logging service</param>
         /// <param name="settingsFileName">Optional settings file name</param>
-        public SettingsManager(string settingsFileName = "settings.json")
+        public SettingsManager(ILogService logService, string settingsFileName = "settings.json")
         {
+            _logService = logService ?? throw new ArgumentNullException(nameof(logService));
+            
+            using var scope = _logService?.BeginScope("SettingsManager.Constructor", settingsFileName);
+            
             // Set up the settings file path in the local application data folder
             string appDataPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -36,6 +44,8 @@ namespace BallDragDrop.Services
             
             // Initialize settings dictionary
             _settings = new Dictionary<string, object>();
+            
+            _logService?.LogDebug("SettingsManager initialized with file path: {FilePath}", _settingsFilePath);
         }
         
         /// <summary>
@@ -44,13 +54,19 @@ namespace BallDragDrop.Services
         /// <returns>True if settings were loaded successfully, false otherwise</returns>
         public bool LoadSettings()
         {
+            _logService?.LogMethodEntry(nameof(LoadSettings));
+            
             try
             {
                 // Check if the settings file exists
                 if (File.Exists(_settingsFilePath))
                 {
+                    _logService?.LogDebug("Settings file found, loading from: {FilePath}", _settingsFilePath);
+                    
                     // Read the settings file
                     string json = File.ReadAllText(_settingsFilePath);
+                    
+                    _logService?.LogTrace("Settings file content length: {Length} characters", json.Length);
                     
                     // Deserialize the settings
                     var loadedSettings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
@@ -62,15 +78,20 @@ namespace BallDragDrop.Services
                         _settings[kvp.Key] = ConvertJsonElement(kvp.Value);
                     }
                     
+                    _logService?.LogInformation("Settings loaded successfully. {SettingCount} settings found", _settings.Count);
+                    _logService?.LogMethodExit(nameof(LoadSettings), true);
                     return true;
                 }
                 
+                _logService?.LogInformation("Settings file does not exist: {FilePath}", _settingsFilePath);
+                _logService?.LogMethodExit(nameof(LoadSettings), false);
                 return false;
             }
             catch (Exception ex)
             {
-                // Log the error
-                Console.WriteLine($"Error loading settings: {ex.Message}");
+                // Log the error with structured logging
+                _logService?.LogError(ex, "Error loading settings from file: {FilePath}", _settingsFilePath);
+                _logService?.LogMethodExit(nameof(LoadSettings), false);
                 return false;
             }
         }
@@ -81,23 +102,32 @@ namespace BallDragDrop.Services
         /// <returns>True if settings were saved successfully, false otherwise</returns>
         public bool SaveSettings()
         {
+            _logService?.LogMethodEntry(nameof(SaveSettings));
+            
             try
             {
+                _logService?.LogDebug("Saving {SettingCount} settings to file: {FilePath}", _settings.Count, _settingsFilePath);
+                
                 // Serialize the settings
                 string json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions
                 {
                     WriteIndented = true
                 });
                 
+                _logService?.LogTrace("Serialized settings JSON length: {Length} characters", json.Length);
+                
                 // Write the settings file
                 File.WriteAllText(_settingsFilePath, json);
                 
+                _logService?.LogInformation("Settings saved successfully to: {FilePath}", _settingsFilePath);
+                _logService?.LogMethodExit(nameof(SaveSettings), true);
                 return true;
             }
             catch (Exception ex)
             {
-                // Log the error
-                Console.WriteLine($"Error saving settings: {ex.Message}");
+                // Log the error with structured logging
+                _logService?.LogError(ex, "Error saving settings to file: {FilePath}", _settingsFilePath);
+                _logService?.LogMethodExit(nameof(SaveSettings), false);
                 return false;
             }
         }
@@ -111,6 +141,8 @@ namespace BallDragDrop.Services
         /// <returns>The setting value or the default value if the setting doesn't exist</returns>
         public T GetSetting<T>(string key, T defaultValue = default)
         {
+            _logService?.LogTrace("Getting setting: {Key} (type: {Type})", key, typeof(T).Name);
+            
             if (_settings.TryGetValue(key, out object value))
             {
                 try
@@ -118,18 +150,25 @@ namespace BallDragDrop.Services
                     // Try to convert the value to the requested type
                     if (value is JsonElement jsonElement)
                     {
-                        return (T)ConvertJsonElement(jsonElement, typeof(T));
+                        var result = (T)ConvertJsonElement(jsonElement, typeof(T));
+                        _logService?.LogTrace("Setting {Key} found with value: {Value}", key, result);
+                        return result;
                     }
                     
-                    return (T)Convert.ChangeType(value, typeof(T));
+                    var convertedValue = (T)Convert.ChangeType(value, typeof(T));
+                    _logService?.LogTrace("Setting {Key} found with value: {Value}", key, convertedValue);
+                    return convertedValue;
                 }
-                catch
+                catch (Exception ex)
                 {
                     // If conversion fails, return the default value
+                    _logService?.LogError(ex, "Failed to convert setting {Key} to type {Type}, using default value: {DefaultValue}", 
+                        key, typeof(T).Name, defaultValue);
                     return defaultValue;
                 }
             }
             
+            _logService?.LogTrace("Setting {Key} not found, using default value: {DefaultValue}", key, defaultValue);
             return defaultValue;
         }
         
@@ -141,7 +180,19 @@ namespace BallDragDrop.Services
         /// <param name="value">The setting value</param>
         public void SetSetting<T>(string key, T value)
         {
+            _logService?.LogTrace("Setting value for key: {Key} = {Value} (type: {Type})", key, value, typeof(T).Name);
+            
+            var oldValue = _settings.ContainsKey(key) ? _settings[key] : null;
             _settings[key] = value;
+            
+            if (oldValue != null && !oldValue.Equals(value))
+            {
+                _logService?.LogDebug("Setting {Key} changed from {OldValue} to {NewValue}", key, oldValue, value);
+            }
+            else if (oldValue == null)
+            {
+                _logService?.LogDebug("New setting {Key} added with value: {Value}", key, value);
+            }
         }
         
         /// <summary>
@@ -151,7 +202,9 @@ namespace BallDragDrop.Services
         /// <returns>True if the setting exists, false otherwise</returns>
         public bool HasSetting(string key)
         {
-            return _settings.ContainsKey(key);
+            var exists = _settings.ContainsKey(key);
+            _logService?.LogTrace("Checking if setting exists: {Key} = {Exists}", key, exists);
+            return exists;
         }
         
         /// <summary>
@@ -161,7 +214,9 @@ namespace BallDragDrop.Services
         /// <returns>True if the setting was removed, false otherwise</returns>
         public bool RemoveSetting(string key)
         {
-            return _settings.Remove(key);
+            var removed = _settings.Remove(key);
+            _logService?.LogDebug("Setting {Key} removal: {Success}", key, removed ? "successful" : "failed (key not found)");
+            return removed;
         }
         
         /// <summary>
@@ -169,7 +224,9 @@ namespace BallDragDrop.Services
         /// </summary>
         public void ClearSettings()
         {
+            var count = _settings.Count;
             _settings.Clear();
+            _logService?.LogInformation("Cleared all settings. {Count} settings removed", count);
         }
         
         /// <summary>

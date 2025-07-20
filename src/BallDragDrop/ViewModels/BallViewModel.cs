@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -16,6 +17,7 @@ namespace BallDragDrop.ViewModels
     {
         // Making _ballModel internal so it can be accessed by MainWindow
         internal readonly BallModel _ballModel;
+        private readonly ILogService _logService;
         private ImageSource _ballImage;
         private bool _isDragging;
         private Point _lastMousePosition;
@@ -174,12 +176,13 @@ namespace BallDragDrop.ViewModels
         /// <summary>
         /// Initializes a new instance of the BallViewModel class
         /// </summary>
-        /// <param name="initialX">Initial X position</param>
-        /// <param name="initialY">Initial Y position</param>
-        /// <param name="radius">Ball radius</param>
-        public BallViewModel(double initialX, double initialY, double radius = 25)
+        /// <param name="logService">Logging service for tracking user interactions</param>
+        public BallViewModel(ILogService logService)
         {
-            _ballModel = new BallModel(initialX, initialY, radius);
+            _logService = logService ?? throw new ArgumentNullException(nameof(logService));
+            
+            // Initialize with default values - will be set via Initialize method
+            _ballModel = new BallModel(0, 0, 25);
             _isDragging = false;
             _currentCursor = Cursors.Arrow;
             _ballImage = null!; // Initialize to null! to satisfy non-nullable field requirement
@@ -197,6 +200,33 @@ namespace BallDragDrop.ViewModels
             MouseDownCommand = new RelayCommand<MouseEventArgs>(OnMouseDown);
             MouseMoveCommand = new RelayCommand<MouseEventArgs>(OnMouseMove);
             MouseUpCommand = new RelayCommand<MouseEventArgs>(OnMouseUp);
+            
+            _logService.LogDebug("BallViewModel created with dependency injection");
+        }
+
+        /// <summary>
+        /// Initializes the ball position and properties
+        /// </summary>
+        /// <param name="initialX">Initial X position</param>
+        /// <param name="initialY">Initial Y position</param>
+        /// <param name="radius">Ball radius</param>
+        public void Initialize(double initialX, double initialY, double radius = 25)
+        {
+            _ballModel.X = initialX;
+            _ballModel.Y = initialY;
+            _ballModel.Radius = radius;
+            
+            // Notify property changes
+            OnPropertyChanged(nameof(X));
+            OnPropertyChanged(nameof(Y));
+            OnPropertyChanged(nameof(Radius));
+            OnPropertyChanged(nameof(Left));
+            OnPropertyChanged(nameof(Top));
+            OnPropertyChanged(nameof(Width));
+            OnPropertyChanged(nameof(Height));
+            
+            _logService.LogDebug("BallViewModel initialized at position ({X}, {Y}) with radius {Radius}", 
+                initialX, initialY, radius);
         }
 
         /// <summary>
@@ -213,6 +243,9 @@ namespace BallDragDrop.ViewModels
             // Check if the click is inside the ball
             if (_ballModel.ContainsPoint(position.X, position.Y))
             {
+                // Log user interaction
+                _logService?.LogInformation("User started dragging ball at position ({X}, {Y})", position.X, position.Y);
+                
                 // Start dragging
                 IsDragging = true;
                 _lastMousePosition = position;
@@ -227,6 +260,12 @@ namespace BallDragDrop.ViewModels
                 
                 // Reset mouse history when starting a new drag
                 _mouseHistoryCount = 0;
+                
+                _logService?.LogDebug("Ball drag initiated - mouse captured, movement stopped");
+            }
+            else
+            {
+                _logService?.LogTrace("Mouse click outside ball bounds at ({X}, {Y})", position.X, position.Y);
             }
         }
 
@@ -258,6 +297,8 @@ namespace BallDragDrop.ViewModels
         /// </summary>
         private void ProcessMouseMove()
         {
+            var stopwatch = Stopwatch.StartNew();
+            
             // Use the last stored mouse event args
             var e = _lastMouseMoveArgs;
             if (e == null) return;
@@ -271,6 +312,13 @@ namespace BallDragDrop.ViewModels
                 // Calculate the movement delta
                 double deltaX = position.X - _lastMousePosition.X;
                 double deltaY = position.Y - _lastMousePosition.Y;
+
+                // Log significant movements at debug level
+                if (Math.Abs(deltaX) > 5 || Math.Abs(deltaY) > 5)
+                {
+                    _logService?.LogTrace("Ball dragged by delta ({DeltaX:F1}, {DeltaY:F1}) to position ({X:F1}, {Y:F1})", 
+                        deltaX, deltaY, X + deltaX, Y + deltaY);
+                }
 
                 // Update the ball position
                 X += deltaX;
@@ -305,6 +353,14 @@ namespace BallDragDrop.ViewModels
 
             // Update cursor based on position and dragging state
             UpdateCursor();
+            
+            stopwatch.Stop();
+            
+            // Log performance metrics for mouse processing at debug level
+            if (stopwatch.ElapsedMilliseconds > 5) // Only log if processing took more than 5ms
+            {
+                _logService?.LogDebug("Mouse move processing took {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
+            }
         }
         
         /// <summary>
@@ -344,6 +400,11 @@ namespace BallDragDrop.ViewModels
         {
             if (IsDragging)
             {
+                var stopwatch = Stopwatch.StartNew();
+                
+                // Log the end of dragging
+                _logService?.LogInformation("User released ball at position ({X:F1}, {Y:F1})", X, Y);
+                
                 // Stop dragging
                 IsDragging = false;
 
@@ -392,12 +453,16 @@ namespace BallDragDrop.ViewModels
                     // Check if the movement is fast enough to be considered a throw
                     if (physicsEngine.IsThrow(velocityX, velocityY, throwThreshold))
                     {
+                        // Log the throw action
+                        _logService?.LogInformation("Ball thrown with velocity ({VelX:F1}, {VelY:F1})", velocityX, velocityY);
+                        
                         // Apply the velocity to the ball model
                         _ballModel.SetVelocity(velocityX, velocityY);
                     }
                     else
                     {
                         // Not a throw, stop the ball
+                        _logService?.LogDebug("Ball dropped (velocity too low for throw): ({VelX:F1}, {VelY:F1})", velocityX, velocityY);
                         _ballModel.Stop();
                     }
                     
@@ -409,11 +474,17 @@ namespace BallDragDrop.ViewModels
                 else
                 {
                     // No event data, stop the ball
+                    _logService?.LogDebug("Ball released without event data - stopping movement");
                     _ballModel.Stop();
                 }
                 
                 // Update the cursor after releasing the ball
                 UpdateCursor();
+                
+                stopwatch.Stop();
+                
+                // Log performance metrics for physics calculations at debug level
+                _logService?.LogPerformance("Ball release processing", stopwatch.Elapsed);
             }
         }
 
@@ -448,16 +519,43 @@ namespace BallDragDrop.ViewModels
         /// <param name="maxY">Maximum Y coordinate</param>
         public void ConstrainPosition(double minX, double minY, double maxX, double maxY)
         {
+            var originalX = X;
+            var originalY = Y;
+            
             bool wasConstrained = _ballModel.ConstrainPosition(minX, minY, maxX, maxY);
             
             if (wasConstrained)
             {
+                _logService?.LogDebug("Ball position constrained from ({OriginalX:F1}, {OriginalY:F1}) to ({NewX:F1}, {NewY:F1})", 
+                    originalX, originalY, X, Y);
+                
                 // Notify UI that position properties have changed
                 OnPropertyChanged(nameof(X));
                 OnPropertyChanged(nameof(Y));
                 OnPropertyChanged(nameof(Left));
                 OnPropertyChanged(nameof(Top));
             }
+        }
+        
+        /// <summary>
+        /// Gets the log service from the application instance
+        /// </summary>
+        /// <returns>The log service or null if not available</returns>
+        private static ILogService GetLogServiceFromApp()
+        {
+            try
+            {
+                if (Application.Current is App app)
+                {
+                    return app.GetLogService();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to get log service from app: {ex.Message}");
+            }
+            
+            return null;
         }
 
         /// <summary>

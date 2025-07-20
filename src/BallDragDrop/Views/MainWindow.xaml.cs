@@ -14,6 +14,8 @@ using System.Windows.Shapes;
 using System.Diagnostics;
 using System.Windows.Threading;
 using BallDragDrop.ViewModels;
+using BallDragDrop.Services;
+using BallDragDrop.Bootstrapper;
 using Path = System.IO.Path;
 
 namespace BallDragDrop.Views;
@@ -91,8 +93,11 @@ public partial class MainWindow : Window
         double centerY = MainCanvas.Height / 2;
         double ballRadius = 25; // Default radius
         
-        // Create a new BallViewModel with the center position
-        BallViewModel viewModel = new BallViewModel(centerX, centerY, ballRadius);
+        // Create a new BallViewModel using dependency injection
+        BallViewModel viewModel = ServiceBootstrapper.GetService<BallViewModel>();
+        
+        // Initialize the ball position
+        viewModel.Initialize(centerX, centerY, ballRadius);
         
         // Load the ball image with optimized settings
         try
@@ -103,24 +108,21 @@ public partial class MainWindow : Window
             
             if (File.Exists(fullPath))
             {
-                // Performance optimization: Load image with optimized settings
-                BitmapImage ballImage = new BitmapImage();
-                ballImage.BeginInit();
-                ballImage.UriSource = new Uri(fullPath);
-                ballImage.CacheOption = BitmapCacheOption.OnLoad; // Load image into memory immediately
-                ballImage.CreateOptions = BitmapCreateOptions.None; // Don't delay creation
-                ballImage.DecodePixelWidth = (int)(ballRadius * 2); // Only decode to the size we need
-                ballImage.DecodePixelHeight = (int)(ballRadius * 2);
-                ballImage.EndInit();
+                // Get logging service from dependency injection
+                var logService = ServiceBootstrapper.GetService<ILogService>();
                 
-                // Freeze the image to make it immutable and improve performance
-                if (ballImage.CanFreeze)
+                // Use ImageService to load the image with logging
+                var ballImage = Services.ImageService.LoadImage(fullPath, logService);
+                
+                if (ballImage != null)
                 {
-                    ballImage.Freeze();
+                    // Set the image source in the view model
+                    viewModel.BallImage = ballImage;
                 }
-                
-                // Set the image source in the view model
-                viewModel.BallImage = ballImage;
+                else
+                {
+                    throw new InvalidOperationException("ImageService returned null");
+                }
             }
             else
             {
@@ -129,41 +131,28 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            // If the image can't be loaded, create a fallback image (a simple circle)
-            // Performance optimization: Create a more efficient fallback image
-            int size = (int)(ballRadius * 2);
+            // Get logging service from dependency injection
+            var logService = ServiceBootstrapper.GetService<ILogService>();
             
-            // Create a DrawingVisual for the fallback image
-            DrawingVisual drawingVisual = new DrawingVisual();
-            using (DrawingContext drawingContext = drawingVisual.RenderOpen())
+            // If the image can't be loaded, create a fallback image using ImageService
+            logService?.LogError(ex, "Failed to load ball image, creating fallback image");
+            
+            var fallbackImage = Services.ImageService.CreateFallbackImage(
+                ballRadius, 
+                Colors.Red, 
+                Colors.DarkRed, 
+                2, 
+                logService);
+            
+            if (fallbackImage != null)
             {
-                // Draw a simple circle
-                drawingContext.DrawEllipse(
-                    Brushes.Red,
-                    new Pen(Brushes.DarkRed, 2),
-                    new Point(ballRadius, ballRadius),
-                    ballRadius,
-                    ballRadius);
+                // Set the fallback image in the view model
+                viewModel.BallImage = fallbackImage;
             }
-            
-            // Render the drawing to a bitmap
-            RenderTargetBitmap renderBitmap = new RenderTargetBitmap(
-                size, size,
-                96, 96,
-                PixelFormats.Pbgra32);
-            renderBitmap.Render(drawingVisual);
-            
-            // Freeze the bitmap to make it immutable and improve performance
-            if (renderBitmap.CanFreeze)
+            else
             {
-                renderBitmap.Freeze();
+                logService?.LogError("Failed to create fallback image");
             }
-            
-            // Set the fallback image in the view model
-            viewModel.BallImage = renderBitmap;
-            
-            // Log the error
-            Debug.WriteLine($"Error loading ball image: {ex.Message}");
         }
         
         // Set the DataContext for the window
