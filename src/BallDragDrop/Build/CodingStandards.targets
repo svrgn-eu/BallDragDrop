@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+  <!-- Properties for Coding Standards Validation -->
+  <PropertyGroup>
+    <CodingStandardsConfigFile Condition="'$(CodingStandardsConfigFile)' == ''">$(MSBuildProjectDirectory)\..\..\coding-standards.json</CodingStandardsConfigFile>
+    <CodingStandardsReportDir Condition="'$(CodingStandardsReportDir)' == ''">$(OutputPath)CodeQuality</CodingStandardsReportDir>
+    <CodingStandardsReportFile Condition="'$(CodingStandardsReportFile)' == ''">$(CodingStandardsReportDir)\CodeQualityReport.xml</CodingStandardsReportFile>
+    <CodingStandardsScriptPath Condition="'$(CodingStandardsScriptPath)' == ''">$(MSBuildThisFileDirectory)ValidateCodingStandards.ps1</CodingStandardsScriptPath>
+    <FailBuildOnCriticalViolations Condition="'$(FailBuildOnCriticalViolations)' == ''">false</FailBuildOnCriticalViolations>
+    <EnableCodingStandardsValidation Condition="'$(EnableCodingStandardsValidation)' == ''">true</EnableCodingStandardsValidation>
+  </PropertyGroup>
+
+  <!-- Define the pre-build validation target -->
+  <Target Name="ValidateCodingStandards" 
+          BeforeTargets="CoreCompile" 
+          Condition="'$(EnableCodingStandardsValidation)' == 'true'">
+    
+    <Message Text="Starting Coding Standards Validation..." Importance="high" />
+    
+    <!-- Ensure report directory exists -->
+    <MakeDir Directories="$(CodingStandardsReportDir)" />
+    
+    <!-- Execute PowerShell validation script -->
+    <Exec Command="powershell.exe -ExecutionPolicy Bypass -File &quot;$(CodingStandardsScriptPath)&quot; -ProjectPath &quot;$(MSBuildProjectDirectory)&quot; -ConfigPath &quot;$(CodingStandardsConfigFile)&quot; -ReportPath &quot;$(CodingStandardsReportFile)&quot; -FailOnCritical:$$(FailBuildOnCriticalViolations)"
+          ContinueOnError="true"
+          IgnoreExitCode="false">
+      <Output TaskParameter="ExitCode" PropertyName="CodingStandardsExitCode" />
+    </Exec>
+    
+    <!-- Handle validation results -->
+    <Message Text="Coding Standards Validation completed. Report: $(CodingStandardsReportFile)" Importance="high" />
+    
+    <!-- Fail build if critical violations found and configured to fail -->
+    <Error Text="Build failed due to critical coding standards violations. See $(CodingStandardsReportFile) for details." 
+           Condition="'$(CodingStandardsExitCode)' != '0' AND '$(FailBuildOnCriticalViolations)' == 'true'" />
+    
+    <!-- Show warning if violations found but not failing build -->
+    <Warning Text="Coding standards violations found. See $(CodingStandardsReportFile) for details." 
+             Condition="'$(CodingStandardsExitCode)' != '0' AND '$(FailBuildOnCriticalViolations)' != 'true'" />
+  </Target>
+
+  <!-- Additional targets for manual validation -->
+  <Target Name="RunCodingStandardsValidation">
+    <Message Text="Running manual coding standards validation..." Importance="high" />
+    <CallTarget Targets="ValidateCodingStandards" />
+  </Target>
+  
+  <!-- Target to generate report only -->
+  <Target Name="GenerateCodingStandardsReport">
+    <Message Text="Generating coding standards report..." Importance="high" />
+    <MakeDir Directories="$(CodingStandardsReportDir)" />
+    <Exec Command="powershell.exe -ExecutionPolicy Bypass -File &quot;$(CodingStandardsScriptPath)&quot; -ProjectPath &quot;$(MSBuildProjectDirectory)&quot; -ConfigPath &quot;$(CodingStandardsConfigFile)&quot; -ReportPath &quot;$(CodingStandardsReportFile)&quot; -FailOnCritical:$$false"
+          ContinueOnError="true" />
+    <Message Text="Report generated: $(CodingStandardsReportFile)" Importance="high" />
+  </Target>
+
+</Project>

@@ -7,6 +7,7 @@ before_script:
   - dotnet restore "src/$PROJECT_NAME.sln"
 stages:
   - build
+  - code-quality
   - test
 build:
   tags:
@@ -20,6 +21,30 @@ build:
     paths:
       - src/$PROJECT_RESULTS_NAME/bin/Release/**
     name: "Build Results"
+code-quality:
+  tags:
+  - c#
+  - windows
+  stage: code-quality
+  script:
+  - echo "Running coding standards validation..."
+  - cd "src/$PROJECT_NAME"
+  - pwsh -File "Build/RunCodingStandardsValidation.ps1"
+  artifacts:
+    when: always
+    paths:
+      - src/$PROJECT_NAME/bin/Debug/net9.0-windows/CodeQuality/CodeQualityReport.xml
+      - src/$PROJECT_NAME/bin/Release/net9.0-windows/CodeQuality/CodeQualityReport.xml
+    reports:
+      junit: 
+        - src/$PROJECT_NAME/bin/Debug/net9.0-windows/CodeQuality/CodeQualityReport.xml
+        - src/$PROJECT_NAME/bin/Release/net9.0-windows/CodeQuality/CodeQualityReport.xml
+    name: "Code Quality Report"
+    expire_in: 30 days
+  dependencies:
+  - build
+  allow_failure: false
+
 test:
   tags:
   - c#
@@ -30,3 +55,4 @@ test:
   - dotnet test "src/$PROJECT_NAME.sln" --nologo -c Release /p:Platform="Any CPU"
   dependencies:
   - build
+  - code-quality

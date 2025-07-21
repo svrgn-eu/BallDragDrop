@@ -1,0 +1,1190 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>BallDragDrop</name>
+    </assembly>
+    <members>
+        <member name="T:BallDragDrop.App">
+            <summary>
+            Interaction logic for App.xaml
+            </summary>
+            <summary>
+            App
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.App.Application_Startup(System.Object,System.Windows.StartupEventArgs)">
+            <summary>
+            Application startup event handler from XAML
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.App.ShowSplashScreenAndInitialize">
+            <summary>
+            Shows the splash screen and initializes the application
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.App.SplashScreen_InitializationComplete(System.Object,System.EventArgs)">
+            <summary>
+            Event handler for splash screen initialization complete
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.App.ShowMainWindow">
+            <summary>
+            Shows the main window
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.App.Application_Exit(System.Object,System.Windows.ExitEventArgs)">
+            <summary>
+            Application exit event handler from XAML
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.App.ProcessCommandLineArguments(System.String[])">
+            <summary>
+            Processes command line arguments
+            </summary>
+            <param name="args">Command line arguments</param>
+        </member>
+        <member name="M:BallDragDrop.App.CleanupResources">
+            <summary>
+            Cleans up application resources before exit
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.App.App_DispatcherUnhandledException(System.Object,System.Windows.Threading.DispatcherUnhandledExceptionEventArgs,BallDragDrop.Services.IExceptionHandlingService)">
+            <summary>
+            Handles unhandled exceptions in the UI thread
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+            <param name="exceptionHandlingService">Injected exception handling service</param>
+        </member>
+        <member name="M:BallDragDrop.App.CurrentDomain_UnhandledException(System.Object,System.UnhandledExceptionEventArgs,BallDragDrop.Services.IExceptionHandlingService)">
+            <summary>
+            Handles unhandled exceptions in non-UI threads
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+            <param name="exceptionHandlingService">Injected exception handling service</param>
+        </member>
+        <member name="M:BallDragDrop.App.TaskScheduler_UnobservedTaskException(System.Object,System.Threading.Tasks.UnobservedTaskExceptionEventArgs,BallDragDrop.Services.IExceptionHandlingService)">
+            <summary>
+            Handles unobserved task exceptions
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+            <param name="exceptionHandlingService">Injected exception handling service</param>
+        </member>
+        <member name="M:BallDragDrop.App.LogStartupInformation">
+            <summary>
+            Logs comprehensive startup information including version and configuration
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.App.LogShutdownInformation(System.Int32)">
+            <summary>
+            Logs comprehensive shutdown information
+            </summary>
+            <param name="exitCode">Application exit code</param>
+        </member>
+        <member name="M:BallDragDrop.App.FlushLogs">
+            <summary>
+            Flushes any pending log entries
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.App.InitializeSettings">
+            <summary>
+            Initializes application settings
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.App.SaveSettings">
+            <summary>
+            Saves application settings
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.App.GetSettingsManager">
+            <summary>
+            Gets the settings manager instance
+            </summary>
+            <returns>The settings manager instance</returns>
+        </member>
+        <member name="M:BallDragDrop.App.GetLogService">
+            <summary>
+            Gets the logging service instance
+            </summary>
+            <returns>The logging service instance</returns>
+        </member>
+        <member name="M:BallDragDrop.App.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.App.Main">
+            <summary>
+            Application Entry Point.
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Bootstrapper.ServiceBootstrapper">
+            <summary>
+            Central static bootstrapper class for dependency injection configuration
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Bootstrapper.ServiceBootstrapper.ServiceProvider">
+            <summary>
+            Gets the configured service provider
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.Initialize">
+            <summary>
+            Initializes the service container with all application services
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Configures all application services in the dependency injection container
+            </summary>
+            <param name="services">The service collection to configure</param>
+        </member>
+        <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.RegisterCoreServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers core application services
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.RegisterLoggingServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers logging-related services
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.InitializeLog4NetConfiguration">
+            <summary>
+            Initializes Log4NET configuration
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.RegisterViewModels(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers ViewModels for dependency injection
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.RegisterApplicationServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers other application-specific services
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.GetService``1">
+            <summary>
+            Gets a service of the specified type
+            </summary>
+            <typeparam name="T">The type of service to retrieve</typeparam>
+            <returns>The service instance</returns>
+        </member>
+        <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.GetOptionalService``1">
+            <summary>
+            Gets a service of the specified type, or null if not found
+            </summary>
+            <typeparam name="T">The type of service to retrieve</typeparam>
+            <returns>The service instance or null</returns>
+        </member>
+        <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.Dispose">
+            <summary>
+            Disposes the service provider and cleans up resources
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Models.BallModel">
+            <summary>
+            Represents the data model for a ball in the application.
+            Contains properties for position, velocity, size, and other physical attributes.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.BallModel.#ctor">
+            <summary>
+            Initializes a new instance of the BallModel class with default values.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.BallModel.#ctor(System.Double,System.Double)">
+            <summary>
+            Initializes a new instance of the BallModel class with specified position.
+            </summary>
+            <param name="x">Initial X position</param>
+            <param name="y">Initial Y position</param>
+        </member>
+        <member name="M:BallDragDrop.Models.BallModel.#ctor(System.Double,System.Double,System.Double)">
+            <summary>
+            Initializes a new instance of the BallModel class with specified position and radius.
+            </summary>
+            <param name="x">Initial X position</param>
+            <param name="y">Initial Y position</param>
+            <param name="radius">Ball radius</param>
+        </member>
+        <member name="M:BallDragDrop.Models.BallModel.UpdatePosition(System.Double)">
+            <summary>
+            Updates the ball's position based on its current velocity.
+            </summary>
+            <param name="timeStep">Time step for the update (in seconds)</param>
+        </member>
+        <member name="M:BallDragDrop.Models.BallModel.ApplyForce(System.Double,System.Double,System.Double)">
+            <summary>
+            Applies a force to the ball, changing its velocity.
+            </summary>
+            <param name="forceX">Force in X direction</param>
+            <param name="forceY">Force in Y direction</param>
+            <param name="timeStep">Time step for the force application (in seconds)</param>
+        </member>
+        <member name="M:BallDragDrop.Models.BallModel.SetVelocity(System.Double,System.Double)">
+            <summary>
+            Sets the ball's velocity directly.
+            </summary>
+            <param name="velocityX">New X velocity</param>
+            <param name="velocityY">New Y velocity</param>
+        </member>
+        <member name="M:BallDragDrop.Models.BallModel.Stop">
+            <summary>
+            Stops the ball's movement by setting its velocity to zero.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.BallModel.ContainsPoint(System.Double,System.Double)">
+            <summary>
+            Checks if a point is inside the ball.
+            </summary>
+            <param name="pointX">X coordinate of the point</param>
+            <param name="pointY">Y coordinate of the point</param>
+            <returns>True if the point is inside the ball, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.BallModel.GetPosition">
+            <summary>
+            Gets the current position as a Point.
+            </summary>
+            <returns>A Point representing the ball's position</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.BallModel.SetPosition(System.Double,System.Double)">
+            <summary>
+            Sets the ball's position.
+            </summary>
+            <param name="x">New X position</param>
+            <param name="y">New Y position</param>
+        </member>
+        <member name="M:BallDragDrop.Models.BallModel.SetPosition(System.Windows.Point)">
+            <summary>
+            Sets the ball's position from a Point.
+            </summary>
+            <param name="position">New position</param>
+        </member>
+        <member name="M:BallDragDrop.Models.BallModel.ConstrainPosition(System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Constrains the ball's position to be within the specified boundaries.
+            </summary>
+            <param name="minX">Minimum X coordinate</param>
+            <param name="minY">Minimum Y coordinate</param>
+            <param name="maxX">Maximum X coordinate</param>
+            <param name="maxY">Maximum Y coordinate</param>
+            <returns>True if the position was constrained, false otherwise</returns>
+        </member>
+        <member name="T:BallDragDrop.Models.PhysicsEngine">
+            <summary>
+            Provides physics calculations for ball movement including velocity, friction, and collisions.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.#ctor">
+            <summary>
+            Initializes a new instance of the PhysicsEngine class with default values.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.#ctor(System.Double,System.Double,System.Double)">
+            <summary>
+            Initializes a new instance of the PhysicsEngine class with specified values.
+            </summary>
+            <param name="frictionCoefficient">Coefficient of friction (0-1 where 1 is no friction)</param>
+            <param name="gravity">Gravity acceleration in pixels per second squared</param>
+            <param name="bounceFactor">Bounce elasticity factor (0-1 where 1 is perfect bounce)</param>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.UpdateBall(BallDragDrop.Models.BallModel,System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Updates the ball's position and velocity based on physics calculations.
+            </summary>
+            <param name="ball">The ball model to update</param>
+            <param name="timeStep">Time step for the update in seconds</param>
+            <param name="minX">Minimum X boundary</param>
+            <param name="minY">Minimum Y boundary</param>
+            <param name="maxX">Maximum X boundary</param>
+            <param name="maxY">Maximum Y boundary</param>
+            <returns>A tuple containing whether the ball is still moving and which boundaries were hit</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.HandleCollisions(BallDragDrop.Models.BallModel,System.Double@,System.Double@,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Handles collisions with boundaries and updates velocity for bouncing.
+            </summary>
+            <param name="ball">The ball model</param>
+            <param name="newX">New X position (will be modified if collision occurs)</param>
+            <param name="newY">New Y position (will be modified if collision occurs)</param>
+            <param name="minX">Minimum X boundary</param>
+            <param name="minY">Minimum Y boundary</param>
+            <param name="maxX">Maximum X boundary</param>
+            <param name="maxY">Maximum Y boundary</param>
+            <returns>A tuple indicating which boundaries were hit (left, right, top, bottom)</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.CalculateVelocity(System.Double,System.Double,System.Double)">
+            <summary>
+            Calculates the velocity based on the movement delta and time elapsed.
+            </summary>
+            <param name="deltaX">Change in X position</param>
+            <param name="deltaY">Change in Y position</param>
+            <param name="timeElapsed">Time elapsed in seconds</param>
+            <returns>A tuple containing the X and Y velocity components</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.CalculateVelocityFromHistory(System.Windows.Point[],System.DateTime[],System.Int32)">
+            <summary>
+            Calculates velocity based on a series of mouse positions and timestamps.
+            This provides a more accurate velocity calculation by considering multiple data points.
+            </summary>
+            <param name="positions">Array of mouse positions</param>
+            <param name="timestamps">Array of timestamps corresponding to the positions</param>
+            <param name="count">Number of valid positions to consider (most recent ones)</param>
+            <returns>A tuple containing the X and Y velocity components</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.IsThrow(System.Double,System.Double,System.Double)">
+            <summary>
+            Determines if a movement should be considered a throw based on velocity.
+            </summary>
+            <param name="velocityX">X velocity component</param>
+            <param name="velocityY">Y velocity component</param>
+            <param name="throwThreshold">Velocity threshold for considering a movement a throw</param>
+            <returns>True if the movement is a throw, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.IsThrowFromHistory(System.Windows.Point[],System.DateTime[],System.Int32,System.Double)">
+            <summary>
+            Determines if a movement should be considered a throw based on velocity and movement pattern.
+            </summary>
+            <param name="positions">Array of mouse positions</param>
+            <param name="timestamps">Array of timestamps corresponding to the positions</param>
+            <param name="count">Number of valid positions to consider</param>
+            <param name="throwThreshold">Velocity threshold for considering a movement a throw</param>
+            <returns>True if the movement is a throw, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.ApplyForce(BallDragDrop.Models.BallModel,System.Double,System.Double,System.Double)">
+            <summary>
+            Applies a force to the ball, changing its velocity.
+            </summary>
+            <param name="ball">The ball model</param>
+            <param name="forceX">Force in X direction</param>
+            <param name="forceY">Force in Y direction</param>
+            <param name="timeStep">Time step for the force application in seconds</param>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.CalculateDistance(System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Calculates the distance between two points.
+            </summary>
+            <param name="x1">X coordinate of the first point</param>
+            <param name="y1">Y coordinate of the first point</param>
+            <param name="x2">X coordinate of the second point</param>
+            <param name="y2">Y coordinate of the second point</param>
+            <returns>The distance between the two points</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.DetectAndResolveCollision(BallDragDrop.Models.BallModel,BallDragDrop.Models.BallModel)">
+            <summary>
+            Detects collision between two balls and handles the physics response.
+            </summary>
+            <param name="ball1">The first ball</param>
+            <param name="ball2">The second ball</param>
+            <returns>True if the balls collided, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.DetectCollision(BallDragDrop.Models.BallModel,BallDragDrop.Models.BallModel)">
+            <summary>
+            Detects if two balls are colliding without resolving the collision.
+            </summary>
+            <param name="ball1">The first ball</param>
+            <param name="ball2">The second ball</param>
+            <returns>True if the balls are colliding, false otherwise</returns>
+        </member>
+        <member name="T:BallDragDrop.Services.EventThrottler">
+            <summary>
+            Utility class for throttling events to limit their frequency
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.EventThrottler.#ctor(System.Action,System.Int32)">
+            <summary>
+            Initializes a new instance of the EventThrottler class
+            </summary>
+            <param name="action">The action to execute when throttled</param>
+            <param name="intervalMs">The minimum interval between executions in milliseconds</param>
+        </member>
+        <member name="M:BallDragDrop.Services.EventThrottler.Execute">
+            <summary>
+            Executes the action, throttling if called too frequently
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.EventThrottler.ExecuteNow">
+            <summary>
+            Executes the action immediately, bypassing throttling
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.EventThrottler.Timer_Tick(System.Object,System.EventArgs)">
+            <summary>
+            Event handler for the timer tick
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.ExceptionHandlingService">
+            <summary>
+            Basic implementation of exception handling service
+            This is a placeholder implementation that will be enhanced in task 5
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.IExceptionHandlingService">
+            <summary>
+            Interface for enhanced exception handling service
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.IExceptionHandlingService.HandleException(System.Exception,System.String)">
+            <summary>
+            Handles unhandled exceptions with context capture
+            </summary>
+            <param name="exception">The exception to handle</param>
+            <param name="context">Additional context information</param>
+        </member>
+        <member name="M:BallDragDrop.Services.IExceptionHandlingService.CaptureApplicationContext">
+            <summary>
+            Captures current application state for error reporting
+            </summary>
+            <returns>Application context information</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.IExceptionHandlingService.GenerateUserFriendlyMessage(System.Exception)">
+            <summary>
+            Generates user-friendly error message from exception
+            </summary>
+            <param name="exception">The exception to process</param>
+            <returns>User-friendly error message</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.IExceptionHandlingService.AttemptRecovery(System.Exception)">
+            <summary>
+            Attempts to recover from an error condition
+            </summary>
+            <param name="exception">The exception that occurred</param>
+            <returns>True if recovery was successful</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.IExceptionHandlingService.ReportCriticalError(System.Exception,System.Object)">
+            <summary>
+            Reports critical errors that require immediate attention
+            </summary>
+            <param name="exception">The critical exception</param>
+            <param name="applicationState">Current application state</param>
+        </member>
+        <member name="T:BallDragDrop.Services.ILogService">
+            <summary>
+            Interface for logging services
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.LogLevel">
+            <summary>
+            Log levels enumeration
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.ImageService">
+            <summary>
+            Service for loading and managing images
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.LoadImage(System.String,BallDragDrop.Services.ILogService)">
+            <summary>
+            Loads an image from the specified path
+            </summary>
+            <param name="imagePath">Path to the image file</param>
+            <param name="logService">Optional logging service</param>
+            <returns>ImageSource if successful, null if failed</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.CreateFallbackImage(System.Double,System.Windows.Media.Color,System.Windows.Media.Color,System.Double,BallDragDrop.Services.ILogService)">
+            <summary>
+            Creates a fallback image (a simple circle) when the actual image cannot be loaded
+            </summary>
+            <param name="radius">Radius of the circle</param>
+            <param name="fillColor">Fill color of the circle</param>
+            <param name="strokeColor">Stroke color of the circle</param>
+            <param name="strokeThickness">Stroke thickness of the circle</param>
+            <param name="logService">Optional logging service</param>
+            <returns>ImageSource representing a circle</returns>
+        </member>
+        <member name="T:BallDragDrop.Services.IMethodLoggingInterceptor">
+            <summary>
+            Interface for method logging interception
+            This will be implemented in task 4
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.IMethodLoggingInterceptor.ConfigureMethodFilter(System.String,System.Boolean)">
+            <summary>
+            Configures method filtering for interception
+            </summary>
+            <param name="methodName">Method name to filter</param>
+            <param name="shouldIntercept">Whether to intercept this method</param>
+        </member>
+        <member name="M:BallDragDrop.Services.IMethodLoggingInterceptor.SetParameterLogging(System.Boolean)">
+            <summary>
+            Enables or disables parameter logging
+            </summary>
+            <param name="enabled">Whether parameter logging is enabled</param>
+        </member>
+        <member name="T:BallDragDrop.Services.Log4NetService">
+            <summary>
+            Enhanced Log4NET implementation of ILogService with performance optimizations
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.GetPerformanceStatistics">
+            <summary>
+            Gets current performance statistics
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.ResetPerformanceCounters">
+            <summary>
+            Resets performance counters
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.MethodLoggingInterceptor">
+            <summary>
+            Basic implementation of method logging interceptor
+            This is a placeholder implementation that will be enhanced in task 4
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.PerformanceMonitor">
+            <summary>
+            Service for monitoring and analyzing application performance metrics
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.PerformanceMonitor.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the PerformanceMonitor class
+            </summary>
+            <param name="targetFrameRate">Target frame rate for the application</param>
+        </member>
+        <member name="M:BallDragDrop.Services.PerformanceMonitor.BeginFrameTime">
+            <summary>
+            Begins measuring a new frame time
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.PerformanceMonitor.EndFrameTime">
+            <summary>
+            Ends the current frame time measurement and records the result
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.PerformanceMonitor.BeginPhysicsTime">
+            <summary>
+            Begins measuring a new physics update time
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.PerformanceMonitor.EndPhysicsTime">
+            <summary>
+            Ends the current physics update time measurement and records the result
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.PerformanceMonitor.ShouldRenderFrame(System.Boolean)">
+            <summary>
+            Checks if a new frame should be rendered based on the target frame rate
+            </summary>
+            <param name="forceRender">Whether to force rendering regardless of frame rate</param>
+            <returns>True if a new frame should be rendered, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.PerformanceMonitor.UpdateMetrics">
+            <summary>
+            Updates performance metrics and raises the MetricsUpdated event
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.PerformanceMonitor.GetCurrentMetrics">
+            <summary>
+            Gets the current performance metrics
+            </summary>
+            <returns>Current performance metrics</returns>
+        </member>
+        <member name="T:BallDragDrop.Services.PerformanceMetricsEventArgs">
+            <summary>
+            Event arguments for performance metrics updates
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.PerformanceMetricsEventArgs.AverageFrameTimeMs">
+            <summary>
+            Gets or sets the average frame time in milliseconds
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.PerformanceMetricsEventArgs.MaxFrameTimeMs">
+            <summary>
+            Gets or sets the maximum frame time in milliseconds
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.PerformanceMetricsEventArgs.FramesPerSecond">
+            <summary>
+            Gets or sets the frames per second
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.PerformanceMetricsEventArgs.AveragePhysicsTimeMs">
+            <summary>
+            Gets or sets the average physics update time in milliseconds
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.PerformanceMetricsEventArgs.MaxPhysicsTimeMs">
+            <summary>
+            Gets or sets the maximum physics update time in milliseconds
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.PerformanceMetricsEventArgs.FrameCount">
+            <summary>
+            Gets or sets the number of frames rendered since the last metrics update
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.PerformanceMetricsEventArgs.PhysicsCount">
+            <summary>
+            Gets or sets the number of physics updates since the last metrics update
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.Performance.AsyncLogProcessor">
+            <summary>
+            Async log processor with batching for efficient I/O operations
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.AsyncLogProcessor.QueueLogItem(BallDragDrop.Services.LogLevel,System.String,System.Exception,System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+            <summary>
+            Queues a log item for async processing
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.Performance.IPerformanceMonitor">
+            <summary>
+            Interface for performance monitoring of logging operations
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.IPerformanceMonitor.RecordLoggingOperation(System.String,System.TimeSpan)">
+            <summary>
+            Records the execution time of a logging operation
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.IPerformanceMonitor.RecordMemoryUsage(System.Int64,System.Int64)">
+            <summary>
+            Records memory usage for logging operations
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.IPerformanceMonitor.RecordLogEntriesProcessed(System.Int32)">
+            <summary>
+            Records the number of log entries processed
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.IPerformanceMonitor.RecordBatchProcessing(System.Int32,System.TimeSpan)">
+            <summary>
+            Records batch processing metrics
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.IPerformanceMonitor.GetStatistics">
+            <summary>
+            Gets current performance statistics
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.IPerformanceMonitor.Reset">
+            <summary>
+            Resets all performance counters
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.Performance.PerformanceStatistics">
+            <summary>
+            Performance statistics for logging operations
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.Performance.OperationStatistics">
+            <summary>
+            Statistics for specific operation types
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.Performance.LogEntryPool">
+            <summary>
+            Object pool for log entries to reduce GC pressure
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.LogEntryPool.Get">
+            <summary>
+            Gets a log entry from the pool or creates a new one
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.LogEntryPool.Return(BallDragDrop.Services.Performance.PooledLogEntry)">
+            <summary>
+            Returns a log entry to the pool
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.Performance.PooledLogEntry">
+            <summary>
+            Pooled log entry that automatically returns to pool when disposed
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.PooledLogEntry.Reset">
+            <summary>
+            Resets the log entry for reuse
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.Performance.PerformanceConfiguration">
+            <summary>
+            Configuration settings for logging performance optimizations
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PerformanceConfiguration.LogEntryPoolSize">
+            <summary>
+            Maximum size of the log entry object pool
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PerformanceConfiguration.AsyncBatchSize">
+            <summary>
+            Batch size for async log processing
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PerformanceConfiguration.AsyncBatchTimeout">
+            <summary>
+            Timeout for batch processing
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PerformanceConfiguration.EnablePerformanceMonitoring">
+            <summary>
+            Whether to enable performance monitoring
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PerformanceConfiguration.EnableAsyncLogging">
+            <summary>
+            Whether to enable async logging
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PerformanceConfiguration.EnableObjectPooling">
+            <summary>
+            Whether to enable object pooling
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PerformanceConfiguration.PerformanceReportingInterval">
+            <summary>
+            Interval for performance statistics reporting
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PerformanceConfiguration.MemoryThresholdMB">
+            <summary>
+            Memory threshold for triggering GC collection (in MB)
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PerformanceConfiguration.EnableAutomaticPerformanceReporting">
+            <summary>
+            Whether to enable automatic performance reporting
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.PerformanceConfiguration.CreateDefault">
+            <summary>
+            Creates a default configuration optimized for performance
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.PerformanceConfiguration.CreateHighThroughput">
+            <summary>
+            Creates a configuration optimized for high-throughput scenarios
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.PerformanceConfiguration.CreateLowMemory">
+            <summary>
+            Creates a configuration optimized for low-memory scenarios
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.PerformanceConfiguration.Validate">
+            <summary>
+            Validates the configuration settings
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.Performance.LoggingPerformanceMonitor">
+            <summary>
+            Thread-safe performance monitor for logging operations
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.SettingsManager">
+            <summary>
+            Manages application settings persistence
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.SettingsManager.#ctor(BallDragDrop.Services.ILogService,System.String)">
+            <summary>
+            Initializes a new instance of the SettingsManager class
+            </summary>
+            <param name="logService">Logging service</param>
+            <param name="settingsFileName">Optional settings file name</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SettingsManager.LoadSettings">
+            <summary>
+            Loads settings from the settings file
+            </summary>
+            <returns>True if settings were loaded successfully, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.SettingsManager.SaveSettings">
+            <summary>
+            Saves settings to the settings file
+            </summary>
+            <returns>True if settings were saved successfully, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.SettingsManager.GetSetting``1(System.String,``0)">
+            <summary>
+            Gets a setting value
+            </summary>
+            <typeparam name="T">The type of the setting value</typeparam>
+            <param name="key">The setting key</param>
+            <param name="defaultValue">The default value to return if the setting doesn't exist</param>
+            <returns>The setting value or the default value if the setting doesn't exist</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.SettingsManager.SetSetting``1(System.String,``0)">
+            <summary>
+            Sets a setting value
+            </summary>
+            <typeparam name="T">The type of the setting value</typeparam>
+            <param name="key">The setting key</param>
+            <param name="value">The setting value</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SettingsManager.HasSetting(System.String)">
+            <summary>
+            Checks if a setting exists
+            </summary>
+            <param name="key">The setting key</param>
+            <returns>True if the setting exists, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.SettingsManager.RemoveSetting(System.String)">
+            <summary>
+            Removes a setting
+            </summary>
+            <param name="key">The setting key</param>
+            <returns>True if the setting was removed, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.SettingsManager.ClearSettings">
+            <summary>
+            Clears all settings
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.SettingsManager.GetKeys">
+            <summary>
+            Gets all setting keys
+            </summary>
+            <returns>An enumerable of setting keys</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.SettingsManager.ConvertJsonElement(System.Text.Json.JsonElement)">
+            <summary>
+            Converts a JsonElement to an appropriate .NET type
+            </summary>
+            <param name="element">The JsonElement to convert</param>
+            <returns>The converted value</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.SettingsManager.ConvertJsonElement(System.Text.Json.JsonElement,System.Type)">
+            <summary>
+            Converts a JsonElement to a specific type
+            </summary>
+            <param name="element">The JsonElement to convert</param>
+            <param name="targetType">The target type</param>
+            <returns>The converted value</returns>
+        </member>
+        <member name="T:BallDragDrop.Services.SimpleLogService">
+            <summary>
+            Simple implementation of ILogService for integration purposes
+            This will be replaced by Log4NetService in later tasks
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.ViewModels.BallViewModel">
+            <summary>
+            View model for the ball, implementing INotifyPropertyChanged for UI binding
+            </summary>
+        </member>
+        <member name="E:BallDragDrop.ViewModels.BallViewModel.PropertyChanged">
+            <summary>
+            Event that is raised when a property value changes
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.MouseDownCommand">
+            <summary>
+            Command for handling mouse down events
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.MouseMoveCommand">
+            <summary>
+            Command for handling mouse move events
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.MouseUpCommand">
+            <summary>
+            Command for handling mouse up events
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.X">
+            <summary>
+            Gets or sets the X position of the ball
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.Y">
+            <summary>
+            Gets or sets the Y position of the ball
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.Radius">
+            <summary>
+            Gets or sets the radius of the ball
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.BallImage">
+            <summary>
+            Gets or sets the image source for the ball
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.IsDragging">
+            <summary>
+            Gets or sets whether the ball is currently being dragged
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.CurrentCursor">
+            <summary>
+            Gets or sets the cursor to display
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.Left">
+            <summary>
+            Gets the left position for binding (X - Radius)
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.Top">
+            <summary>
+            Gets the top position for binding (Y - Radius)
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.Width">
+            <summary>
+            Gets the width for binding (Diameter)
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.Height">
+            <summary>
+            Gets the height for binding (Diameter)
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(BallDragDrop.Services.ILogService)">
+            <summary>
+            Initializes a new instance of the BallViewModel class
+            </summary>
+            <param name="logService">Logging service for tracking user interactions</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.Initialize(System.Double,System.Double,System.Double)">
+            <summary>
+            Initializes the ball position and properties
+            </summary>
+            <param name="initialX">Initial X position</param>
+            <param name="initialY">Initial Y position</param>
+            <param name="radius">Ball radius</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.OnMouseDown(System.Windows.Input.MouseEventArgs)">
+            <summary>
+            Handles mouse down events
+            </summary>
+            <param name="e">Mouse event arguments</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.OnMouseMove(System.Windows.Input.MouseEventArgs)">
+            <summary>
+            Handles mouse move events with throttling
+            </summary>
+            <param name="e">Mouse event arguments</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.ProcessMouseMove">
+            <summary>
+            Processes mouse move events at a throttled rate
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.StoreMousePosition(System.Windows.Point,System.DateTime)">
+            <summary>
+            Stores the current mouse position and timestamp in the history arrays
+            </summary>
+            <param name="position">Current mouse position</param>
+            <param name="timestamp">Current timestamp</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.OnMouseUp(System.Windows.Input.MouseEventArgs)">
+            <summary>
+            Handles mouse up events
+            </summary>
+            <param name="e">Mouse event arguments</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.UpdateCursor">
+            <summary>
+            Updates the cursor based on the current state
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.ConstrainPosition(System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Constrains the ball position to the specified boundaries
+            </summary>
+            <param name="minX">Minimum X coordinate</param>
+            <param name="minY">Minimum Y coordinate</param>
+            <param name="maxX">Maximum X coordinate</param>
+            <param name="maxY">Maximum Y coordinate</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.GetLogServiceFromApp">
+            <summary>
+            Gets the log service from the application instance
+            </summary>
+            <returns>The log service or null if not available</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.OnPropertyChanged(System.String)">
+            <summary>
+            Raises the PropertyChanged event
+            </summary>
+            <param name="propertyName">Name of the property that changed</param>
+        </member>
+        <member name="T:BallDragDrop.ViewModels.RelayCommand`1">
+            <summary>
+            A simple implementation of ICommand for the view model
+            </summary>
+        </member>
+        <member name="E:BallDragDrop.ViewModels.RelayCommand`1.CanExecuteChanged">
+            <summary>
+            Event that is raised when the ability to execute the command changes
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.RelayCommand`1.#ctor(System.Action{`0},System.Predicate{`0})">
+            <summary>
+            Initializes a new instance of the RelayCommand class
+            </summary>
+            <param name="execute">The execution logic</param>
+            <param name="canExecute">The execution status logic</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.RelayCommand`1.CanExecute(System.Object)">
+            <summary>
+            Determines whether this command can execute in its current state
+            </summary>
+            <param name="parameter">Data used by the command</param>
+            <returns>True if this command can be executed; otherwise, false</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.RelayCommand`1.Execute(System.Object)">
+            <summary>
+            Executes the command
+            </summary>
+            <param name="parameter">Data used by the command</param>
+        </member>
+        <member name="T:BallDragDrop.Views.MainWindow">
+            <summary>
+            Interaction logic for MainWindow.xaml
+            </summary>
+            <summary>
+            MainWindow
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.MainWindow_Closed(System.Object,System.EventArgs)">
+            <summary>
+            Event handler for window closed event
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.Window_Loaded(System.Object,System.Windows.RoutedEventArgs)">
+            <summary>
+            Event handler for window loaded event
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.Window_SizeChanged(System.Object,System.Windows.SizeChangedEventArgs)">
+            <summary>
+            Event handler for window resize events
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.BallImage_MouseDown(System.Object,System.Windows.Input.MouseButtonEventArgs)">
+            <summary>
+            Event handler for mouse down on the ball image
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.UpdateBallPositionToMouse(BallDragDrop.ViewModels.BallViewModel,System.Windows.Point)">
+            <summary>
+            Updates the ball position to follow the mouse cursor
+            </summary>
+            <param name="viewModel">The ball view model</param>
+            <param name="mousePosition">The current mouse position</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.BallImage_MouseMove(System.Object,System.Windows.Input.MouseEventArgs)">
+            <summary>
+            Event handler for mouse move on the ball image
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.BallImage_MouseUp(System.Object,System.Windows.Input.MouseButtonEventArgs)">
+            <summary>
+            Event handler for mouse up on the ball image
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.ConstrainToWindowBoundaries(System.Double,System.Double,System.Double)">
+            <summary>
+            Ensures the ball stays within the window boundaries
+            </summary>
+            <param name="x">The x-coordinate to constrain</param>
+            <param name="y">The y-coordinate to constrain</param>
+            <param name="ballRadius">The radius of the ball (default is 0, treating the ball as a point)</param>
+            <returns>A Point with coordinates constrained to the window boundaries</returns>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.SimulateResize(System.Double,System.Double)">
+            <summary>
+            Helper method for testing to simulate a window resize
+            </summary>
+            <param name="newWidth">The new width of the window</param>
+            <param name="newHeight">The new height of the window</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.CompositionTarget_Rendering(System.Object,System.EventArgs)">
+            <summary>
+            Event handler for composition target rendering
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="F:BallDragDrop.Views.MainWindow.MainCanvas">
+            <summary>
+            MainCanvas Name Field
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Views.SplashScreen">
+            <summary>
+            Interaction logic for SplashScreen.xaml
+            </summary>
+            <summary>
+            SplashScreen
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.SplashScreen.#ctor">
+            <summary>
+            Initializes a new instance of the SplashScreen class
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.SplashScreen.Window_Loaded(System.Object,System.Windows.RoutedEventArgs)">
+            <summary>
+            Event handler for window loaded event
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.SplashScreen.InitializeApplication">
+            <summary>
+            Initializes the application
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.SplashScreen.MinimumDisplayTimer_Tick(System.Object,System.EventArgs)">
+            <summary>
+            Event handler for minimum display timer tick
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.SplashScreen.CheckIfReadyToClose">
+            <summary>
+            Checks if the splash screen is ready to close
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.SplashScreen.UpdateStatus(System.String)">
+            <summary>
+            Updates the status text on the splash screen
+            </summary>
+            <param name="status">The new status text</param>
+        </member>
+        <member name="M:BallDragDrop.Views.SplashScreen.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -28,4 +28,30 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Custom Analyzer Project Reference -->
+    <ProjectReference Include="..\BallDragDrop.CodeAnalysis\BallDragDrop.CodeAnalysis.csproj">
+      <OutputItemType>Analyzer</OutputItemType>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!-- Import custom MSBuild targets for coding standards validation -->
+  <Import Project="Build\CodingStandards.targets" />
+
+  <!-- Properties for coding standards integration -->
+  <PropertyGroup>
+    <!-- Enable/disable coding standards validation during build -->
+    <EnableCodingStandardsValidation Condition="'$(Configuration)' == 'Debug'">true</EnableCodingStandardsValidation>
+    <EnableCodingStandardsValidation Condition="'$(Configuration)' == 'Release'">true</EnableCodingStandardsValidation>
+    
+    <!-- Configure whether to fail build on critical violations -->
+    <!-- Set to false initially to avoid breaking existing builds -->
+    <FailBuildOnCriticalViolations>false</FailBuildOnCriticalViolations>
+    
+    <!-- Generate XML documentation for better analysis -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
+  </PropertyGroup>
+
 </Project>

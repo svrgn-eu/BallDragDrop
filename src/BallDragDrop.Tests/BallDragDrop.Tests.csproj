@@ -12,6 +12,10 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="MSTest" Version="3.6.4" />
     <PackageReference Include="Moq" Version="4.20.70" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.5.0" PrivateAssets="all" />
+    <PackageReference Include="System.Composition" Version="8.0.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BallDragDrop\BallDragDrop.csproj" />
+    <ProjectReference Include="..\BallDragDrop.CodeAnalysis\BallDragDrop.CodeAnalysis.csproj" />
   </ItemGroup>
 
 </Project>
