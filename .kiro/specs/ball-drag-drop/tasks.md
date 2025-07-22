@@ -101,17 +101,12 @@
     - _Requirements: 4.3, 5.1, 5.2, 5.3_
   
   - [x] 7.3 Implement ball grabbing during motion
-
-
     - Add logic to allow grabbing the ball while it's in motion
     - Handle transition from physics-based to user-controlled movement
     - Write unit tests for interrupting ball motion
     - _Requirements: 4.5_
 
 - [x] 8. Optimize performance
-
-
-
   - [x] 8.1 Implement rendering optimizations
     - Use hardware acceleration where appropriate
     - Optimize animation frame rate
@@ -119,29 +114,128 @@
     - _Requirements: 5.1, 5.2, 5.3, 5.4_
   
   - [x] 8.2 Implement event throttling
-
     - Add logic to limit event processing frequency if needed
     - Ensure smooth interaction even under heavy load
     - Write performance tests for event handling
     - _Requirements: 5.1, 5.4_
 
 - [x] 9. Implement application lifecycle
-
-
   - Properly handle application startup
   - Implement clean shutdown
   - Write integration tests for application lifecycle
   - _Requirements: 1.4_
 
 - [x] 10. Final integration and testing
-
-
   - Integrate all components
   - Perform end-to-end testing
   - Fix any remaining issues
   - _Requirements: All_
 
-- [ ] 11. Get tests into green status
-  - check, if all tests are necessary
+- [ ] 11. Implement ImageService for visual content management
+  - [ ] 11.1 Create ImageService class
+    - Implement file type detection for static images, GIFs, and Aseprite exports
+    - Add methods for loading different image formats (PNG, JPG, BMP)
+    - Implement fallback image generation when content cannot be loaded
+    - Write unit tests for file type detection and loading
+    - _Requirements: 6.1, 6.2, 6.7, 6.10_
+  
+  - [ ] 11.2 Integrate ImageService with BallViewModel
+    - Update BallViewModel to use ImageService instead of direct image loading
+    - Add properties for tracking animation state
+    - Implement LoadBallVisualAsync method
+    - Write unit tests for ImageService integration
+    - _Requirements: 6.6, 6.9_
+
+- [ ] 12. Implement animation support
+  - [ ] 12.1 Create AnimationEngine class
+    - Implement frame management and timing control
+    - Add playback state management (play, pause, stop, loop)
+    - Implement frame update logic with proper timing
+    - Write unit tests for animation playback
+    - _Requirements: 6.4, 6.5_
+  
+  - [ ] 12.2 Add GIF animation support
+    - Implement GIF decoder to extract frames and timing
+    - Convert GIF frames to internal animation format
+    - Handle GIF-specific timing and loop behavior
+    - Write unit tests for GIF loading and playback
+    - _Requirements: 6.3, 6.4_
+  
+  - [ ] 12.3 Implement animation timer integration
+    - Add DispatcherTimer to BallViewModel for animation updates
+    - Coordinate animation timing with physics updates
+    - Ensure animation continues during drag operations
+    - Write unit tests for animation timing
+    - _Requirements: 6.5, 6.6_
+
+- [ ] 13. Implement Aseprite support
+  - [ ] 13.1 Create AsepriteLoader class
+    - Implement JSON metadata parsing for Aseprite exports
+    - Create data structures for Aseprite frames, tags, and metadata
+    - Add PNG sprite sheet frame extraction
+    - Write unit tests for JSON parsing and frame extraction
+    - _Requirements: 6.4, 6.5_
+  
+  - [ ] 13.2 Integrate Aseprite loading with ImageService
+    - Add Aseprite file detection (PNG + JSON pair)
+    - Convert Aseprite data to internal animation format
+    - Handle multiple animation sequences (use default/first)
+    - Write unit tests for Aseprite integration
+    - _Requirements: 6.4, 6.5, 6.6_
+  
+  - [ ] 13.3 Implement error handling for Aseprite files
+    - Handle missing JSON metadata files
+    - Provide fallback behavior for invalid JSON
+    - Add appropriate error messages for malformed data
+    - Write unit tests for error scenarios
+    - _Requirements: 6.10_
+
+- [ ] 14. Update ball rendering for animations
+  - [ ] 14.1 Modify ball UI element for animation support
+    - Update Image control to handle animated content
+    - Ensure proper frame updates without flickering
+    - Maintain visual quality during animation playback
+    - Write unit tests for animated rendering
+    - _Requirements: 2.4, 2.5, 2.8_
+  
+  - [ ] 14.2 Implement visual content switching
+    - Add ability to change ball visual without restart
+    - Handle transitions between static and animated content
+    - Maintain drag functionality during visual changes
+    - Write unit tests for content switching
+    - _Requirements: 6.6, 6.7, 6.9_
+
+- [ ] 15. Optimize animation performance
+  - [ ] 15.1 Implement animation memory management
+    - Add frame caching for efficient memory usage
+    - Implement resource disposal for unused animations
+    - Pre-load animation frames to prevent stuttering
+    - Write performance tests for memory usage
+    - _Requirements: 6.8_
+  
+  - [ ] 15.2 Optimize dual timer system
+    - Separate physics updates (60 FPS) from animation frame updates
+    - Respect source animation frame rates while maintaining physics smoothness
+    - Ensure animation performance doesn't impact drag responsiveness
+    - Write performance tests for timer coordination
+    - _Requirements: 6.8_
+
+- [ ] 16. Comprehensive testing for animation features
+  - [ ] 16.1 Create integration tests for animation system
+    - Test ImageService with AnimationEngine integration
+    - Test animation playback during drag operations
+    - Test visual switching between different content types
+    - _Requirements: All animation requirements_
+  
+  - [ ] 16.2 Add file format testing
+    - Test loading of PNG, JPG, BMP static images
+    - Test GIF animation loading and playback
+    - Test Aseprite PNG+JSON combinations
+    - Test error handling for corrupted or missing files
+    - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.10_
+
+- [ ] 17. Get tests into green status
+  - Check if all tests are necessary
   - Fix any remaining issues in the tests
+  - Ensure all new animation tests pass
   - _Requirements: All_

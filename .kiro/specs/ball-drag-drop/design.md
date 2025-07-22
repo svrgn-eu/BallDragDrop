@@ -364,16 +364,31 @@ The testing strategy will include:
    - Test physics calculations
    - Test boundary collision detection
    - Test velocity and position updates
+   - Test animation frame management
+   - Test Aseprite JSON parsing
+   - Test image loading for different formats
 
 2. **Integration Testing**:
    - Test the interaction between the ViewModel and the Model
    - Test the physics engine integration
+   - Test ImageService with AnimationEngine integration
+   - Test animation playback during drag operations
 
 3. **UI Testing**:
-   - Test mouse interaction with the ball
-   - Test window resizing behavior
-   - Test animation smoothness
+   - Test mouse interaction with static and animated balls
+   - Test window resizing behavior with different visual content
+   - Test animation smoothness and continuity
+   - Test visual switching between static and animated content
 
 4. **Performance Testing**:
-   - Measure frame rates during animations
-   - Test responsiveness of drag operations
+   - Measure frame rates during physics animations
+   - Test responsiveness of drag operations with animated content
+   - Test memory usage with large animation sequences
+   - Test loading times for different file formats
+
+5. **File Format Testing**:
+   - Test loading of PNG, JPG, BMP static images
+   - Test GIF animation loading and playback
+   - Test Aseprite PNG+JSON combinations
+   - Test error handling for corrupted or missing files
+   - Test fallback behavior when JSON metadata is invalid
