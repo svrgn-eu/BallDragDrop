@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BallDragDrop.Contracts;
 using BallDragDrop.Services;
 using log4net;
 using log4net.Appender;

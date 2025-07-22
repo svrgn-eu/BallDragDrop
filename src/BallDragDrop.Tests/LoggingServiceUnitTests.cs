@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using BallDragDrop.Contracts;
 using BallDragDrop.Services;
 using log4net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using BallDragDrop.Contracts;
 using BallDragDrop.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

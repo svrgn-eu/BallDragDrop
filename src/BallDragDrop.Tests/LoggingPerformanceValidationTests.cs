@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BallDragDrop.Contracts;
 using BallDragDrop.Services;
 using BallDragDrop.Services.Performance;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

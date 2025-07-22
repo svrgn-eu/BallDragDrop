@@ -18,9 +18,12 @@ graph TD
     B --> C[BallViewModel]
     C --> D[BallModel]
     C --> E[PhysicsEngine]
-    B --> F[ResourceDictionary]
-    F --> G[Styles/Templates]
-    F --> H[Ball Image]
+    C --> F[ImageService]
+    F --> G[AnimationEngine]
+    F --> H[AsepriteLoader]
+    B --> I[ResourceDictionary]
+    I --> J[Styles/Templates]
+    I --> K[Ball Visuals]
 ```
 
 1. **App.xaml**: The entry point of the application.
@@ -28,7 +31,10 @@ graph TD
 3. **BallViewModel**: Handles the presentation logic and user interactions.
 4. **BallModel**: Represents the data and state of the ball.
 5. **PhysicsEngine**: Manages the physics calculations for ball movement and momentum.
-6. **ResourceDictionary**: Contains styles, templates, and resources used in the application.
+6. **ImageService**: Handles loading and managing static images and animations.
+7. **AnimationEngine**: Manages animation playback, frame timing, and animation state.
+8. **AsepriteLoader**: Specialized loader for Aseprite PNG+JSON exports.
+9. **ResourceDictionary**: Contains styles, templates, and resources used in the application.
 
 ## Components and Interfaces
 
@@ -57,25 +63,34 @@ The BallViewModel will act as an intermediary between the View (MainWindow) and 
 - Handle user input events (mouse down, move, up)
 - Implement commands for user interactions
 - Manage the physics calculations through the PhysicsEngine
+- Coordinate with ImageService for visual content management
 
 ```csharp
 public class BallViewModel : INotifyPropertyChanged
 {
     private BallModel _ball;
     private PhysicsEngine _physicsEngine;
+    private ImageService _imageService;
+    private DispatcherTimer _animationTimer;
     
     // Properties for binding
     public double X { get; set; }
     public double Y { get; set; }
     public bool IsDragging { get; set; }
     public ImageSource BallImage { get; set; }
+    public bool IsAnimated { get; set; }
     
     // Commands
     public ICommand MouseDownCommand { get; }
     public ICommand MouseMoveCommand { get; }
     public ICommand MouseUpCommand { get; }
+    public ICommand LoadImageCommand { get; }
     
     // Methods for handling drag, drop, and throw
+    public async Task LoadBallVisualAsync(string filePath)
+    private void OnAnimationTimerTick(object sender, EventArgs e)
+    private void UpdateBallImage()
+    
     // Implementation of INotifyPropertyChanged
 }
 ```
@@ -124,6 +139,104 @@ public class PhysicsEngine
 }
 ```
 
+### ImageService
+
+The ImageService will manage loading and providing visual content for the ball. It will:
+- Detect file types and determine if content is static or animated
+- Load static images (PNG, JPG, BMP)
+- Load and manage animated content (GIF, Aseprite exports)
+- Provide the current frame for animated content
+- Handle fallback scenarios when content cannot be loaded
+
+```csharp
+public class ImageService
+{
+    private AnimationEngine _animationEngine;
+    private AsepriteLoader _asepriteLoader;
+    
+    public ImageSource CurrentFrame { get; private set; }
+    public bool IsAnimated { get; private set; }
+    public TimeSpan FrameDuration { get; private set; }
+    
+    public async Task<bool> LoadBallVisualAsync(string filePath)
+    public void StartAnimation()
+    public void StopAnimation()
+    public void UpdateFrame()
+    public ImageSource GetFallbackImage()
+}
+```
+
+### AnimationEngine
+
+The AnimationEngine will handle animation playback and timing. It will:
+- Manage frame sequences and timing
+- Control animation playback state
+- Provide smooth frame transitions
+- Handle different animation formats
+
+```csharp
+public class AnimationEngine
+{
+    public List<AnimationFrame> Frames { get; private set; }
+    public int CurrentFrameIndex { get; private set; }
+    public bool IsPlaying { get; private set; }
+    public bool IsLooping { get; set; } = true;
+    
+    public void LoadFrames(List<AnimationFrame> frames)
+    public void Play()
+    public void Pause()
+    public void Stop()
+    public void NextFrame()
+    public AnimationFrame GetCurrentFrame()
+    public void Update(TimeSpan deltaTime)
+}
+
+public class AnimationFrame
+{
+    public ImageSource Image { get; set; }
+    public TimeSpan Duration { get; set; }
+    public Rectangle SourceRect { get; set; }
+}
+```
+
+### AsepriteLoader
+
+The AsepriteLoader will handle Aseprite-specific file formats. It will:
+- Parse JSON metadata files
+- Extract frames from PNG sprite sheets
+- Convert Aseprite data to internal animation format
+- Handle multiple animation tags/sequences
+
+```csharp
+public class AsepriteLoader
+{
+    public async Task<AsepriteData> LoadAsepriteAsync(string pngPath, string jsonPath)
+    public List<AnimationFrame> ConvertToAnimationFrames(AsepriteData data)
+    public ImageSource ExtractFrame(ImageSource spriteSheet, Rectangle sourceRect)
+}
+
+public class AsepriteData
+{
+    public List<AsepriteFrame> Frames { get; set; }
+    public List<AsepriteTag> Tags { get; set; }
+    public AsepriteMetadata Meta { get; set; }
+}
+
+public class AsepriteFrame
+{
+    public Rectangle Frame { get; set; }
+    public int Duration { get; set; }
+}
+
+public class AsepriteTag
+{
+    public string Name { get; set; }
+    public int From { get; set; }
+    public int To { get; set; }
+    public string Direction { get; set; }
+}
+```
+
 ## Data Models
 
 ### Ball Properties
@@ -169,6 +282,41 @@ The application will implement the following error handling strategies:
 3. **Exception Handling**: Try-catch blocks around critical operations with appropriate user feedback.
 4. **Logging**: Basic logging of errors for troubleshooting.
 
+## Visual Content Management
+
+### Image and Animation Loading
+
+The application will support multiple visual content types:
+
+1. **Static Images**: PNG, JPG, and BMP files loaded directly as ImageSource
+2. **GIF Animations**: Animated GIF files with automatic frame extraction
+3. **Aseprite Exports**: PNG sprite sheets with JSON metadata for frame timing and sequences
+
+### Animation System Architecture
+
+```mermaid
+graph LR
+    A[File Input] --> B{File Type Detection}
+    B -->|Static| C[Direct Load]
+    B -->|GIF| D[GIF Decoder]
+    B -->|PNG+JSON| E[Aseprite Loader]
+    C --> F[ImageService]
+    D --> G[Animation Engine]
+    E --> G
+    G --> F
+    F --> H[BallViewModel]
+    H --> I[UI Display]
+```
+
+### Animation Playback
+
+The animation system will handle:
+
+1. **Frame Management**: Store and manage sequences of animation frames
+2. **Timing Control**: Respect frame durations from source files
+3. **Playback State**: Play, pause, stop, and loop controls
+4. **Performance**: Efficient frame updates without impacting drag responsiveness
+
 ## Animation and Physics
 
 ### Ball Movement
@@ -177,6 +325,14 @@ The ball's movement will be handled through two mechanisms:
 
 1. **Direct Manipulation**: When dragging, the ball follows the mouse position directly.
 2. **Physics-Based Animation**: When thrown, the ball moves according to physics calculations.
+
+### Visual Animation
+
+The ball's visual representation will support:
+
+1. **Static Display**: Single frame images displayed continuously
+2. **Continuous Animation**: Frame-based animations playing in loops
+3. **Animation During Interaction**: Animations continue playing while dragging or throwing
 
 ### Physics Calculations
 
@@ -191,10 +347,14 @@ The physics system will implement:
 
 To ensure smooth performance:
 
-1. **Rendering Optimization**: Use hardware acceleration for rendering.
-2. **Animation Frame Rate**: Target 60 FPS for smooth animations.
+1. **Rendering Optimization**: Use hardware acceleration for rendering both static and animated content.
+2. **Animation Frame Rate**: Target 60 FPS for smooth physics animations while respecting source animation frame rates.
 3. **Event Throttling**: Limit the frequency of mouse move event handling if necessary.
 4. **Efficient Collision Detection**: Implement simple but efficient collision detection algorithms.
+5. **Animation Memory Management**: Cache animation frames efficiently and dispose of unused resources.
+6. **Dual Timer System**: Separate timers for physics updates (60 FPS) and animation frame updates (variable based on source).
+7. **Frame Pre-loading**: Pre-load animation frames to avoid stuttering during playback.
+8. **Aseprite Optimization**: Cache parsed JSON metadata and extracted frames to avoid repeated processing.
 
 ## Testing Strategy
 
