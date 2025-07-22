@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using BallDragDrop.Models;
 using BallDragDrop.Services;
+using BallDragDrop.Contracts;
 
 namespace BallDragDrop.ViewModels
 {
@@ -15,30 +16,7 @@ namespace BallDragDrop.ViewModels
     /// </summary>
     public class BallViewModel : INotifyPropertyChanged
     {
-        // Making _ballModel internal so it can be accessed by MainWindow
-        internal readonly BallModel _ballModel;
-        private readonly ILogService _logService;
-        private ImageSource _ballImage;
-        private bool _isDragging;
-        private Point _lastMousePosition;
-        private Point _dragStartPosition;
-        private DateTime _lastUpdateTime;
-        private Cursor _currentCursor;
-        
-        // Mouse movement history for velocity calculation
-        private const int MouseHistorySize = 10;
-        private Point[] _mousePositionHistory;
-        private DateTime[] _mouseTimestampHistory;
-        private int _mouseHistoryCount;
-        
-        // Event throttling for mouse move events
-        private readonly EventThrottler _mouseMoveThrottler;
-        private MouseEventArgs _lastMouseMoveArgs;
-
-        /// <summary>
-        /// Event that is raised when a property value changes
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        #region Properties
 
         /// <summary>
         /// Command for handling mouse down events
@@ -173,6 +151,10 @@ namespace BallDragDrop.ViewModels
         /// </summary>
         public double Height => Radius * 2;
 
+        #endregion Properties
+
+        #region Construction
+
         /// <summary>
         /// Initializes a new instance of the BallViewModel class
         /// </summary>
@@ -203,6 +185,97 @@ namespace BallDragDrop.ViewModels
             
             _logService.LogDebug("BallViewModel created with dependency injection");
         }
+
+        #endregion Construction
+
+        #region Constants
+
+        /// <summary>
+        /// Size of the mouse position history buffer for velocity calculation
+        /// </summary>
+        private const int MouseHistorySize = 10;
+
+        #endregion Constants
+
+        #region Fields
+
+        /// <summary>
+        /// The underlying ball model (internal for MainWindow access)
+        /// </summary>
+        internal readonly BallModel _ballModel;
+
+        /// <summary>
+        /// Logging service for tracking user interactions
+        /// </summary>
+        private readonly ILogService _logService;
+
+        /// <summary>
+        /// Image source for the ball
+        /// </summary>
+        private ImageSource _ballImage;
+
+        /// <summary>
+        /// Flag indicating whether the ball is currently being dragged
+        /// </summary>
+        private bool _isDragging;
+
+        /// <summary>
+        /// Last recorded mouse position
+        /// </summary>
+        private Point _lastMousePosition;
+
+        /// <summary>
+        /// Position where dragging started
+        /// </summary>
+        private Point _dragStartPosition;
+
+        /// <summary>
+        /// Timestamp of the last update
+        /// </summary>
+        private DateTime _lastUpdateTime;
+
+        /// <summary>
+        /// Current cursor to display
+        /// </summary>
+        private Cursor _currentCursor;
+        
+        /// <summary>
+        /// Array storing mouse position history for velocity calculation
+        /// </summary>
+        private Point[] _mousePositionHistory;
+
+        /// <summary>
+        /// Array storing mouse timestamp history for velocity calculation
+        /// </summary>
+        private DateTime[] _mouseTimestampHistory;
+
+        /// <summary>
+        /// Number of valid entries in the mouse history arrays
+        /// </summary>
+        private int _mouseHistoryCount;
+        
+        /// <summary>
+        /// Event throttler for mouse move events
+        /// </summary>
+        private readonly EventThrottler _mouseMoveThrottler;
+
+        /// <summary>
+        /// Last mouse move event arguments for throttled processing
+        /// </summary>
+        private MouseEventArgs _lastMouseMoveArgs;
+
+        #endregion Fields
+
+        #region Events
+
+        /// <summary>
+        /// Event that is raised when a property value changes
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion Events
+
+        #region Methods
 
         /// <summary>
         /// Initializes the ball position and properties
@@ -582,6 +655,8 @@ namespace BallDragDrop.ViewModels
                 }
             }
         }
+
+        #endregion Methods
     }
 
     /// <summary>
@@ -589,8 +664,7 @@ namespace BallDragDrop.ViewModels
     /// </summary>
     public class RelayCommand<T> : ICommand
     {
-        private readonly Action<T> _execute;
-        private readonly Predicate<T> _canExecute;
+        #region Properties
 
         /// <summary>
         /// Event that is raised when the ability to execute the command changes
@@ -601,16 +675,39 @@ namespace BallDragDrop.ViewModels
             remove { CommandManager.RequerySuggested -= value; }
         }
 
+        #endregion Properties
+
+        #region Construction
+
         /// <summary>
         /// Initializes a new instance of the RelayCommand class
         /// </summary>
         /// <param name="execute">The execution logic</param>
         /// <param name="canExecute">The execution status logic</param>
+        /// <exception cref="ArgumentNullException">Thrown when execute is null</exception>
         public RelayCommand(Action<T> execute, Predicate<T> canExecute = null)
         {
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _canExecute = canExecute;
         }
+
+        #endregion Construction
+
+        #region Fields
+
+        /// <summary>
+        /// The execution logic delegate
+        /// </summary>
+        private readonly Action<T> _execute;
+
+        /// <summary>
+        /// The execution status logic delegate
+        /// </summary>
+        private readonly Predicate<T> _canExecute;
+
+        #endregion Fields
+
+        #region Methods
 
         /// <summary>
         /// Determines whether this command can execute in its current state
@@ -630,5 +727,7 @@ namespace BallDragDrop.ViewModels
         {
             _execute((T)parameter);
         }
+
+        #endregion Methods
     }
 }

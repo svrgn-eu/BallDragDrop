@@ -1,6 +1,6 @@
 using System;
 
-namespace BallDragDrop.Services
+namespace BallDragDrop.Contracts
 {
     /// <summary>
     /// Interface for enhanced exception handling service

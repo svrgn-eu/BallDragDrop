@@ -9,20 +9,46 @@ namespace BallDragDrop.Models
     /// </summary>
     public class BallModel
     {
-        // Position properties
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the X position of the ball
+        /// </summary>
         public double X { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Y position of the ball
+        /// </summary>
         public double Y { get; set; }
         
-        // Velocity properties
+        /// <summary>
+        /// Gets or sets the X velocity of the ball
+        /// </summary>
         public double VelocityX { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Y velocity of the ball
+        /// </summary>
         public double VelocityY { get; set; }
         
-        // Physical properties
+        /// <summary>
+        /// Gets or sets the radius of the ball
+        /// </summary>
         public double Radius { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mass of the ball
+        /// </summary>
         public double Mass { get; set; }
         
-        // State properties
+        /// <summary>
+        /// Gets a value indicating whether the ball is currently moving
+        /// </summary>
         public bool IsMoving => Math.Abs(VelocityX) > 0.01 || Math.Abs(VelocityY) > 0.01;
+
+        #endregion Properties
+
+        #region Construction
         
         /// <summary>
         /// Initializes a new instance of the BallModel class with default values.
@@ -59,6 +85,10 @@ namespace BallDragDrop.Models
         {
             Radius = radius;
         }
+
+        #endregion Construction
+
+        #region Methods
         
         /// <summary>
         /// Updates the ball's position based on its current velocity.
@@ -196,5 +226,7 @@ namespace BallDragDrop.Models
             
             return wasConstrained;
         }
+
+        #endregion Methods
     }
 }

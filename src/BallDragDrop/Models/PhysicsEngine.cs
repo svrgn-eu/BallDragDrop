@@ -8,16 +8,26 @@ namespace BallDragDrop.Models
     /// </summary>
     public class PhysicsEngine
     {
-        // Physics constants
-        private const double DefaultFrictionCoefficient = 0.98;
-        private const double DefaultGravity = 0.0;
-        private const double DefaultBounceFactor = 0.8;
-        private const double VelocityThreshold = 0.1;
+        #region Properties
         
-        // Physics properties
+        /// <summary>
+        /// Gets or sets the friction coefficient (0-1 where 1 is no friction)
+        /// </summary>
         public double FrictionCoefficient { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gravity acceleration in pixels per second squared
+        /// </summary>
         public double Gravity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the bounce elasticity factor (0-1 where 1 is perfect bounce)
+        /// </summary>
         public double BounceFactor { get; set; }
+
+        #endregion Properties
+
+        #region Construction
         
         /// <summary>
         /// Initializes a new instance of the PhysicsEngine class with default values.
@@ -35,12 +45,41 @@ namespace BallDragDrop.Models
         /// <param name="frictionCoefficient">Coefficient of friction (0-1 where 1 is no friction)</param>
         /// <param name="gravity">Gravity acceleration in pixels per second squared</param>
         /// <param name="bounceFactor">Bounce elasticity factor (0-1 where 1 is perfect bounce)</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when friction coefficient or bounce factor is not between 0 and 1</exception>
         public PhysicsEngine(double frictionCoefficient, double gravity, double bounceFactor)
         {
             FrictionCoefficient = Math.Clamp(frictionCoefficient, 0.0, 1.0);
             Gravity = gravity;
             BounceFactor = Math.Clamp(bounceFactor, 0.0, 1.0);
         }
+
+        #endregion Construction
+
+        #region Constants
+
+        /// <summary>
+        /// Default friction coefficient for ball movement
+        /// </summary>
+        private const double DefaultFrictionCoefficient = 0.98;
+
+        /// <summary>
+        /// Default gravity acceleration
+        /// </summary>
+        private const double DefaultGravity = 0.0;
+
+        /// <summary>
+        /// Default bounce factor for collisions
+        /// </summary>
+        private const double DefaultBounceFactor = 0.8;
+
+        /// <summary>
+        /// Velocity threshold below which the ball is considered stopped
+        /// </summary>
+        private const double VelocityThreshold = 0.1;
+
+        #endregion Constants
+
+        #region Methods
         
         /// <summary>
         /// Updates the ball's position and velocity based on physics calculations.
@@ -366,5 +405,7 @@ namespace BallDragDrop.Models
             // If distance is less than sum of radii, collision occurred
             return distance < minDistance;
         }
+
+        #endregion Methods
     }
 }

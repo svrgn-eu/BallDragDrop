@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using BallDragDrop.Bootstrapper;
 using BallDragDrop.Services;
+using BallDragDrop.Contracts;
 using BallDragDrop.ViewModels;
 using Path = System.IO.Path;
 
@@ -17,24 +18,20 @@ namespace BallDragDrop.Views;
 /// </summary>
 public partial class MainWindow : Window
 {
-    // Event that will be raised when the ball position changes due to window resize
+    #region Properties
+
+    /// <summary>
+    /// Event that will be raised when the ball position changes due to window resize
+    /// </summary>
     public event EventHandler<Point>? BallPositionChanged;
-    
-    // Physics engine for ball movement
-    private Models.PhysicsEngine _physicsEngine;
-    
-    // Last time the physics was updated
-    private DateTime _lastPhysicsUpdate;
-    
-    // Flag to track if physics simulation is running
-    private bool _isPhysicsRunning;
-    
-    // Performance monitoring and optimization
-    private Services.PerformanceMonitor _performanceMonitor;
-    
-    // Debug counter for physics updates
-    private int _physicsUpdateCounter = 0;
-    
+
+    #endregion Properties
+
+    #region Construction
+
+    /// <summary>
+    /// Initializes a new instance of the MainWindow class
+    /// </summary>
     public MainWindow()
     {
         InitializeComponent();
@@ -57,7 +54,40 @@ public partial class MainWindow : Window
         
         Debug.WriteLine("MainWindow initialized");
     }
+
+    #endregion Construction
+
+    #region Fields
+
+    /// <summary>
+    /// Physics engine for ball movement
+    /// </summary>
+    private Models.PhysicsEngine _physicsEngine;
     
+    /// <summary>
+    /// Last time the physics was updated
+    /// </summary>
+    private DateTime _lastPhysicsUpdate;
+    
+    /// <summary>
+    /// Flag to track if physics simulation is running
+    /// </summary>
+    private bool _isPhysicsRunning;
+    
+    /// <summary>
+    /// Performance monitoring and optimization
+    /// </summary>
+    private Services.PerformanceMonitor _performanceMonitor;
+    
+    /// <summary>
+    /// Debug counter for physics updates
+    /// </summary>
+    private int _physicsUpdateCounter = 0;
+
+    #endregion Fields
+    
+    #region Event Handlers
+
     /// <summary>
     /// Event handler for window closed event
     /// </summary>
@@ -244,25 +274,6 @@ public partial class MainWindow : Window
     }
     
     /// <summary>
-    /// Updates the ball position to follow the mouse cursor
-    /// </summary>
-    /// <param name="viewModel">The ball view model</param>
-    /// <param name="mousePosition">The current mouse position</param>
-    private void UpdateBallPositionToMouse(BallViewModel viewModel, Point mousePosition)
-    {
-        // Update the ball position to the mouse position
-        viewModel.X = mousePosition.X;
-        viewModel.Y = mousePosition.Y;
-        
-        // Constrain the ball position to stay within the window boundaries
-        viewModel.ConstrainPosition(0, 0, MainCanvas.Width, MainCanvas.Height);
-        
-        // Force UI update by updating the Canvas.Left and Canvas.Top properties directly
-        Canvas.SetLeft(BallImage, viewModel.Left);
-        Canvas.SetTop(BallImage, viewModel.Top);
-    }
-    
-    /// <summary>
     /// Event handler for mouse move on the ball image
     /// </summary>
     /// <param name="sender">The source of the event</param>
@@ -309,78 +320,7 @@ public partial class MainWindow : Window
             }
         }
     }
-    
-    /// <summary>
-    /// Ensures the ball stays within the window boundaries
-    /// </summary>
-    /// <param name="x">The x-coordinate to constrain</param>
-    /// <param name="y">The y-coordinate to constrain</param>
-    /// <param name="ballRadius">The radius of the ball (default is 0, treating the ball as a point)</param>
-    /// <returns>A Point with coordinates constrained to the window boundaries</returns>
-    public Point ConstrainToWindowBoundaries(double x, double y, double ballRadius = 0)
-    {
-        // Get the current canvas dimensions
-        double canvasWidth = MainCanvas.Width;
-        double canvasHeight = MainCanvas.Height;
-        
-        // Constrain x and y to be within the canvas boundaries, accounting for the ball's size
-        double constrainedX = Math.Max(ballRadius, Math.Min(x, canvasWidth - ballRadius));
-        double constrainedY = Math.Max(ballRadius, Math.Min(y, canvasHeight - ballRadius));
-        
-        return new Point(constrainedX, constrainedY);
-    }
-    
-    #region Test Helpers
-    
-    /// <summary>
-    /// Helper method for testing to simulate a window resize
-    /// </summary>
-    /// <param name="newWidth">The new width of the window</param>
-    /// <param name="newHeight">The new height of the window</param>
-    public void SimulateResize(double newWidth, double newHeight)
-    {
-        // Store the old dimensions for calculating relative position
-        double oldWidth = MainCanvas.Width;
-        double oldHeight = MainCanvas.Height;
-        
-        // Update the canvas dimensions to the new size
-        MainCanvas.Width = newWidth;
-        MainCanvas.Height = newHeight;
-        
-        // Get the BallViewModel from the DataContext
-        if (DataContext is BallViewModel viewModel)
-        {
-            // Store the ball's relative position (as a percentage of the window size)
-            // before resizing to maintain its relative position
-            double relativeX = viewModel.X / oldWidth;
-            double relativeY = viewModel.Y / oldHeight;
-            
-            // Only apply relative positioning if we have valid previous dimensions
-            // and the ball was not at the edge of the window
-            if (!double.IsNaN(relativeX) && !double.IsInfinity(relativeX) && 
-                !double.IsNaN(relativeY) && !double.IsInfinity(relativeY) &&
-                oldWidth > 0 && oldHeight > 0)
-            {
-                // Calculate new position based on relative position
-                double newX = relativeX * newWidth;
-                double newY = relativeY * newHeight;
-                
-                // Update the ball position
-                viewModel.X = newX;
-                viewModel.Y = newY;
-            }
-            
-            // Constrain the ball position to the new window boundaries
-            // This ensures the ball stays within the window even after applying relative positioning
-            viewModel.ConstrainPosition(0, 0, MainCanvas.Width, MainCanvas.Height);
-            
-            // Raise the BallPositionChanged event with the new position
-            BallPositionChanged?.Invoke(this, new Point(viewModel.X, viewModel.Y));
-        }
-    }
-    
-    #endregion
-    
+
     /// <summary>
     /// Event handler for composition target rendering
     /// </summary>
@@ -492,4 +432,96 @@ public partial class MainWindow : Window
         // End measuring frame time
         _performanceMonitor.EndFrameTime();
     }
+
+    #endregion Event Handlers
+
+    #region Methods
+
+    /// <summary>
+    /// Updates the ball position to follow the mouse cursor
+    /// </summary>
+    /// <param name="viewModel">The ball view model</param>
+    /// <param name="mousePosition">The current mouse position</param>
+    private void UpdateBallPositionToMouse(BallViewModel viewModel, Point mousePosition)
+    {
+        // Update the ball position to the mouse position
+        viewModel.X = mousePosition.X;
+        viewModel.Y = mousePosition.Y;
+        
+        // Constrain the ball position to stay within the window boundaries
+        viewModel.ConstrainPosition(0, 0, MainCanvas.Width, MainCanvas.Height);
+        
+        // Force UI update by updating the Canvas.Left and Canvas.Top properties directly
+        Canvas.SetLeft(BallImage, viewModel.Left);
+        Canvas.SetTop(BallImage, viewModel.Top);
+    }
+
+    /// <summary>
+    /// Ensures the ball stays within the window boundaries
+    /// </summary>
+    /// <param name="x">The x-coordinate to constrain</param>
+    /// <param name="y">The y-coordinate to constrain</param>
+    /// <param name="ballRadius">The radius of the ball (default is 0, treating the ball as a point)</param>
+    /// <returns>A Point with coordinates constrained to the window boundaries</returns>
+    public Point ConstrainToWindowBoundaries(double x, double y, double ballRadius = 0)
+    {
+        // Get the current canvas dimensions
+        double canvasWidth = MainCanvas.Width;
+        double canvasHeight = MainCanvas.Height;
+        
+        // Constrain x and y to be within the canvas boundaries, accounting for the ball's size
+        double constrainedX = Math.Max(ballRadius, Math.Min(x, canvasWidth - ballRadius));
+        double constrainedY = Math.Max(ballRadius, Math.Min(y, canvasHeight - ballRadius));
+        
+        return new Point(constrainedX, constrainedY);
+    }
+    
+    /// <summary>
+    /// Helper method for testing to simulate a window resize
+    /// </summary>
+    /// <param name="newWidth">The new width of the window</param>
+    /// <param name="newHeight">The new height of the window</param>
+    public void SimulateResize(double newWidth, double newHeight)
+    {
+        // Store the old dimensions for calculating relative position
+        double oldWidth = MainCanvas.Width;
+        double oldHeight = MainCanvas.Height;
+        
+        // Update the canvas dimensions to the new size
+        MainCanvas.Width = newWidth;
+        MainCanvas.Height = newHeight;
+        
+        // Get the BallViewModel from the DataContext
+        if (DataContext is BallViewModel viewModel)
+        {
+            // Store the ball's relative position (as a percentage of the window size)
+            // before resizing to maintain its relative position
+            double relativeX = viewModel.X / oldWidth;
+            double relativeY = viewModel.Y / oldHeight;
+            
+            // Only apply relative positioning if we have valid previous dimensions
+            // and the ball was not at the edge of the window
+            if (!double.IsNaN(relativeX) && !double.IsInfinity(relativeX) && 
+                !double.IsNaN(relativeY) && !double.IsInfinity(relativeY) &&
+                oldWidth > 0 && oldHeight > 0)
+            {
+                // Calculate new position based on relative position
+                double newX = relativeX * newWidth;
+                double newY = relativeY * newHeight;
+                
+                // Update the ball position
+                viewModel.X = newX;
+                viewModel.Y = newY;
+            }
+            
+            // Constrain the ball position to the new window boundaries
+            // This ensures the ball stays within the window even after applying relative positioning
+            viewModel.ConstrainPosition(0, 0, MainCanvas.Width, MainCanvas.Height);
+            
+            // Raise the BallPositionChanged event with the new position
+            BallPositionChanged?.Invoke(this, new Point(viewModel.X, viewModel.Y));
+        }
+    }
+
+    #endregion Methods
 }

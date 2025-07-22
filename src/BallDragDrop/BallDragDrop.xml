@@ -12,6 +12,21 @@
             App
             </summary>
         </member>
+        <member name="F:BallDragDrop.App._logService">
+            <summary>
+            Logging service for application-wide logging
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.App._mainWindow">
+            <summary>
+            Main window reference for the application
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.App._settingsManager">
+            <summary>
+            Settings manager for application configuration
+            </summary>
+        </member>
         <member name="M:BallDragDrop.App.Application_Startup(System.Object,System.Windows.StartupEventArgs)">
             <summary>
             Application startup event handler from XAML
@@ -54,7 +69,7 @@
             Cleans up application resources before exit
             </summary>
         </member>
-        <member name="M:BallDragDrop.App.App_DispatcherUnhandledException(System.Object,System.Windows.Threading.DispatcherUnhandledExceptionEventArgs,BallDragDrop.Services.IExceptionHandlingService)">
+        <member name="M:BallDragDrop.App.App_DispatcherUnhandledException(System.Object,System.Windows.Threading.DispatcherUnhandledExceptionEventArgs,BallDragDrop.Contracts.IExceptionHandlingService)">
             <summary>
             Handles unhandled exceptions in the UI thread
             </summary>
@@ -62,7 +77,7 @@
             <param name="e">Event data</param>
             <param name="exceptionHandlingService">Injected exception handling service</param>
         </member>
-        <member name="M:BallDragDrop.App.CurrentDomain_UnhandledException(System.Object,System.UnhandledExceptionEventArgs,BallDragDrop.Services.IExceptionHandlingService)">
+        <member name="M:BallDragDrop.App.CurrentDomain_UnhandledException(System.Object,System.UnhandledExceptionEventArgs,BallDragDrop.Contracts.IExceptionHandlingService)">
             <summary>
             Handles unhandled exceptions in non-UI threads
             </summary>
@@ -70,7 +85,7 @@
             <param name="e">Event data</param>
             <param name="exceptionHandlingService">Injected exception handling service</param>
         </member>
-        <member name="M:BallDragDrop.App.TaskScheduler_UnobservedTaskException(System.Object,System.Threading.Tasks.UnobservedTaskExceptionEventArgs,BallDragDrop.Services.IExceptionHandlingService)">
+        <member name="M:BallDragDrop.App.TaskScheduler_UnobservedTaskException(System.Object,System.Threading.Tasks.UnobservedTaskExceptionEventArgs,BallDragDrop.Contracts.IExceptionHandlingService)">
             <summary>
             Handles unobserved task exceptions
             </summary>
@@ -126,15 +141,38 @@
             Application Entry Point.
             </summary>
         </member>
+        <member name="T:BallDragDrop.AssemblyInfo">
+            <summary>
+            Assembly-level attributes and configuration for the BallDragDrop application.
+            Contains theme information and resource dictionary location settings.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.AssemblyInfo.#cctor">
+            <summary>
+            Configures theme information for the application assembly.
+            Specifies where theme-specific and generic resource dictionaries are located.
+            </summary>
+        </member>
         <member name="T:BallDragDrop.Bootstrapper.ServiceBootstrapper">
             <summary>
             Central static bootstrapper class for dependency injection configuration
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Bootstrapper.ServiceBootstrapper._serviceProvider">
+            <summary>
+            The configured service provider instance
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Bootstrapper.ServiceBootstrapper._lock">
+            <summary>
+            Lock object for thread-safe initialization
             </summary>
         </member>
         <member name="P:BallDragDrop.Bootstrapper.ServiceBootstrapper.ServiceProvider">
             <summary>
             Gets the configured service provider
             </summary>
+            <exception cref="T:System.InvalidOperationException">Thrown when the service provider has not been initialized</exception>
         </member>
         <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.Initialize">
             <summary>
@@ -191,10 +229,158 @@
             Disposes the service provider and cleans up resources
             </summary>
         </member>
+        <member name="T:BallDragDrop.Contracts.IExceptionHandlingService">
+            <summary>
+            Interface for enhanced exception handling service
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IExceptionHandlingService.HandleException(System.Exception,System.String)">
+            <summary>
+            Handles unhandled exceptions with context capture
+            </summary>
+            <param name="exception">The exception to handle</param>
+            <param name="context">Additional context information</param>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IExceptionHandlingService.CaptureApplicationContext">
+            <summary>
+            Captures current application state for error reporting
+            </summary>
+            <returns>Application context information</returns>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IExceptionHandlingService.GenerateUserFriendlyMessage(System.Exception)">
+            <summary>
+            Generates user-friendly error message from exception
+            </summary>
+            <param name="exception">The exception to process</param>
+            <returns>User-friendly error message</returns>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IExceptionHandlingService.AttemptRecovery(System.Exception)">
+            <summary>
+            Attempts to recover from an error condition
+            </summary>
+            <param name="exception">The exception that occurred</param>
+            <returns>True if recovery was successful</returns>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IExceptionHandlingService.ReportCriticalError(System.Exception,System.Object)">
+            <summary>
+            Reports critical errors that require immediate attention
+            </summary>
+            <param name="exception">The critical exception</param>
+            <param name="applicationState">Current application state</param>
+        </member>
+        <member name="T:BallDragDrop.Contracts.ILogService">
+            <summary>
+            Interface for logging services
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Contracts.LogLevel">
+            <summary>
+            Log levels enumeration
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Contracts.IMethodLoggingInterceptor">
+            <summary>
+            Interface for method logging interception
+            This will be implemented in task 4
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IMethodLoggingInterceptor.ConfigureMethodFilter(System.String,System.Boolean)">
+            <summary>
+            Configures method filtering for interception
+            </summary>
+            <param name="methodName">Method name to filter</param>
+            <param name="shouldIntercept">Whether to intercept this method</param>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IMethodLoggingInterceptor.SetParameterLogging(System.Boolean)">
+            <summary>
+            Enables or disables parameter logging
+            </summary>
+            <param name="enabled">Whether parameter logging is enabled</param>
+        </member>
+        <member name="T:BallDragDrop.Contracts.IPerformanceMonitor">
+            <summary>
+            Interface for performance monitoring of logging operations
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IPerformanceMonitor.RecordLoggingOperation(System.String,System.TimeSpan)">
+            <summary>
+            Records the execution time of a logging operation
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IPerformanceMonitor.RecordMemoryUsage(System.Int64,System.Int64)">
+            <summary>
+            Records memory usage for logging operations
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IPerformanceMonitor.RecordLogEntriesProcessed(System.Int32)">
+            <summary>
+            Records the number of log entries processed
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IPerformanceMonitor.RecordBatchProcessing(System.Int32,System.TimeSpan)">
+            <summary>
+            Records batch processing metrics
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IPerformanceMonitor.GetStatistics">
+            <summary>
+            Gets current performance statistics
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IPerformanceMonitor.Reset">
+            <summary>
+            Resets all performance counters
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Contracts.PerformanceStatistics">
+            <summary>
+            Performance statistics for logging operations
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Contracts.OperationStatistics">
+            <summary>
+            Statistics for specific operation types
+            </summary>
+        </member>
         <member name="T:BallDragDrop.Models.BallModel">
             <summary>
             Represents the data model for a ball in the application.
             Contains properties for position, velocity, size, and other physical attributes.
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.BallModel.X">
+            <summary>
+            Gets or sets the X position of the ball
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.BallModel.Y">
+            <summary>
+            Gets or sets the Y position of the ball
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.BallModel.VelocityX">
+            <summary>
+            Gets or sets the X velocity of the ball
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.BallModel.VelocityY">
+            <summary>
+            Gets or sets the Y velocity of the ball
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.BallModel.Radius">
+            <summary>
+            Gets or sets the radius of the ball
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.BallModel.Mass">
+            <summary>
+            Gets or sets the mass of the ball
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.BallModel.IsMoving">
+            <summary>
+            Gets a value indicating whether the ball is currently moving
             </summary>
         </member>
         <member name="M:BallDragDrop.Models.BallModel.#ctor">
@@ -285,6 +471,21 @@
             Provides physics calculations for ball movement including velocity, friction, and collisions.
             </summary>
         </member>
+        <member name="P:BallDragDrop.Models.PhysicsEngine.FrictionCoefficient">
+            <summary>
+            Gets or sets the friction coefficient (0-1 where 1 is no friction)
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.PhysicsEngine.Gravity">
+            <summary>
+            Gets or sets the gravity acceleration in pixels per second squared
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.PhysicsEngine.BounceFactor">
+            <summary>
+            Gets or sets the bounce elasticity factor (0-1 where 1 is perfect bounce)
+            </summary>
+        </member>
         <member name="M:BallDragDrop.Models.PhysicsEngine.#ctor">
             <summary>
             Initializes a new instance of the PhysicsEngine class with default values.
@@ -297,6 +498,27 @@
             <param name="frictionCoefficient">Coefficient of friction (0-1 where 1 is no friction)</param>
             <param name="gravity">Gravity acceleration in pixels per second squared</param>
             <param name="bounceFactor">Bounce elasticity factor (0-1 where 1 is perfect bounce)</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when friction coefficient or bounce factor is not between 0 and 1</exception>
+        </member>
+        <member name="F:BallDragDrop.Models.PhysicsEngine.DefaultFrictionCoefficient">
+            <summary>
+            Default friction coefficient for ball movement
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.PhysicsEngine.DefaultGravity">
+            <summary>
+            Default gravity acceleration
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.PhysicsEngine.DefaultBounceFactor">
+            <summary>
+            Default bounce factor for collisions
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.PhysicsEngine.VelocityThreshold">
+            <summary>
+            Velocity threshold below which the ball is considered stopped
+            </summary>
         </member>
         <member name="M:BallDragDrop.Models.PhysicsEngine.UpdateBall(BallDragDrop.Models.BallModel,System.Double,System.Double,System.Double,System.Double,System.Double)">
             <summary>
@@ -407,6 +629,32 @@
             </summary>
             <param name="action">The action to execute when throttled</param>
             <param name="intervalMs">The minimum interval between executions in milliseconds</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when action is null</exception>
+        </member>
+        <member name="F:BallDragDrop.Services.EventThrottler._timer">
+            <summary>
+            Timer for delayed execution
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.EventThrottler._action">
+            <summary>
+            Action to execute when throttled
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.EventThrottler._interval">
+            <summary>
+            Minimum interval between executions
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.EventThrottler._isQueued">
+            <summary>
+            Flag indicating if an execution is queued
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.EventThrottler._lastExecutionTime">
+            <summary>
+            Timestamp of the last execution
+            </summary>
         </member>
         <member name="M:BallDragDrop.Services.EventThrottler.Execute">
             <summary>
@@ -429,69 +677,67 @@
             This is a placeholder implementation that will be enhanced in task 5
             </summary>
         </member>
-        <member name="T:BallDragDrop.Services.IExceptionHandlingService">
+        <member name="M:BallDragDrop.Services.ExceptionHandlingService.#ctor(BallDragDrop.Contracts.ILogService)">
             <summary>
-            Interface for enhanced exception handling service
+            Initializes a new instance of the ExceptionHandlingService class
+            </summary>
+            <param name="logService">The logging service to use for recording exceptions</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when logService is null</exception>
+        </member>
+        <member name="F:BallDragDrop.Services.ExceptionHandlingService._logService">
+            <summary>
+            Logging service for recording exception information
             </summary>
         </member>
-        <member name="M:BallDragDrop.Services.IExceptionHandlingService.HandleException(System.Exception,System.String)">
+        <member name="M:BallDragDrop.Services.ExceptionHandlingService.HandleException(System.Exception,System.String)">
             <summary>
-            Handles unhandled exceptions with context capture
+            Handles an exception by logging it with the provided context
             </summary>
             <param name="exception">The exception to handle</param>
-            <param name="context">Additional context information</param>
+            <param name="context">Additional context information about where the exception occurred</param>
         </member>
-        <member name="M:BallDragDrop.Services.IExceptionHandlingService.CaptureApplicationContext">
+        <member name="M:BallDragDrop.Services.ExceptionHandlingService.CaptureApplicationContext">
             <summary>
-            Captures current application state for error reporting
+            Captures the current application context for error reporting
             </summary>
-            <returns>Application context information</returns>
+            <returns>An object containing application state information</returns>
         </member>
-        <member name="M:BallDragDrop.Services.IExceptionHandlingService.GenerateUserFriendlyMessage(System.Exception)">
+        <member name="M:BallDragDrop.Services.ExceptionHandlingService.GenerateUserFriendlyMessage(System.Exception)">
             <summary>
-            Generates user-friendly error message from exception
+            Generates a user-friendly error message based on the exception type
             </summary>
-            <param name="exception">The exception to process</param>
-            <returns>User-friendly error message</returns>
+            <param name="exception">The exception to generate a message for</param>
+            <returns>A user-friendly error message</returns>
         </member>
-        <member name="M:BallDragDrop.Services.IExceptionHandlingService.AttemptRecovery(System.Exception)">
+        <member name="M:BallDragDrop.Services.ExceptionHandlingService.AttemptRecovery(System.Exception)">
             <summary>
-            Attempts to recover from an error condition
+            Attempts to recover from an exception
             </summary>
-            <param name="exception">The exception that occurred</param>
-            <returns>True if recovery was successful</returns>
+            <param name="exception">The exception to attempt recovery from</param>
+            <returns>True if recovery was successful, false otherwise</returns>
         </member>
-        <member name="M:BallDragDrop.Services.IExceptionHandlingService.ReportCriticalError(System.Exception,System.Object)">
+        <member name="M:BallDragDrop.Services.ExceptionHandlingService.ReportCriticalError(System.Exception,System.Object)">
             <summary>
-            Reports critical errors that require immediate attention
+            Reports a critical error with application state information
             </summary>
-            <param name="exception">The critical exception</param>
-            <param name="applicationState">Current application state</param>
-        </member>
-        <member name="T:BallDragDrop.Services.ILogService">
-            <summary>
-            Interface for logging services
-            </summary>
-        </member>
-        <member name="T:BallDragDrop.Services.LogLevel">
-            <summary>
-            Log levels enumeration
-            </summary>
+            <param name="exception">The critical exception that occurred</param>
+            <param name="applicationState">The current application state</param>
         </member>
         <member name="T:BallDragDrop.Services.ImageService">
             <summary>
             Service for loading and managing images
             </summary>
         </member>
-        <member name="M:BallDragDrop.Services.ImageService.LoadImage(System.String,BallDragDrop.Services.ILogService)">
+        <member name="M:BallDragDrop.Services.ImageService.LoadImage(System.String,BallDragDrop.Contracts.ILogService)">
             <summary>
             Loads an image from the specified path
             </summary>
             <param name="imagePath">Path to the image file</param>
             <param name="logService">Optional logging service</param>
             <returns>ImageSource if successful, null if failed</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when imagePath is null or empty</exception>
         </member>
-        <member name="M:BallDragDrop.Services.ImageService.CreateFallbackImage(System.Double,System.Windows.Media.Color,System.Windows.Media.Color,System.Double,BallDragDrop.Services.ILogService)">
+        <member name="M:BallDragDrop.Services.ImageService.CreateFallbackImage(System.Double,System.Windows.Media.Color,System.Windows.Media.Color,System.Double,BallDragDrop.Contracts.ILogService)">
             <summary>
             Creates a fallback image (a simple circle) when the actual image cannot be loaded
             </summary>
@@ -501,39 +747,239 @@
             <param name="strokeThickness">Stroke thickness of the circle</param>
             <param name="logService">Optional logging service</param>
             <returns>ImageSource representing a circle</returns>
-        </member>
-        <member name="T:BallDragDrop.Services.IMethodLoggingInterceptor">
-            <summary>
-            Interface for method logging interception
-            This will be implemented in task 4
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Services.IMethodLoggingInterceptor.ConfigureMethodFilter(System.String,System.Boolean)">
-            <summary>
-            Configures method filtering for interception
-            </summary>
-            <param name="methodName">Method name to filter</param>
-            <param name="shouldIntercept">Whether to intercept this method</param>
-        </member>
-        <member name="M:BallDragDrop.Services.IMethodLoggingInterceptor.SetParameterLogging(System.Boolean)">
-            <summary>
-            Enables or disables parameter logging
-            </summary>
-            <param name="enabled">Whether parameter logging is enabled</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when radius is less than or equal to zero</exception>
         </member>
         <member name="T:BallDragDrop.Services.Log4NetService">
             <summary>
             Enhanced Log4NET implementation of ILogService with performance optimizations
             </summary>
         </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.#ctor(BallDragDrop.Contracts.IPerformanceMonitor)">
+            <summary>
+            Initializes a new instance of the Log4NetService class
+            </summary>
+            <param name="performanceMonitor">Optional performance monitor instance</param>
+        </member>
+        <member name="F:BallDragDrop.Services.Log4NetService._logger">
+            <summary>
+            Log4NET logger instance
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Log4NetService._performanceMonitor">
+            <summary>
+            Performance monitor for tracking logging operations
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Log4NetService._logEntryPool">
+            <summary>
+            Object pool for log entries to reduce GC pressure
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Log4NetService._asyncProcessor">
+            <summary>
+            Async processor for batched log processing
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Log4NetService._correlationId">
+            <summary>
+            Current correlation ID for tracking related log entries
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Log4NetService._disposed">
+            <summary>
+            Flag indicating if the service has been disposed
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogTrace(System.String,System.Object[])">
+            <summary>
+            Logs a trace message
+            </summary>
+            <param name="message">The message to log</param>
+            <param name="args">Arguments for string formatting</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogDebug(System.String,System.Object[])">
+            <summary>
+            Logs a debug message
+            </summary>
+            <param name="message">The message to log</param>
+            <param name="args">Arguments for string formatting</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogInformation(System.String,System.Object[])">
+            <summary>
+            Logs an information message
+            </summary>
+            <param name="message">The message to log</param>
+            <param name="args">Arguments for string formatting</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogWarning(System.String,System.Object[])">
+            <summary>
+            Logs a warning message
+            </summary>
+            <param name="message">The message to log</param>
+            <param name="args">Arguments for string formatting</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogError(System.String,System.Object[])">
+            <summary>
+            Logs an error message
+            </summary>
+            <param name="message">The message to log</param>
+            <param name="args">Arguments for string formatting</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogError(System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs an error message with an associated exception
+            </summary>
+            <param name="exception">The exception to log</param>
+            <param name="message">The message to log</param>
+            <param name="args">Arguments for string formatting</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogCritical(System.String,System.Object[])">
+            <summary>
+            Logs a critical message
+            </summary>
+            <param name="message">The message to log</param>
+            <param name="args">Arguments for string formatting</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogCritical(System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs a critical message with an associated exception
+            </summary>
+            <param name="exception">The exception to log</param>
+            <param name="message">The message to log</param>
+            <param name="args">Arguments for string formatting</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogStructured(BallDragDrop.Contracts.LogLevel,System.String,System.Object[])">
+            <summary>
+            Logs a structured message with property values
+            </summary>
+            <param name="level">The log level</param>
+            <param name="messageTemplate">The message template</param>
+            <param name="propertyValues">Property values for the template</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogStructured(BallDragDrop.Contracts.LogLevel,System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs a structured message with an exception and property values
+            </summary>
+            <param name="level">The log level</param>
+            <param name="exception">The exception to log</param>
+            <param name="messageTemplate">The message template</param>
+            <param name="propertyValues">Property values for the template</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.BeginScope(System.String,System.Object[])">
+            <summary>
+            Begins a logging scope
+            </summary>
+            <param name="scopeName">Name of the scope</param>
+            <param name="parameters">Parameters for the scope</param>
+            <returns>A disposable scope object</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogMethodEntry(System.String,System.Object[])">
+            <summary>
+            Logs method entry
+            </summary>
+            <param name="methodName">Name of the method</param>
+            <param name="parameters">Method parameters</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogMethodExit(System.String,System.Object,System.Nullable{System.TimeSpan})">
+            <summary>
+            Logs method exit
+            </summary>
+            <param name="methodName">Name of the method</param>
+            <param name="returnValue">Return value of the method</param>
+            <param name="duration">Duration of method execution</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogPerformance(System.String,System.TimeSpan,System.Object[])">
+            <summary>
+            Logs performance information
+            </summary>
+            <param name="operationName">Name of the operation</param>
+            <param name="duration">Duration of the operation</param>
+            <param name="additionalData">Additional data to log</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.SetCorrelationId(System.String)">
+            <summary>
+            Sets the correlation ID for tracking related log entries
+            </summary>
+            <param name="correlationId">The correlation ID to set</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.GetCorrelationId">
+            <summary>
+            Gets the current correlation ID
+            </summary>
+            <returns>The current correlation ID</returns>
+        </member>
         <member name="M:BallDragDrop.Services.Log4NetService.GetPerformanceStatistics">
             <summary>
             Gets current performance statistics
             </summary>
+            <returns>Current performance statistics</returns>
         </member>
         <member name="M:BallDragDrop.Services.Log4NetService.ResetPerformanceCounters">
             <summary>
             Resets performance counters
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogWithPerformanceTracking(BallDragDrop.Contracts.LogLevel,System.String,System.Exception,System.Object[])">
+            <summary>
+            Logs a message with performance tracking
+            </summary>
+            <param name="level">The log level</param>
+            <param name="message">The message to log</param>
+            <param name="exception">Optional exception to log</param>
+            <param name="args">Arguments for string formatting</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.CreatePropertiesDictionary(System.Object[])">
+            <summary>
+            Creates a properties dictionary from property values
+            </summary>
+            <param name="propertyValues">The property values to convert</param>
+            <returns>A dictionary of properties</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.Dispose">
+            <summary>
+            Disposes the service and releases all resources
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.Log4NetService.LogScope">
+            <summary>
+            Represents a logging scope that tracks duration
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Log4NetService.LogScope._logService">
+            <summary>
+            Reference to the log service
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Log4NetService.LogScope._scopeName">
+            <summary>
+            Name of the scope
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Log4NetService.LogScope._stopwatch">
+            <summary>
+            Stopwatch for measuring scope duration
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogScope.#ctor(BallDragDrop.Services.Log4NetService,System.String)">
+            <summary>
+            Initializes a new instance of the LogScope class
+            </summary>
+            <param name="logService">The log service</param>
+            <param name="scopeName">Name of the scope</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.LogScope.Dispose">
+            <summary>
+            Disposes the scope and logs the duration
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.Log4NetService.DisposableScope">
+            <summary>
+            Empty disposable scope for fallback scenarios
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.DisposableScope.Dispose">
+            <summary>
+            Empty dispose implementation
             </summary>
         </member>
         <member name="T:BallDragDrop.Services.MethodLoggingInterceptor">
@@ -542,9 +988,39 @@
             This is a placeholder implementation that will be enhanced in task 4
             </summary>
         </member>
+        <member name="M:BallDragDrop.Services.MethodLoggingInterceptor.#ctor(BallDragDrop.Contracts.ILogService)">
+            <summary>
+            Initializes a new instance of the MethodLoggingInterceptor class
+            </summary>
+            <param name="logService">The logging service to use</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when logService is null</exception>
+        </member>
+        <member name="F:BallDragDrop.Services.MethodLoggingInterceptor._logService">
+            <summary>
+            Logging service for recording method interception information
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.MethodLoggingInterceptor.ConfigureMethodFilter(System.String,System.Boolean)">
+            <summary>
+            Configures whether a specific method should be intercepted for logging
+            </summary>
+            <param name="methodName">The name of the method to configure</param>
+            <param name="shouldIntercept">True to enable interception, false to disable</param>
+        </member>
+        <member name="M:BallDragDrop.Services.MethodLoggingInterceptor.SetParameterLogging(System.Boolean)">
+            <summary>
+            Enables or disables parameter logging for intercepted methods
+            </summary>
+            <param name="enabled">True to enable parameter logging, false to disable</param>
+        </member>
         <member name="T:BallDragDrop.Services.PerformanceMonitor">
             <summary>
             Service for monitoring and analyzing application performance metrics
+            </summary>
+        </member>
+        <member name="E:BallDragDrop.Services.PerformanceMonitor.MetricsUpdated">
+            <summary>
+            Event raised when performance metrics are updated
             </summary>
         </member>
         <member name="M:BallDragDrop.Services.PerformanceMonitor.#ctor(System.Int32)">
@@ -552,6 +1028,77 @@
             Initializes a new instance of the PerformanceMonitor class
             </summary>
             <param name="targetFrameRate">Target frame rate for the application</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when targetFrameRate is less than or equal to zero</exception>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._frameTimesMs">
+            <summary>
+            Queue storing recent frame times for averaging
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._physicsTimesMs">
+            <summary>
+            Queue storing recent physics update times for averaging
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._frameStopwatch">
+            <summary>
+            Stopwatch for measuring frame rendering time
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._physicsStopwatch">
+            <summary>
+            Stopwatch for measuring physics update time
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._averageFrameTimeMs">
+            <summary>
+            Average frame time in milliseconds
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._averagePhysicsTimeMs">
+            <summary>
+            Average physics update time in milliseconds
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._maxFrameTimeMs">
+            <summary>
+            Maximum frame time recorded in the current period
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._maxPhysicsTimeMs">
+            <summary>
+            Maximum physics update time recorded in the current period
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._frameCount">
+            <summary>
+            Number of frames rendered since last metrics update
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._physicsCount">
+            <summary>
+            Number of physics updates since last metrics update
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._lastMetricsUpdate">
+            <summary>
+            Timestamp of the last metrics update
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._targetFrameRate">
+            <summary>
+            Target frame rate for the application
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._targetFrameTime">
+            <summary>
+            Target time per frame based on target frame rate
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._lastFrameTime">
+            <summary>
+            Timestamp of the last frame rendering
+            </summary>
         </member>
         <member name="M:BallDragDrop.Services.PerformanceMonitor.BeginFrameTime">
             <summary>
@@ -636,54 +1183,9 @@
             Async log processor with batching for efficient I/O operations
             </summary>
         </member>
-        <member name="M:BallDragDrop.Services.Performance.AsyncLogProcessor.QueueLogItem(BallDragDrop.Services.LogLevel,System.String,System.Exception,System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+        <member name="M:BallDragDrop.Services.Performance.AsyncLogProcessor.QueueLogItem(BallDragDrop.Contracts.LogLevel,System.String,System.Exception,System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
             <summary>
             Queues a log item for async processing
-            </summary>
-        </member>
-        <member name="T:BallDragDrop.Services.Performance.IPerformanceMonitor">
-            <summary>
-            Interface for performance monitoring of logging operations
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Services.Performance.IPerformanceMonitor.RecordLoggingOperation(System.String,System.TimeSpan)">
-            <summary>
-            Records the execution time of a logging operation
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Services.Performance.IPerformanceMonitor.RecordMemoryUsage(System.Int64,System.Int64)">
-            <summary>
-            Records memory usage for logging operations
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Services.Performance.IPerformanceMonitor.RecordLogEntriesProcessed(System.Int32)">
-            <summary>
-            Records the number of log entries processed
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Services.Performance.IPerformanceMonitor.RecordBatchProcessing(System.Int32,System.TimeSpan)">
-            <summary>
-            Records batch processing metrics
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Services.Performance.IPerformanceMonitor.GetStatistics">
-            <summary>
-            Gets current performance statistics
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Services.Performance.IPerformanceMonitor.Reset">
-            <summary>
-            Resets all performance counters
-            </summary>
-        </member>
-        <member name="T:BallDragDrop.Services.Performance.PerformanceStatistics">
-            <summary>
-            Performance statistics for logging operations
-            </summary>
-        </member>
-        <member name="T:BallDragDrop.Services.Performance.OperationStatistics">
-            <summary>
-            Statistics for specific operation types
             </summary>
         </member>
         <member name="T:BallDragDrop.Services.Performance.LogEntryPool">
@@ -691,14 +1193,49 @@
             Object pool for log entries to reduce GC pressure
             </summary>
         </member>
+        <member name="F:BallDragDrop.Services.Performance.LogEntryPool._pool">
+            <summary>
+            Concurrent queue storing pooled log entries
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LogEntryPool._maxPoolSize">
+            <summary>
+            Maximum number of entries to keep in the pool
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LogEntryPool._currentPoolSize">
+            <summary>
+            Current number of entries in the pool
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LogEntryPool._disposed">
+            <summary>
+            Flag indicating if the pool has been disposed
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.LogEntryPool.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the LogEntryPool class
+            </summary>
+            <param name="maxPoolSize">Maximum number of entries to keep in the pool</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when maxPoolSize is less than or equal to zero</exception>
+        </member>
         <member name="M:BallDragDrop.Services.Performance.LogEntryPool.Get">
             <summary>
             Gets a log entry from the pool or creates a new one
             </summary>
+            <returns>A pooled log entry instance</returns>
+            <exception cref="T:System.ObjectDisposedException">Thrown when the pool has been disposed</exception>
         </member>
         <member name="M:BallDragDrop.Services.Performance.LogEntryPool.Return(BallDragDrop.Services.Performance.PooledLogEntry)">
             <summary>
             Returns a log entry to the pool
+            </summary>
+            <param name="entry">The log entry to return to the pool</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.LogEntryPool.Dispose">
+            <summary>
+            Disposes the log entry pool and clears all pooled entries
             </summary>
         </member>
         <member name="T:BallDragDrop.Services.Performance.PooledLogEntry">
@@ -706,9 +1243,80 @@
             Pooled log entry that automatically returns to pool when disposed
             </summary>
         </member>
+        <member name="F:BallDragDrop.Services.Performance.PooledLogEntry._pool">
+            <summary>
+            Reference to the pool that owns this entry
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.PooledLogEntry._disposed">
+            <summary>
+            Flag indicating if this entry has been disposed
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Timestamp">
+            <summary>
+            Gets or sets the timestamp when the log entry was created
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Level">
+            <summary>
+            Gets or sets the log level of the entry
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Category">
+            <summary>
+            Gets or sets the category of the log entry
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Message">
+            <summary>
+            Gets or sets the log message
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.CorrelationId">
+            <summary>
+            Gets or sets the correlation ID for tracking related log entries
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Properties">
+            <summary>
+            Gets or sets additional properties associated with the log entry
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Exception">
+            <summary>
+            Gets or sets the exception associated with the log entry, if any
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.ThreadId">
+            <summary>
+            Gets or sets the thread ID where the log entry was created
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.MachineName">
+            <summary>
+            Gets or sets the machine name where the log entry was created
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.ApplicationVersion">
+            <summary>
+            Gets or sets the application version
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.PooledLogEntry.#ctor(BallDragDrop.Services.Performance.LogEntryPool)">
+            <summary>
+            Initializes a new instance of the PooledLogEntry class
+            </summary>
+            <param name="pool">The pool that owns this entry</param>
+        </member>
         <member name="M:BallDragDrop.Services.Performance.PooledLogEntry.Reset">
             <summary>
             Resets the log entry for reuse
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.PooledLogEntry.Dispose">
+            <summary>
+            Disposes the log entry and returns it to the pool
             </summary>
         </member>
         <member name="T:BallDragDrop.Services.Performance.PerformanceConfiguration">
@@ -765,25 +1373,137 @@
             <summary>
             Creates a default configuration optimized for performance
             </summary>
+            <returns>A default performance configuration instance</returns>
         </member>
         <member name="M:BallDragDrop.Services.Performance.PerformanceConfiguration.CreateHighThroughput">
             <summary>
             Creates a configuration optimized for high-throughput scenarios
             </summary>
+            <returns>A high-throughput optimized performance configuration instance</returns>
         </member>
         <member name="M:BallDragDrop.Services.Performance.PerformanceConfiguration.CreateLowMemory">
             <summary>
             Creates a configuration optimized for low-memory scenarios
             </summary>
+            <returns>A low-memory optimized performance configuration instance</returns>
         </member>
         <member name="M:BallDragDrop.Services.Performance.PerformanceConfiguration.Validate">
             <summary>
             Validates the configuration settings
             </summary>
+            <exception cref="T:System.ArgumentException">Thrown when any configuration value is invalid</exception>
         </member>
         <member name="T:BallDragDrop.Services.Performance.LoggingPerformanceMonitor">
             <summary>
             Thread-safe performance monitor for logging operations
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LoggingPerformanceMonitor._operationMetrics">
+            <summary>
+            Dictionary storing metrics for different operation types
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LoggingPerformanceMonitor._totalLoggingOperations">
+            <summary>
+            Total number of logging operations performed
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LoggingPerformanceMonitor._totalLoggingTimeTicks">
+            <summary>
+            Total time spent on logging operations in ticks
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LoggingPerformanceMonitor._totalMemoryAllocated">
+            <summary>
+            Total memory allocated in bytes
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LoggingPerformanceMonitor._totalMemoryFreed">
+            <summary>
+            Total memory freed in bytes
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LoggingPerformanceMonitor._totalLogEntriesProcessed">
+            <summary>
+            Total number of log entries processed
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LoggingPerformanceMonitor._totalBatchesProcessed">
+            <summary>
+            Total number of batches processed
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LoggingPerformanceMonitor._totalBatchSize">
+            <summary>
+            Total size of all batches processed
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LoggingPerformanceMonitor._totalBatchProcessingTimeTicks">
+            <summary>
+            Total time spent processing batches in ticks
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.LoggingPerformanceMonitor.RecordLoggingOperation(System.String,System.TimeSpan)">
+            <summary>
+            Records a logging operation with its duration
+            </summary>
+            <param name="operationType">The type of operation performed</param>
+            <param name="duration">The duration of the operation</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.LoggingPerformanceMonitor.RecordMemoryUsage(System.Int64,System.Int64)">
+            <summary>
+            Records memory usage statistics
+            </summary>
+            <param name="bytesAllocated">Number of bytes allocated</param>
+            <param name="bytesFreed">Number of bytes freed</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.LoggingPerformanceMonitor.RecordLogEntriesProcessed(System.Int32)">
+            <summary>
+            Records the number of log entries processed
+            </summary>
+            <param name="count">Number of log entries processed</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.LoggingPerformanceMonitor.RecordBatchProcessing(System.Int32,System.TimeSpan)">
+            <summary>
+            Records batch processing statistics
+            </summary>
+            <param name="batchSize">Size of the batch processed</param>
+            <param name="processingTime">Time taken to process the batch</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.LoggingPerformanceMonitor.GetStatistics">
+            <summary>
+            Gets the current performance statistics
+            </summary>
+            <returns>A snapshot of current performance statistics</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.LoggingPerformanceMonitor.Reset">
+            <summary>
+            Resets all performance statistics to zero
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.Performance.LoggingPerformanceMonitor.OperationMetrics">
+            <summary>
+            Internal class for storing operation metrics
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LoggingPerformanceMonitor.OperationMetrics.Count">
+            <summary>
+            Number of operations recorded
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LoggingPerformanceMonitor.OperationMetrics.TotalTimeTicks">
+            <summary>
+            Total time for all operations in ticks
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LoggingPerformanceMonitor.OperationMetrics.MinTimeTicks">
+            <summary>
+            Minimum operation time in ticks
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.LoggingPerformanceMonitor.OperationMetrics.MaxTimeTicks">
+            <summary>
+            Maximum operation time in ticks
             </summary>
         </member>
         <member name="T:BallDragDrop.Services.SettingsManager">
@@ -791,7 +1511,7 @@
             Manages application settings persistence
             </summary>
         </member>
-        <member name="M:BallDragDrop.Services.SettingsManager.#ctor(BallDragDrop.Services.ILogService,System.String)">
+        <member name="M:BallDragDrop.Services.SettingsManager.#ctor(BallDragDrop.Contracts.ILogService,System.String)">
             <summary>
             Initializes a new instance of the SettingsManager class
             </summary>
@@ -878,11 +1598,6 @@
             View model for the ball, implementing INotifyPropertyChanged for UI binding
             </summary>
         </member>
-        <member name="E:BallDragDrop.ViewModels.BallViewModel.PropertyChanged">
-            <summary>
-            Event that is raised when a property value changes
-            </summary>
-        </member>
         <member name="P:BallDragDrop.ViewModels.BallViewModel.MouseDownCommand">
             <summary>
             Command for handling mouse down events
@@ -948,11 +1663,86 @@
             Gets the height for binding (Diameter)
             </summary>
         </member>
-        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(BallDragDrop.Services.ILogService)">
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(BallDragDrop.Contracts.ILogService)">
             <summary>
             Initializes a new instance of the BallViewModel class
             </summary>
             <param name="logService">Logging service for tracking user interactions</param>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel.MouseHistorySize">
+            <summary>
+            Size of the mouse position history buffer for velocity calculation
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._ballModel">
+            <summary>
+            The underlying ball model (internal for MainWindow access)
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._logService">
+            <summary>
+            Logging service for tracking user interactions
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._ballImage">
+            <summary>
+            Image source for the ball
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._isDragging">
+            <summary>
+            Flag indicating whether the ball is currently being dragged
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._lastMousePosition">
+            <summary>
+            Last recorded mouse position
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._dragStartPosition">
+            <summary>
+            Position where dragging started
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._lastUpdateTime">
+            <summary>
+            Timestamp of the last update
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._currentCursor">
+            <summary>
+            Current cursor to display
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._mousePositionHistory">
+            <summary>
+            Array storing mouse position history for velocity calculation
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._mouseTimestampHistory">
+            <summary>
+            Array storing mouse timestamp history for velocity calculation
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._mouseHistoryCount">
+            <summary>
+            Number of valid entries in the mouse history arrays
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._mouseMoveThrottler">
+            <summary>
+            Event throttler for mouse move events
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._lastMouseMoveArgs">
+            <summary>
+            Last mouse move event arguments for throttled processing
+            </summary>
+        </member>
+        <member name="E:BallDragDrop.ViewModels.BallViewModel.PropertyChanged">
+            <summary>
+            Event that is raised when a property value changes
+            </summary>
         </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.Initialize(System.Double,System.Double,System.Double)">
             <summary>
@@ -1034,6 +1824,17 @@
             </summary>
             <param name="execute">The execution logic</param>
             <param name="canExecute">The execution status logic</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when execute is null</exception>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.RelayCommand`1._execute">
+            <summary>
+            The execution logic delegate
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.RelayCommand`1._canExecute">
+            <summary>
+            The execution status logic delegate
+            </summary>
         </member>
         <member name="M:BallDragDrop.ViewModels.RelayCommand`1.CanExecute(System.Object)">
             <summary>
@@ -1054,6 +1855,41 @@
             </summary>
             <summary>
             MainWindow
+            </summary>
+        </member>
+        <member name="E:BallDragDrop.Views.MainWindow.BallPositionChanged">
+            <summary>
+            Event that will be raised when the ball position changes due to window resize
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.#ctor">
+            <summary>
+            Initializes a new instance of the MainWindow class
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.MainWindow._physicsEngine">
+            <summary>
+            Physics engine for ball movement
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.MainWindow._lastPhysicsUpdate">
+            <summary>
+            Last time the physics was updated
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.MainWindow._isPhysicsRunning">
+            <summary>
+            Flag to track if physics simulation is running
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.MainWindow._performanceMonitor">
+            <summary>
+            Performance monitoring and optimization
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.MainWindow._physicsUpdateCounter">
+            <summary>
+            Debug counter for physics updates
             </summary>
         </member>
         <member name="M:BallDragDrop.Views.MainWindow.MainWindow_Closed(System.Object,System.EventArgs)">
@@ -1084,13 +1920,6 @@
             <param name="sender">The source of the event</param>
             <param name="e">Event data</param>
         </member>
-        <member name="M:BallDragDrop.Views.MainWindow.UpdateBallPositionToMouse(BallDragDrop.ViewModels.BallViewModel,System.Windows.Point)">
-            <summary>
-            Updates the ball position to follow the mouse cursor
-            </summary>
-            <param name="viewModel">The ball view model</param>
-            <param name="mousePosition">The current mouse position</param>
-        </member>
         <member name="M:BallDragDrop.Views.MainWindow.BallImage_MouseMove(System.Object,System.Windows.Input.MouseEventArgs)">
             <summary>
             Event handler for mouse move on the ball image
@@ -1104,6 +1933,20 @@
             </summary>
             <param name="sender">The source of the event</param>
             <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.CompositionTarget_Rendering(System.Object,System.EventArgs)">
+            <summary>
+            Event handler for composition target rendering
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.UpdateBallPositionToMouse(BallDragDrop.ViewModels.BallViewModel,System.Windows.Point)">
+            <summary>
+            Updates the ball position to follow the mouse cursor
+            </summary>
+            <param name="viewModel">The ball view model</param>
+            <param name="mousePosition">The current mouse position</param>
         </member>
         <member name="M:BallDragDrop.Views.MainWindow.ConstrainToWindowBoundaries(System.Double,System.Double,System.Double)">
             <summary>
@@ -1120,13 +1963,6 @@
             </summary>
             <param name="newWidth">The new width of the window</param>
             <param name="newHeight">The new height of the window</param>
-        </member>
-        <member name="M:BallDragDrop.Views.MainWindow.CompositionTarget_Rendering(System.Object,System.EventArgs)">
-            <summary>
-            Event handler for composition target rendering
-            </summary>
-            <param name="sender">The source of the event</param>
-            <param name="e">Event data</param>
         </member>
         <member name="F:BallDragDrop.Views.MainWindow.MainCanvas">
             <summary>
@@ -1146,9 +1982,29 @@
             SplashScreen
             </summary>
         </member>
+        <member name="E:BallDragDrop.Views.SplashScreen.InitializationComplete">
+            <summary>
+            Event that is raised when initialization is complete
+            </summary>
+        </member>
         <member name="M:BallDragDrop.Views.SplashScreen.#ctor">
             <summary>
             Initializes a new instance of the SplashScreen class
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.SplashScreen._minimumDisplayTimer">
+            <summary>
+            Timer for minimum display time
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.SplashScreen._isInitializationComplete">
+            <summary>
+            Flag to track if initialization is complete
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.SplashScreen._isMinimumTimeElapsed">
+            <summary>
+            Flag to track if minimum display time has elapsed
             </summary>
         </member>
         <member name="M:BallDragDrop.Views.SplashScreen.Window_Loaded(System.Object,System.Windows.RoutedEventArgs)">
@@ -1162,6 +2018,7 @@
             <summary>
             Initializes the application
             </summary>
+            <returns>A task representing the asynchronous initialization operation</returns>
         </member>
         <member name="M:BallDragDrop.Views.SplashScreen.MinimumDisplayTimer_Tick(System.Object,System.EventArgs)">
             <summary>
@@ -1180,6 +2037,7 @@
             Updates the status text on the splash screen
             </summary>
             <param name="status">The new status text</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when status is null</exception>
         </member>
         <member name="M:BallDragDrop.Views.SplashScreen.InitializeComponent">
             <summary>

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using BallDragDrop.Contracts;
 
 namespace BallDragDrop.Services.Performance
 {
@@ -11,16 +12,62 @@ namespace BallDragDrop.Services.Performance
     /// </summary>
     public class LoggingPerformanceMonitor : IPerformanceMonitor
     {
+        #region Fields
+
+        /// <summary>
+        /// Dictionary storing metrics for different operation types
+        /// </summary>
         private readonly ConcurrentDictionary<string, OperationMetrics> _operationMetrics = new();
+        
+        /// <summary>
+        /// Total number of logging operations performed
+        /// </summary>
         private long _totalLoggingOperations;
+        
+        /// <summary>
+        /// Total time spent on logging operations in ticks
+        /// </summary>
         private long _totalLoggingTimeTicks;
+        
+        /// <summary>
+        /// Total memory allocated in bytes
+        /// </summary>
         private long _totalMemoryAllocated;
+        
+        /// <summary>
+        /// Total memory freed in bytes
+        /// </summary>
         private long _totalMemoryFreed;
+        
+        /// <summary>
+        /// Total number of log entries processed
+        /// </summary>
         private long _totalLogEntriesProcessed;
+        
+        /// <summary>
+        /// Total number of batches processed
+        /// </summary>
         private long _totalBatchesProcessed;
+        
+        /// <summary>
+        /// Total size of all batches processed
+        /// </summary>
         private long _totalBatchSize;
+        
+        /// <summary>
+        /// Total time spent processing batches in ticks
+        /// </summary>
         private long _totalBatchProcessingTimeTicks;
 
+        #endregion Fields
+
+        #region Methods
+
+        /// <summary>
+        /// Records a logging operation with its duration
+        /// </summary>
+        /// <param name="operationType">The type of operation performed</param>
+        /// <param name="duration">The duration of the operation</param>
         public void RecordLoggingOperation(string operationType, TimeSpan duration)
         {
             Interlocked.Increment(ref _totalLoggingOperations);
@@ -55,17 +102,31 @@ namespace BallDragDrop.Services.Performance
                 });
         }
 
+        /// <summary>
+        /// Records memory usage statistics
+        /// </summary>
+        /// <param name="bytesAllocated">Number of bytes allocated</param>
+        /// <param name="bytesFreed">Number of bytes freed</param>
         public void RecordMemoryUsage(long bytesAllocated, long bytesFreed)
         {
             Interlocked.Add(ref _totalMemoryAllocated, bytesAllocated);
             Interlocked.Add(ref _totalMemoryFreed, bytesFreed);
         }
 
+        /// <summary>
+        /// Records the number of log entries processed
+        /// </summary>
+        /// <param name="count">Number of log entries processed</param>
         public void RecordLogEntriesProcessed(int count)
         {
             Interlocked.Add(ref _totalLogEntriesProcessed, count);
         }
 
+        /// <summary>
+        /// Records batch processing statistics
+        /// </summary>
+        /// <param name="batchSize">Size of the batch processed</param>
+        /// <param name="processingTime">Time taken to process the batch</param>
         public void RecordBatchProcessing(int batchSize, TimeSpan processingTime)
         {
             Interlocked.Increment(ref _totalBatchesProcessed);
@@ -73,6 +134,10 @@ namespace BallDragDrop.Services.Performance
             Interlocked.Add(ref _totalBatchProcessingTimeTicks, processingTime.Ticks);
         }
 
+        /// <summary>
+        /// Gets the current performance statistics
+        /// </summary>
+        /// <returns>A snapshot of current performance statistics</returns>
         public PerformanceStatistics GetStatistics()
         {
             var totalOps = Interlocked.Read(ref _totalLoggingOperations);
@@ -106,6 +171,9 @@ namespace BallDragDrop.Services.Performance
             };
         }
 
+        /// <summary>
+        /// Resets all performance statistics to zero
+        /// </summary>
         public void Reset()
         {
             Interlocked.Exchange(ref _totalLoggingOperations, 0);
@@ -119,12 +187,36 @@ namespace BallDragDrop.Services.Performance
             _operationMetrics.Clear();
         }
 
+        #endregion Methods
+
+        #region Nested Types
+
+        /// <summary>
+        /// Internal class for storing operation metrics
+        /// </summary>
         private class OperationMetrics
         {
+            /// <summary>
+            /// Number of operations recorded
+            /// </summary>
             public long Count;
+            
+            /// <summary>
+            /// Total time for all operations in ticks
+            /// </summary>
             public long TotalTimeTicks;
+            
+            /// <summary>
+            /// Minimum operation time in ticks
+            /// </summary>
             public long MinTimeTicks = long.MaxValue;
+            
+            /// <summary>
+            /// Maximum operation time in ticks
+            /// </summary>
             public long MaxTimeTicks = long.MinValue;
         }
+
+        #endregion Nested Types
     }
 }

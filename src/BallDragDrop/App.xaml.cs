@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using BallDragDrop.Services;
+using BallDragDrop.Contracts;
 using BallDragDrop.Bootstrapper;
 using BallDragDrop.Views;
 
@@ -16,15 +17,27 @@ namespace BallDragDrop;
 /// </summary>
 public partial class App : Application
 {
-    // Logging service
+    #region Fields
+
+    /// <summary>
+    /// Logging service for application-wide logging
+    /// </summary>
     private ILogService _logService;
         
-    // Main window reference
+    /// <summary>
+    /// Main window reference for the application
+    /// </summary>
     private MainWindow _mainWindow;
     
-    // Settings manager
+    /// <summary>
+    /// Settings manager for application configuration
+    /// </summary>
     private SettingsManager _settingsManager;
+
+    #endregion Fields
     
+    #region Event Handlers
+
     /// <summary>
     /// Application startup event handler from XAML
     /// </summary>
@@ -56,6 +69,10 @@ public partial class App : Application
         ShowSplashScreenAndInitialize();
     }
     
+    #endregion Event Handlers
+    
+    #region Methods
+
     /// <summary>
     /// Shows the splash screen and initializes the application
     /// </summary>
@@ -476,4 +493,6 @@ public partial class App : Application
     {
         return _logService;
     }
+
+    #endregion Methods
 }

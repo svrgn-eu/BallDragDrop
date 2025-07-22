@@ -1,4 +1,4 @@
-namespace BallDragDrop.Services
+namespace BallDragDrop.Contracts
 {
     /// <summary>
     /// Interface for method logging interception

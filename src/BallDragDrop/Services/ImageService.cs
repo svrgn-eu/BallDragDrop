@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using BallDragDrop.Contracts;
 
 namespace BallDragDrop.Services
 {
@@ -10,12 +11,15 @@ namespace BallDragDrop.Services
     /// </summary>
     public class ImageService
     {
+        #region Methods
+
         /// <summary>
         /// Loads an image from the specified path
         /// </summary>
         /// <param name="imagePath">Path to the image file</param>
         /// <param name="logService">Optional logging service</param>
         /// <returns>ImageSource if successful, null if failed</returns>
+        /// <exception cref="ArgumentNullException">Thrown when imagePath is null or empty</exception>
         public static ImageSource LoadImage(string imagePath, ILogService logService = null)
         {
             logService?.LogMethodEntry(nameof(LoadImage), imagePath);
@@ -62,6 +66,7 @@ namespace BallDragDrop.Services
         /// <param name="strokeThickness">Stroke thickness of the circle</param>
         /// <param name="logService">Optional logging service</param>
         /// <returns>ImageSource representing a circle</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when radius is less than or equal to zero</exception>
         public static ImageSource CreateFallbackImage(double radius, Color fillColor, Color strokeColor, double strokeThickness = 2, ILogService logService = null)
         {
             logService?.LogMethodEntry(nameof(CreateFallbackImage), radius, fillColor, strokeColor, strokeThickness);
@@ -113,5 +118,7 @@ namespace BallDragDrop.Services
                 return null;
             }
         }
+
+        #endregion Methods
     }
 }

@@ -7,6 +7,8 @@ namespace BallDragDrop.Services.Performance
     /// </summary>
     public class PerformanceConfiguration
     {
+        #region Properties
+
         /// <summary>
         /// Maximum size of the log entry object pool
         /// </summary>
@@ -52,9 +54,14 @@ namespace BallDragDrop.Services.Performance
         /// </summary>
         public bool EnableAutomaticPerformanceReporting { get; set; } = false;
 
+        #endregion Properties
+
+        #region Methods
+
         /// <summary>
         /// Creates a default configuration optimized for performance
         /// </summary>
+        /// <returns>A default performance configuration instance</returns>
         public static PerformanceConfiguration CreateDefault()
         {
             return new PerformanceConfiguration();
@@ -63,6 +70,7 @@ namespace BallDragDrop.Services.Performance
         /// <summary>
         /// Creates a configuration optimized for high-throughput scenarios
         /// </summary>
+        /// <returns>A high-throughput optimized performance configuration instance</returns>
         public static PerformanceConfiguration CreateHighThroughput()
         {
             return new PerformanceConfiguration
@@ -82,6 +90,7 @@ namespace BallDragDrop.Services.Performance
         /// <summary>
         /// Creates a configuration optimized for low-memory scenarios
         /// </summary>
+        /// <returns>A low-memory optimized performance configuration instance</returns>
         public static PerformanceConfiguration CreateLowMemory()
         {
             return new PerformanceConfiguration
@@ -101,6 +110,7 @@ namespace BallDragDrop.Services.Performance
         /// <summary>
         /// Validates the configuration settings
         /// </summary>
+        /// <exception cref="ArgumentException">Thrown when any configuration value is invalid</exception>
         public void Validate()
         {
             if (LogEntryPoolSize <= 0)
@@ -118,5 +128,7 @@ namespace BallDragDrop.Services.Performance
             if (MemoryThresholdMB <= 0)
                 throw new ArgumentException("MemoryThresholdMB must be greater than 0");
         }
+
+        #endregion Methods
     }
 }

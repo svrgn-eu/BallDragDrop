@@ -8,17 +8,14 @@ namespace BallDragDrop.Services
     /// </summary>
     public class EventThrottler
     {
-        private readonly DispatcherTimer _timer;
-        private readonly Action _action;
-        private readonly TimeSpan _interval;
-        private bool _isQueued;
-        private DateTime _lastExecutionTime;
+        #region Construction
         
         /// <summary>
         /// Initializes a new instance of the EventThrottler class
         /// </summary>
         /// <param name="action">The action to execute when throttled</param>
         /// <param name="intervalMs">The minimum interval between executions in milliseconds</param>
+        /// <exception cref="ArgumentNullException">Thrown when action is null</exception>
         public EventThrottler(Action action, int intervalMs)
         {
             _action = action ?? throw new ArgumentNullException(nameof(action));
@@ -33,6 +30,39 @@ namespace BallDragDrop.Services
             };
             _timer.Tick += Timer_Tick;
         }
+
+        #endregion Construction
+
+        #region Fields
+
+        /// <summary>
+        /// Timer for delayed execution
+        /// </summary>
+        private readonly DispatcherTimer _timer;
+
+        /// <summary>
+        /// Action to execute when throttled
+        /// </summary>
+        private readonly Action _action;
+
+        /// <summary>
+        /// Minimum interval between executions
+        /// </summary>
+        private readonly TimeSpan _interval;
+
+        /// <summary>
+        /// Flag indicating if an execution is queued
+        /// </summary>
+        private bool _isQueued;
+
+        /// <summary>
+        /// Timestamp of the last execution
+        /// </summary>
+        private DateTime _lastExecutionTime;
+
+        #endregion Fields
+
+        #region Methods
         
         /// <summary>
         /// Executes the action, throttling if called too frequently
@@ -95,5 +125,7 @@ namespace BallDragDrop.Services
             // Reset the queued flag
             _isQueued = false;
         }
+
+        #endregion Methods
     }
 }

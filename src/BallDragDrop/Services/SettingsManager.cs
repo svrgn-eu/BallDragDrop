@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using BallDragDrop.Contracts;
 
 namespace BallDragDrop.Services
 {
@@ -11,14 +12,7 @@ namespace BallDragDrop.Services
     /// </summary>
     public class SettingsManager
     {
-        // Default settings file path
-        private readonly string _settingsFilePath;
-        
-        // Current settings
-        private Dictionary<string, object> _settings;
-        
-        // Logging service
-        private readonly ILogService _logService;
+        #region Construction
         
         /// <summary>
         /// Initializes a new instance of the SettingsManager class
@@ -47,6 +41,21 @@ namespace BallDragDrop.Services
             
             _logService?.LogDebug("SettingsManager initialized with file path: {FilePath}", _settingsFilePath);
         }
+
+        #endregion Construction
+
+        #region Fields
+
+        // Default settings file path
+        private readonly string _settingsFilePath;
+        
+        // Current settings
+        private Dictionary<string, object> _settings;
+        
+        // Logging service
+        private readonly ILogService _logService;
+
+        #endregion Fields
         
         /// <summary>
         /// Loads settings from the settings file

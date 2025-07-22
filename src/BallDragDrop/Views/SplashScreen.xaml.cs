@@ -10,18 +10,17 @@ namespace BallDragDrop.Views
     /// </summary>
     public partial class SplashScreen : Window
     {
-        // Event that is raised when initialization is complete
+        #region Properties
+
+        /// <summary>
+        /// Event that is raised when initialization is complete
+        /// </summary>
         public event EventHandler InitializationComplete;
+
+        #endregion Properties
         
-        // Timer for minimum display time
-        private readonly DispatcherTimer _minimumDisplayTimer;
-        
-        // Flag to track if initialization is complete
-        private bool _isInitializationComplete;
-        
-        // Flag to track if minimum display time has elapsed
-        private bool _isMinimumTimeElapsed;
-        
+        #region Construction
+
         /// <summary>
         /// Initializes a new instance of the SplashScreen class
         /// </summary>
@@ -40,7 +39,30 @@ namespace BallDragDrop.Views
             };
             _minimumDisplayTimer.Tick += MinimumDisplayTimer_Tick;
         }
+
+        #endregion Construction
+
+        #region Fields
+
+        /// <summary>
+        /// Timer for minimum display time
+        /// </summary>
+        private readonly DispatcherTimer _minimumDisplayTimer;
         
+        /// <summary>
+        /// Flag to track if initialization is complete
+        /// </summary>
+        private bool _isInitializationComplete;
+        
+        /// <summary>
+        /// Flag to track if minimum display time has elapsed
+        /// </summary>
+        private bool _isMinimumTimeElapsed;
+
+        #endregion Fields
+        
+        #region Event Handlers
+
         /// <summary>
         /// Event handler for window loaded event
         /// </summary>
@@ -55,9 +77,12 @@ namespace BallDragDrop.Views
             Task.Run(() => InitializeApplication());
         }
         
+        #region Methods
+
         /// <summary>
         /// Initializes the application
         /// </summary>
+        /// <returns>A task representing the asynchronous initialization operation</returns>
         private async Task InitializeApplication()
         {
             try
@@ -111,6 +136,8 @@ namespace BallDragDrop.Views
             // Check if we can close the splash screen
             CheckIfReadyToClose();
         }
+
+        #endregion Event Handlers
         
         /// <summary>
         /// Checks if the splash screen is ready to close
@@ -132,9 +159,12 @@ namespace BallDragDrop.Views
         /// Updates the status text on the splash screen
         /// </summary>
         /// <param name="status">The new status text</param>
+        /// <exception cref="ArgumentNullException">Thrown when status is null</exception>
         public void UpdateStatus(string status)
         {
             Dispatcher.InvokeAsync(() => StatusText.Text = status);
         }
+
+        #endregion Methods
     }
 }

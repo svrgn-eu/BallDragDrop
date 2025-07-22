@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace BallDragDrop.Services.Performance
+namespace BallDragDrop.Contracts
 {
     /// <summary>
     /// Interface for performance monitoring of logging operations

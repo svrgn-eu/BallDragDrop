@@ -10,33 +10,22 @@ namespace BallDragDrop.Services
     /// </summary>
     public class PerformanceMonitor
     {
-        // Performance metrics
-        private readonly Queue<double> _frameTimesMs = new Queue<double>(100);
-        private readonly Queue<double> _physicsTimesMs = new Queue<double>(100);
-        private readonly Stopwatch _frameStopwatch = new Stopwatch();
-        private readonly Stopwatch _physicsStopwatch = new Stopwatch();
-        
-        // Metrics tracking
-        private double _averageFrameTimeMs = 0;
-        private double _averagePhysicsTimeMs = 0;
-        private double _maxFrameTimeMs = 0;
-        private double _maxPhysicsTimeMs = 0;
-        private int _frameCount = 0;
-        private int _physicsCount = 0;
-        private DateTime _lastMetricsUpdate = DateTime.Now;
-        
-        // Frame rate control
-        private readonly int _targetFrameRate;
-        private readonly TimeSpan _targetFrameTime;
-        private DateTime _lastFrameTime = DateTime.Now;
-        
-        // Events
+        #region Properties
+
+        /// <summary>
+        /// Event raised when performance metrics are updated
+        /// </summary>
         public event EventHandler<PerformanceMetricsEventArgs> MetricsUpdated;
+
+        #endregion Properties
         
+        #region Construction
+
         /// <summary>
         /// Initializes a new instance of the PerformanceMonitor class
         /// </summary>
         /// <param name="targetFrameRate">Target frame rate for the application</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when targetFrameRate is less than or equal to zero</exception>
         public PerformanceMonitor(int targetFrameRate = 60)
         {
             _targetFrameRate = targetFrameRate;
@@ -50,7 +39,85 @@ namespace BallDragDrop.Services
             metricsTimer.Tick += (s, e) => UpdateMetrics();
             metricsTimer.Start();
         }
+
+        #endregion Construction
+
+        #region Fields
+
+        /// <summary>
+        /// Queue storing recent frame times for averaging
+        /// </summary>
+        private readonly Queue<double> _frameTimesMs = new Queue<double>(100);
         
+        /// <summary>
+        /// Queue storing recent physics update times for averaging
+        /// </summary>
+        private readonly Queue<double> _physicsTimesMs = new Queue<double>(100);
+        
+        /// <summary>
+        /// Stopwatch for measuring frame rendering time
+        /// </summary>
+        private readonly Stopwatch _frameStopwatch = new Stopwatch();
+        
+        /// <summary>
+        /// Stopwatch for measuring physics update time
+        /// </summary>
+        private readonly Stopwatch _physicsStopwatch = new Stopwatch();
+        
+        /// <summary>
+        /// Average frame time in milliseconds
+        /// </summary>
+        private double _averageFrameTimeMs = 0;
+        
+        /// <summary>
+        /// Average physics update time in milliseconds
+        /// </summary>
+        private double _averagePhysicsTimeMs = 0;
+        
+        /// <summary>
+        /// Maximum frame time recorded in the current period
+        /// </summary>
+        private double _maxFrameTimeMs = 0;
+        
+        /// <summary>
+        /// Maximum physics update time recorded in the current period
+        /// </summary>
+        private double _maxPhysicsTimeMs = 0;
+        
+        /// <summary>
+        /// Number of frames rendered since last metrics update
+        /// </summary>
+        private int _frameCount = 0;
+        
+        /// <summary>
+        /// Number of physics updates since last metrics update
+        /// </summary>
+        private int _physicsCount = 0;
+        
+        /// <summary>
+        /// Timestamp of the last metrics update
+        /// </summary>
+        private DateTime _lastMetricsUpdate = DateTime.Now;
+        
+        /// <summary>
+        /// Target frame rate for the application
+        /// </summary>
+        private readonly int _targetFrameRate;
+        
+        /// <summary>
+        /// Target time per frame based on target frame rate
+        /// </summary>
+        private readonly TimeSpan _targetFrameTime;
+        
+        /// <summary>
+        /// Timestamp of the last frame rendering
+        /// </summary>
+        private DateTime _lastFrameTime = DateTime.Now;
+
+        #endregion Fields
+        
+        #region Methods
+
         /// <summary>
         /// Begins measuring a new frame time
         /// </summary>
@@ -222,6 +289,8 @@ namespace BallDragDrop.Services
                 PhysicsCount = _physicsCount
             };
         }
+
+        #endregion Methods
     }
     
     /// <summary>

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using BallDragDrop.Contracts;
 
 namespace BallDragDrop.Services
 {
@@ -10,8 +11,7 @@ namespace BallDragDrop.Services
     /// </summary>
     public class SimpleLogService : ILogService
     {
-        private readonly string _logFilePath;
-        private string _correlationId;
+        #region Construction
 
         public SimpleLogService()
         {
@@ -24,6 +24,15 @@ namespace BallDragDrop.Services
             Directory.CreateDirectory(Path.GetDirectoryName(_logFilePath));
             _correlationId = Guid.NewGuid().ToString("N")[..8];
         }
+
+        #endregion Construction
+
+        #region Fields
+
+        private readonly string _logFilePath;
+        private string _correlationId;
+
+        #endregion Fields
 
         public void LogTrace(string message, params object[] args)
         {

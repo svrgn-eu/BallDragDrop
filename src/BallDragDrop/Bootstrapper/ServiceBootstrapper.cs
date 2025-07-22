@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using BallDragDrop.ViewModels;
 using BallDragDrop.Services;
+using BallDragDrop.Contracts;
 
 namespace BallDragDrop.Bootstrapper
 {
@@ -10,12 +11,26 @@ namespace BallDragDrop.Bootstrapper
     /// </summary>
     public static class ServiceBootstrapper
     {
+        #region Fields
+
+        /// <summary>
+        /// The configured service provider instance
+        /// </summary>
         private static ServiceProvider? _serviceProvider;
+
+        /// <summary>
+        /// Lock object for thread-safe initialization
+        /// </summary>
         private static readonly object _lock = new object();
+
+        #endregion Fields
+
+        #region Properties
 
         /// <summary>
         /// Gets the configured service provider
         /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown when the service provider has not been initialized</exception>
         public static ServiceProvider ServiceProvider
         {
             get
@@ -27,6 +42,10 @@ namespace BallDragDrop.Bootstrapper
                 return _serviceProvider;
             }
         }
+
+        #endregion Properties
+
+        #region Methods
 
         /// <summary>
         /// Initializes the service container with all application services
@@ -152,5 +171,7 @@ namespace BallDragDrop.Bootstrapper
                 _serviceProvider = null;
             }
         }
+
+        #endregion Methods
     }
 }
