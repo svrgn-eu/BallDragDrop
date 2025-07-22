@@ -186,6 +186,40 @@ namespace BallDragDrop.ViewModels
             _logService.LogDebug("BallViewModel created with dependency injection");
         }
 
+        /// <summary>
+        /// Initializes a new instance of the BallViewModel class for testing
+        /// </summary>
+        /// <param name="x">Initial X position</param>
+        /// <param name="y">Initial Y position</param>
+        /// <param name="radius">Ball radius</param>
+        public BallViewModel(double x, double y, double radius)
+        {
+            // For testing, use a null log service or get from app
+            _logService = GetLogServiceFromApp();
+            
+            // Initialize with provided values
+            _ballModel = new BallModel(x, y, radius);
+            _isDragging = false;
+            _currentCursor = Cursors.Arrow;
+            _ballImage = null!; // Initialize to null! to satisfy non-nullable field requirement
+            
+            // Initialize mouse history arrays for velocity calculation
+            _mousePositionHistory = new Point[MouseHistorySize];
+            _mouseTimestampHistory = new DateTime[MouseHistorySize];
+            _mouseHistoryCount = 0;
+            
+            // Initialize event throttler for mouse move events
+            // Throttle to 60 updates per second (approximately 16ms)
+            _mouseMoveThrottler = new EventThrottler(ProcessMouseMove, 16);
+            
+            // Initialize commands
+            MouseDownCommand = new RelayCommand<MouseEventArgs>(OnMouseDown);
+            MouseMoveCommand = new RelayCommand<MouseEventArgs>(OnMouseMove);
+            MouseUpCommand = new RelayCommand<MouseEventArgs>(OnMouseUp);
+            
+            _logService?.LogDebug("BallViewModel created for testing at position ({X}, {Y}) with radius {Radius}", x, y, radius);
+        }
+
         #endregion Construction
 
         #region Constants

@@ -1669,6 +1669,14 @@
             </summary>
             <param name="logService">Logging service for tracking user interactions</param>
         </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(System.Double,System.Double,System.Double)">
+            <summary>
+            Initializes a new instance of the BallViewModel class for testing
+            </summary>
+            <param name="x">Initial X position</param>
+            <param name="y">Initial Y position</param>
+            <param name="radius">Ball radius</param>
+        </member>
         <member name="F:BallDragDrop.ViewModels.BallViewModel.MouseHistorySize">
             <summary>
             Size of the mouse position history buffer for velocity calculation
