@@ -42,6 +42,37 @@ namespace BallDragDrop.Services
             _logService?.LogDebug("SettingsManager initialized with file path: {FilePath}", _settingsFilePath);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the SettingsManager class with a custom file path (for testing)
+        /// </summary>
+        /// <param name="logService">Logging service</param>
+        /// <param name="settingsFilePath">Full path to the settings file</param>
+        /// <param name="useCustomPath">Flag to indicate custom path usage</param>
+        public SettingsManager(ILogService logService, string settingsFilePath, bool useCustomPath)
+        {
+            if (!useCustomPath)
+                throw new ArgumentException("Use the other constructor for default path behavior", nameof(useCustomPath));
+                
+            _logService = logService ?? throw new ArgumentNullException(nameof(logService));
+            
+            using var scope = _logService?.BeginScope("SettingsManager.Constructor", settingsFilePath);
+            
+            // Use the provided file path directly
+            _settingsFilePath = settingsFilePath ?? throw new ArgumentNullException(nameof(settingsFilePath));
+            
+            // Create the directory if it doesn't exist
+            var directory = Path.GetDirectoryName(_settingsFilePath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            
+            // Initialize settings dictionary
+            _settings = new Dictionary<string, object>();
+            
+            _logService?.LogDebug("SettingsManager initialized with custom file path: {FilePath}", _settingsFilePath);
+        }
+
         #endregion Construction
 
         #region Fields

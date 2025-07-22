@@ -62,6 +62,7 @@ graph TB
 - MethodRegionAnalyzer: Enforces #region/#endregion around methods
 - XmlDocumentationAnalyzer: Validates comprehensive XML documentation
 - ProjectStructureAnalyzer: Validates overall project organization
+- ThisQualifierAnalyzer: Enforces use of "this." qualifier for instance members
 
 ### 3. Integration Components
 
@@ -86,6 +87,7 @@ public class CodingStandardsConfig
     public MethodRegionRules MethodRegions { get; set; }
     public XmlDocumentationRules Documentation { get; set; }
     public NamingConventionRules Naming { get; set; }
+    public ThisQualifierRules ThisQualifier { get; set; }
 }
 
 public class FolderStructureRules
@@ -99,6 +101,15 @@ public class MethodRegionRules
     public bool EnforceRegions { get; set; }
     public string RegionNameFormat { get; set; }
     public string[] ExemptMethodTypes { get; set; }
+}
+
+public class ThisQualifierRules
+{
+    public bool EnforceThisQualifier { get; set; }
+    public bool ApplyToProperties { get; set; }
+    public bool ApplyToMethods { get; set; }
+    public bool ApplyToFields { get; set; }
+    public string[] ExemptMemberTypes { get; set; }
 }
 ```
 
@@ -160,6 +171,7 @@ public class CodingStandardDiagnostic
 - Develop FolderStructureAnalyzer for Contracts/Bootstrapper validation
 - Implement MethodRegionAnalyzer for region enforcement
 - Create XmlDocumentationAnalyzer for comprehensive documentation
+- Implement ThisQualifierAnalyzer for enforcing "this." qualifier usage
 
 ### Phase 3: Advanced Integration
 - Implement custom MSBuild targets for pre-build validation

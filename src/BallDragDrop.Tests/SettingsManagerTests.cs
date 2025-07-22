@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using BallDragDrop.Services;
+using BallDragDrop.Contracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BallDragDrop.Tests
@@ -16,11 +17,17 @@ namespace BallDragDrop.Tests
         // Settings manager instance
         private SettingsManager _settingsManager;
         
+        // Mock log service for testing
+        private MockLogService _mockLogService;
+        
         [TestInitialize]
         public void TestInitialize()
         {
+            // Create mock log service
+            _mockLogService = new MockLogService();
+            
             // Create a new settings manager with the test settings path
-            _settingsManager = new SettingsManager(_testSettingsPath);
+            _settingsManager = new SettingsManager(_mockLogService, _testSettingsPath, true);
             
             // Ensure the test settings file doesn't exist
             if (File.Exists(_testSettingsPath))
@@ -59,7 +66,7 @@ namespace BallDragDrop.Tests
             Assert.IsTrue(File.Exists(_testSettingsPath), "Settings file should exist after saving");
             
             // Create a new settings manager to load the settings
-            var newSettingsManager = new SettingsManager(_testSettingsPath);
+            var newSettingsManager = new SettingsManager(_mockLogService, _testSettingsPath, true);
             
             // Load the settings
             bool loadResult = newSettingsManager.LoadSettings();
@@ -154,7 +161,7 @@ namespace BallDragDrop.Tests
             _settingsManager.SaveSettings();
             
             // Create a new settings manager to load the settings
-            var newSettingsManager = new SettingsManager(_testSettingsPath);
+            var newSettingsManager = new SettingsManager(_mockLogService, _testSettingsPath, true);
             newSettingsManager.LoadSettings();
             
             // Get the object from settings
@@ -175,6 +182,34 @@ namespace BallDragDrop.Tests
             public string Name { get; set; }
             public int Value { get; set; }
             public bool IsActive { get; set; }
+        }
+        
+        /// <summary>
+        /// Mock implementation of ILogService for testing
+        /// </summary>
+        private class MockLogService : ILogService
+        {
+            public void LogTrace(string message, params object[] args) { }
+            public void LogDebug(string message, params object[] args) { }
+            public void LogInformation(string message, params object[] args) { }
+            public void LogWarning(string message, params object[] args) { }
+            public void LogError(string message, params object[] args) { }
+            public void LogError(Exception exception, string message, params object[] args) { }
+            public void LogCritical(string message, params object[] args) { }
+            public void LogCritical(Exception exception, string message, params object[] args) { }
+            public void LogStructured(LogLevel level, string messageTemplate, params object[] propertyValues) { }
+            public void LogStructured(LogLevel level, Exception exception, string messageTemplate, params object[] propertyValues) { }
+            public IDisposable BeginScope(string scopeName, params object[] parameters) => new MockScope();
+            public void LogMethodEntry(string methodName, params object[] parameters) { }
+            public void LogMethodExit(string methodName, object? returnValue = null, TimeSpan? duration = null) { }
+            public void LogPerformance(string operationName, TimeSpan duration, params object[] additionalData) { }
+            public void SetCorrelationId(string correlationId) { }
+            public string GetCorrelationId() => Guid.NewGuid().ToString();
+            
+            private class MockScope : IDisposable
+            {
+                public void Dispose() { }
+            }
         }
     }
 }

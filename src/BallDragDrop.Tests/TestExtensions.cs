@@ -21,7 +21,7 @@ namespace BallDragDrop.Tests
             // Initialize DataContext if it's null
             if (window.DataContext == null)
             {
-                window.DataContext = new BallViewModel(x, y);
+                window.DataContext = new BallViewModel(x, y, 50f);
                 return;
             }
             

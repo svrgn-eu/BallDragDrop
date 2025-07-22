@@ -119,3 +119,16 @@ The BallDragDrop solution consists of:
 4. WHEN constructors are added to a class THEN the system SHALL require placement within the "Construction" region
 5. WHEN methods are added to a class THEN the system SHALL require placement within the "Methods" region
 6. WHEN region violations are detected THEN the system SHALL provide warnings with correct region placement suggestions
+
+### Requirement 10
+
+**User Story:** As a developer, I want the "this" qualifier to be used for class members, so that code is more readable and the source of properties and methods is explicit.
+
+#### Acceptance Criteria
+
+1. WHEN accessing instance properties within a class THEN the system SHALL enforce the use of "this." qualifier
+2. WHEN calling instance methods within a class THEN the system SHALL enforce the use of "this." qualifier
+3. WHEN accessing instance fields within a class THEN the system SHALL enforce the use of "this." qualifier
+4. WHEN "this" qualifier is missing THEN the system SHALL flag violations with suggestions to add the qualifier
+5. WHEN static members are accessed THEN the system SHALL NOT require the "this" qualifier
+6. WHEN "this" qualifier violations are detected THEN the system SHALL provide automatic code fixes to add the missing qualifiers

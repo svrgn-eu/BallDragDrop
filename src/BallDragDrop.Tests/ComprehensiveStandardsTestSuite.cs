@@ -253,9 +253,9 @@ namespace BallDragDrop.Tests
             {
                 var testCases = new[]
                 {
-                    new { Analyzer = new FolderStructureAnalyzer(), ExpectedDiagnostics = new[] { "BDD3001", "BDD3002", "BDD3003" } },
-                    new { Analyzer = new MethodRegionAnalyzer(), ExpectedDiagnostics = new[] { "BDD4001", "BDD4002" } },
-                    new { Analyzer = new XmlDocumentationAnalyzer(), ExpectedDiagnostics = new[] { "BDD5001", "BDD5002", "BDD5003" } }
+                    new { Analyzer = (DiagnosticAnalyzer)new FolderStructureAnalyzer(), ExpectedDiagnostics = new[] { "BDD3001", "BDD3002", "BDD3003" } },
+                    new { Analyzer = (DiagnosticAnalyzer)new MethodRegionAnalyzer(), ExpectedDiagnostics = new[] { "BDD4001", "BDD4002" } },
+                    new { Analyzer = (DiagnosticAnalyzer)new XmlDocumentationAnalyzer(), ExpectedDiagnostics = new[] { "BDD5001", "BDD5002", "BDD5003" } }
                 };
                 
                 foreach (var testCase in testCases)

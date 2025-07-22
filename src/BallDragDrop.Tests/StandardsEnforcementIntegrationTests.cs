@@ -364,7 +364,8 @@ public class Test {
     public void Method1() { }
     public void Method2() { }
 }",
-                    ExpectedCount = 2,
+                    ExpectedCount = (int?)2,
+                    ExpectedDiagnostic = (string?)null,
                     Description = "Multiple methods without regions"
                 },
                 new { 
@@ -374,7 +375,8 @@ public class Test {
     public void Method1() { }
     #endregion
 }",
-                    ExpectedDiagnostic = "BDD4002",
+                    ExpectedCount = (int?)null,
+                    ExpectedDiagnostic = (string?)"BDD4002",
                     Description = "Method in incorrectly named region"
                 },
                 new { 
@@ -385,7 +387,8 @@ public class Test {
     public void Method2() { }
     #endregion
 }",
-                    ExpectedCount = 1,
+                    ExpectedCount = (int?)1,
+                    ExpectedDiagnostic = (string?)null,
                     Description = "Mixed correct and incorrect methods"
                 }
             };

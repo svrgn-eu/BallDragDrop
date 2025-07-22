@@ -1188,6 +1188,11 @@
             Queues a log item for async processing
             </summary>
         </member>
+        <member name="M:BallDragDrop.Services.Performance.AsyncLogProcessor.Dispose">
+            <summary>
+            Disposes the instance
+            </summary>
+        </member>
         <member name="T:BallDragDrop.Services.Performance.LogEntryPool">
             <summary>
             Object pool for log entries to reduce GC pressure
@@ -1238,85 +1243,44 @@
             Disposes the log entry pool and clears all pooled entries
             </summary>
         </member>
-        <member name="T:BallDragDrop.Services.Performance.PooledLogEntry">
+        <member name="T:BallDragDrop.Services.Performance.LogItem">
             <summary>
-            Pooled log entry that automatically returns to pool when disposed
+            Represents a log item for async processing
             </summary>
         </member>
-        <member name="F:BallDragDrop.Services.Performance.PooledLogEntry._pool">
+        <member name="P:BallDragDrop.Services.Performance.LogItem.Level">
             <summary>
-            Reference to the pool that owns this entry
+            Gets or sets the log level
             </summary>
         </member>
-        <member name="F:BallDragDrop.Services.Performance.PooledLogEntry._disposed">
-            <summary>
-            Flag indicating if this entry has been disposed
-            </summary>
-        </member>
-        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Timestamp">
-            <summary>
-            Gets or sets the timestamp when the log entry was created
-            </summary>
-        </member>
-        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Level">
-            <summary>
-            Gets or sets the log level of the entry
-            </summary>
-        </member>
-        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Category">
-            <summary>
-            Gets or sets the category of the log entry
-            </summary>
-        </member>
-        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Message">
+        <member name="P:BallDragDrop.Services.Performance.LogItem.Message">
             <summary>
             Gets or sets the log message
             </summary>
         </member>
-        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.CorrelationId">
+        <member name="P:BallDragDrop.Services.Performance.LogItem.Exception">
+            <summary>
+            Gets or sets the exception associated with the log item
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.LogItem.CorrelationId">
             <summary>
             Gets or sets the correlation ID for tracking related log entries
             </summary>
         </member>
-        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Properties">
+        <member name="P:BallDragDrop.Services.Performance.LogItem.Properties">
             <summary>
-            Gets or sets additional properties associated with the log entry
+            Gets or sets additional properties associated with the log item
             </summary>
         </member>
-        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Exception">
+        <member name="P:BallDragDrop.Services.Performance.LogItem.Timestamp">
             <summary>
-            Gets or sets the exception associated with the log entry, if any
+            Gets or sets the timestamp when the log item was created
             </summary>
         </member>
-        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.ThreadId">
+        <member name="P:BallDragDrop.Services.Performance.LogItem.ThreadId">
             <summary>
-            Gets or sets the thread ID where the log entry was created
-            </summary>
-        </member>
-        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.MachineName">
-            <summary>
-            Gets or sets the machine name where the log entry was created
-            </summary>
-        </member>
-        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.ApplicationVersion">
-            <summary>
-            Gets or sets the application version
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Services.Performance.PooledLogEntry.#ctor(BallDragDrop.Services.Performance.LogEntryPool)">
-            <summary>
-            Initializes a new instance of the PooledLogEntry class
-            </summary>
-            <param name="pool">The pool that owns this entry</param>
-        </member>
-        <member name="M:BallDragDrop.Services.Performance.PooledLogEntry.Reset">
-            <summary>
-            Resets the log entry for reuse
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Services.Performance.PooledLogEntry.Dispose">
-            <summary>
-            Disposes the log entry and returns it to the pool
+            Gets or sets the thread ID where the log item was created
             </summary>
         </member>
         <member name="T:BallDragDrop.Services.Performance.PerformanceConfiguration">
@@ -1506,6 +1470,87 @@
             Maximum operation time in ticks
             </summary>
         </member>
+        <member name="T:BallDragDrop.Services.Performance.PooledLogEntry">
+            <summary>
+            Pooled log entry that automatically returns to pool when disposed
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.PooledLogEntry._pool">
+            <summary>
+            Reference to the pool that owns this entry
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.Performance.PooledLogEntry._disposed">
+            <summary>
+            Flag indicating if this entry has been disposed
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Timestamp">
+            <summary>
+            Gets or sets the timestamp when the log entry was created
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Level">
+            <summary>
+            Gets or sets the log level of the entry
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Category">
+            <summary>
+            Gets or sets the category of the log entry
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Message">
+            <summary>
+            Gets or sets the log message
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.CorrelationId">
+            <summary>
+            Gets or sets the correlation ID for tracking related log entries
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Properties">
+            <summary>
+            Gets or sets additional properties associated with the log entry
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.Exception">
+            <summary>
+            Gets or sets the exception associated with the log entry, if any
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.ThreadId">
+            <summary>
+            Gets or sets the thread ID where the log entry was created
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.MachineName">
+            <summary>
+            Gets or sets the machine name where the log entry was created
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.Performance.PooledLogEntry.ApplicationVersion">
+            <summary>
+            Gets or sets the application version
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.PooledLogEntry.#ctor(BallDragDrop.Services.Performance.LogEntryPool)">
+            <summary>
+            Initializes a new instance of the PooledLogEntry class
+            </summary>
+            <param name="pool">The pool that owns this entry</param>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.PooledLogEntry.Reset">
+            <summary>
+            Resets the log entry for reuse
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.Performance.PooledLogEntry.Dispose">
+            <summary>
+            Disposes the log entry and returns it to the pool
+            </summary>
+        </member>
         <member name="T:BallDragDrop.Services.SettingsManager">
             <summary>
             Manages application settings persistence
@@ -1517,6 +1562,14 @@
             </summary>
             <param name="logService">Logging service</param>
             <param name="settingsFileName">Optional settings file name</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SettingsManager.#ctor(BallDragDrop.Contracts.ILogService,System.String,System.Boolean)">
+            <summary>
+            Initializes a new instance of the SettingsManager class with a custom file path (for testing)
+            </summary>
+            <param name="logService">Logging service</param>
+            <param name="settingsFilePath">Full path to the settings file</param>
+            <param name="useCustomPath">Flag to indicate custom path usage</param>
         </member>
         <member name="M:BallDragDrop.Services.SettingsManager.LoadSettings">
             <summary>
@@ -1591,6 +1644,129 @@
             <summary>
             Simple implementation of ILogService for integration purposes
             This will be replaced by Log4NetService in later tasks
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.LogTrace(System.String,System.Object[])">
+            <summary>
+            Logs a trace message with optional formatting parameters
+            </summary>
+            <param name="message">The message template to log</param>
+            <param name="args">Optional formatting arguments for the message</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.LogDebug(System.String,System.Object[])">
+            <summary>
+            Logs a debug message with optional formatting parameters
+            </summary>
+            <param name="message">The message template to log</param>
+            <param name="args">Optional formatting arguments for the message</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.LogInformation(System.String,System.Object[])">
+            <summary>
+            Logs an information message with optional formatting parameters
+            </summary>
+            <param name="message">The message template to log</param>
+            <param name="args">Optional formatting arguments for the message</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.LogWarning(System.String,System.Object[])">
+            <summary>
+            Logs a warning message with optional formatting parameters
+            </summary>
+            <param name="message">The message template to log</param>
+            <param name="args">Optional formatting arguments for the message</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.LogError(System.String,System.Object[])">
+            <summary>
+            Logs an error message with optional formatting parameters
+            </summary>
+            <param name="message">The message template to log</param>
+            <param name="args">Optional formatting arguments for the message</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.LogError(System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs an error message with an associated exception and optional formatting parameters
+            </summary>
+            <param name="exception">The exception to log</param>
+            <param name="message">The message template to log</param>
+            <param name="args">Optional formatting arguments for the message</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.LogCritical(System.String,System.Object[])">
+            <summary>
+            Logs a critical message with optional formatting parameters
+            </summary>
+            <param name="message">The message template to log</param>
+            <param name="args">Optional formatting arguments for the message</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.LogCritical(System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs a critical message with an associated exception and optional formatting parameters
+            </summary>
+            <param name="exception">The exception to log</param>
+            <param name="message">The message template to log</param>
+            <param name="args">Optional formatting arguments for the message</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.LogStructured(BallDragDrop.Contracts.LogLevel,System.String,System.Object[])">
+            <summary>
+            Logs a structured message at the specified log level with property values
+            </summary>
+            <param name="level">The log level for this message</param>
+            <param name="messageTemplate">The message template with placeholders</param>
+            <param name="propertyValues">Values to substitute into the message template</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.LogStructured(BallDragDrop.Contracts.LogLevel,System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs a structured message at the specified log level with an associated exception and property values
+            </summary>
+            <param name="level">The log level for this message</param>
+            <param name="exception">The exception to log</param>
+            <param name="messageTemplate">The message template with placeholders</param>
+            <param name="propertyValues">Values to substitute into the message template</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.BeginScope(System.String,System.Object[])">
+            <summary>
+            Creates a logging scope that tracks the duration of an operation
+            </summary>
+            <param name="scopeName">The name of the scope</param>
+            <param name="parameters">Optional parameters associated with the scope</param>
+            <returns>A disposable object that ends the scope when disposed</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.LogMethodEntry(System.String,System.Object[])">
+            <summary>
+            Logs the entry into a method with optional parameters
+            </summary>
+            <param name="methodName">The name of the method being entered</param>
+            <param name="parameters">Optional parameters passed to the method</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.LogMethodExit(System.String,System.Object,System.Nullable{System.TimeSpan})">
+            <summary>
+            Logs the exit from a method with optional return value and duration
+            </summary>
+            <param name="methodName">The name of the method being exited</param>
+            <param name="returnValue">Optional return value from the method</param>
+            <param name="duration">Optional duration the method took to execute</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.LogPerformance(System.String,System.TimeSpan,System.Object[])">
+            <summary>
+            Logs performance information for an operation
+            </summary>
+            <param name="operationName">The name of the operation being measured</param>
+            <param name="duration">The duration the operation took to complete</param>
+            <param name="additionalData">Optional additional data to include in the performance log</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.SetCorrelationId(System.String)">
+            <summary>
+            Sets the correlation ID for tracking related log entries
+            </summary>
+            <param name="correlationId">The correlation ID to set, or null to generate a new one</param>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.GetCorrelationId">
+            <summary>
+            Gets the current correlation ID used for tracking related log entries
+            </summary>
+            <returns>The current correlation ID</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.SimpleLogService.LogScope.Dispose">
+            <summary>
+            Disposes the instance
             </summary>
         </member>
         <member name="T:BallDragDrop.ViewModels.BallViewModel">

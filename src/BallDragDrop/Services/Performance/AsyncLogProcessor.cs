@@ -229,6 +229,10 @@ namespace BallDragDrop.Services.Performance
             }
         }
 
+        #region Dispose
+        /// <summary>
+        /// Disposes the instance
+        /// </summary>
         public void Dispose()
         {
             if (_disposed) return;
@@ -249,16 +253,7 @@ namespace BallDragDrop.Services.Performance
             
             _cancellationTokenSource.Dispose();
         }
+        #endregion Dispose
 
-        private class LogItem
-        {
-            public LogLevel Level { get; set; }
-            public string Message { get; set; } = string.Empty;
-            public Exception? Exception { get; set; }
-            public string CorrelationId { get; set; } = string.Empty;
-            public Dictionary<string, object> Properties { get; set; } = new();
-            public DateTime Timestamp { get; set; }
-            public string ThreadId { get; set; } = string.Empty;
-        }
     }
 }
