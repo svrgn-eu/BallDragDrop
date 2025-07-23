@@ -9,6 +9,7 @@ using BallDragDrop.Bootstrapper;
 using BallDragDrop.Services;
 using BallDragDrop.Contracts;
 using BallDragDrop.ViewModels;
+using Microsoft.Win32;
 using Path = System.IO.Path;
 
 namespace BallDragDrop.Views;
@@ -121,61 +122,33 @@ public partial class MainWindow : Window
         // Initialize the ball position
         viewModel.Initialize(centerX, centerY, ballRadius);
         
-        // Load the ball image with optimized settings
-        try
+        // Load the ball image using the new LoadBallVisualAsync method
+        _ = Task.Run(async () =>
         {
-            // Try to load the image from the Resources folder
-            string imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Resources", "Ball", "Ball01.png");
-            string fullPath = Path.GetFullPath(imagePath);
-            
-            if (File.Exists(fullPath))
+            try
+            {
+                // Try to load the image from the Resources folder
+                string imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Resources", "Ball", "Ball01.png");
+                string fullPath = Path.GetFullPath(imagePath);
+                
+                bool success = await viewModel.LoadBallVisualAsync(fullPath);
+                
+                if (!success)
+                {
+                    // If loading failed, the ImageService will have already set a fallback image
+                    var logService = ServiceBootstrapper.GetService<ILogService>();
+                    logService?.LogWarning("Failed to load ball visual, fallback image should be displayed");
+                }
+            }
+            catch (Exception ex)
             {
                 // Get logging service from dependency injection
                 var logService = ServiceBootstrapper.GetService<ILogService>();
+                logService?.LogError(ex, "Error during ball visual loading");
                 
-                // Use ImageService to load the image with logging
-                var ballImage = Services.ImageService.LoadImage(fullPath, logService);
-                
-                if (ballImage != null)
-                {
-                    // Set the image source in the view model
-                    viewModel.BallImage = ballImage;
-                }
-                else
-                {
-                    throw new InvalidOperationException("ImageService returned null");
-                }
+                // The ImageService should have already provided a fallback image
             }
-            else
-            {
-                throw new FileNotFoundException($"Ball image not found at: {fullPath}");
-            }
-        }
-        catch (Exception ex)
-        {
-            // Get logging service from dependency injection
-            var logService = ServiceBootstrapper.GetService<ILogService>();
-            
-            // If the image can't be loaded, create a fallback image using ImageService
-            logService?.LogError(ex, "Failed to load ball image, creating fallback image");
-            
-            var fallbackImage = Services.ImageService.CreateFallbackImage(
-                ballRadius, 
-                Colors.Red, 
-                Colors.DarkRed, 
-                2, 
-                logService);
-            
-            if (fallbackImage != null)
-            {
-                // Set the fallback image in the view model
-                viewModel.BallImage = fallbackImage;
-            }
-            else
-            {
-                logService?.LogError("Failed to create fallback image");
-            }
-        }
+        });
         
         // Set the DataContext for the window
         this.DataContext = viewModel;
@@ -342,6 +315,9 @@ public partial class MainWindow : Window
             {
                 var mousePosition = Mouse.GetPosition(MainCanvas);
                 UpdateBallPositionToMouse(viewModel, mousePosition);
+                
+                // Coordinate animation timing with physics updates during drag
+                viewModel.CoordinateAnimationWithPhysics();
             }
             // Otherwise, check if the ball is moving (has velocity) and not being dragged
             else if (!viewModel.IsDragging && _isPhysicsRunning)
@@ -414,6 +390,9 @@ public partial class MainWindow : Window
                     // For example, you could trigger an animation or play a sound
                     Debug.WriteLine("Ball hit boundary");
                 }
+                
+                // Coordinate animation timing with physics updates
+                viewModel.CoordinateAnimationWithPhysics();
                 
                 // Update the last physics update time
                 _lastPhysicsUpdate = currentTime;
@@ -524,4 +503,209 @@ public partial class MainWindow : Window
     }
 
     #endregion Methods
+
+    #region Visual Content Switching Event Handlers
+
+    /// <summary>
+    /// Event handler for switching ball visual content
+    /// </summary>
+    /// <param name="sender">The source of the event</param>
+    /// <param name="e">Event data</param>
+    private async void SwitchVisual_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Title = "Select Ball Visual Content",
+                Filter = "All Supported|*.png;*.jpg;*.jpeg;*.bmp;*.gif|" +
+                        "Static Images|*.png;*.jpg;*.jpeg;*.bmp|" +
+                        "GIF Animations|*.gif|" +
+                        "PNG Files (Aseprite)|*.png|" +
+                        "All Files|*.*",
+                FilterIndex = 1
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                if (DataContext is BallViewModel viewModel)
+                {
+                    var logService = ServiceBootstrapper.GetService<ILogService>();
+                    logService?.LogInformation("User requested visual content switch to: {FilePath}", openFileDialog.FileName);
+
+                    bool success = await viewModel.SwitchBallVisualAsync(openFileDialog.FileName);
+                    
+                    if (success)
+                    {
+                        logService?.LogInformation("Visual content switched successfully");
+                        // Optional: Show success message
+                        // MessageBox.Show("Visual content switched successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        logService?.LogWarning("Failed to switch visual content");
+                        MessageBox.Show("Failed to switch visual content. Please check the file format and try again.", 
+                            "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            var logService = ServiceBootstrapper.GetService<ILogService>();
+            logService?.LogError(ex, "Error in visual content switching dialog");
+            MessageBox.Show($"An error occurred while switching visual content: {ex.Message}", 
+                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Event handler for loading static image content
+    /// </summary>
+    /// <param name="sender">The source of the event</param>
+    /// <param name="e">Event data</param>
+    private async void LoadStaticImage_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Title = "Select Static Image",
+                Filter = "Static Images|*.png;*.jpg;*.jpeg;*.bmp|All Files|*.*",
+                FilterIndex = 1
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                if (DataContext is BallViewModel viewModel)
+                {
+                    var logService = ServiceBootstrapper.GetService<ILogService>();
+                    logService?.LogInformation("User requested static image load: {FilePath}", openFileDialog.FileName);
+
+                    bool success = await viewModel.SwitchVisualContentTypeAsync(openFileDialog.FileName);
+                    
+                    if (!success)
+                    {
+                        MessageBox.Show("Failed to load static image. Please check the file format and try again.", 
+                            "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            var logService = ServiceBootstrapper.GetService<ILogService>();
+            logService?.LogError(ex, "Error loading static image");
+            MessageBox.Show($"An error occurred while loading the static image: {ex.Message}", 
+                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Event handler for loading GIF animation content
+    /// </summary>
+    /// <param name="sender">The source of the event</param>
+    /// <param name="e">Event data</param>
+    private async void LoadGifAnimation_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Title = "Select GIF Animation",
+                Filter = "GIF Animations|*.gif|All Files|*.*",
+                FilterIndex = 1
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                if (DataContext is BallViewModel viewModel)
+                {
+                    var logService = ServiceBootstrapper.GetService<ILogService>();
+                    logService?.LogInformation("User requested GIF animation load: {FilePath}", openFileDialog.FileName);
+
+                    bool success = await viewModel.SwitchVisualContentTypeAsync(openFileDialog.FileName);
+                    
+                    if (!success)
+                    {
+                        MessageBox.Show("Failed to load GIF animation. Please check the file format and try again.", 
+                            "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            var logService = ServiceBootstrapper.GetService<ILogService>();
+            logService?.LogError(ex, "Error loading GIF animation");
+            MessageBox.Show($"An error occurred while loading the GIF animation: {ex.Message}", 
+                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Event handler for loading Aseprite animation content
+    /// </summary>
+    /// <param name="sender">The source of the event</param>
+    /// <param name="e">Event data</param>
+    private async void LoadAsepriteAnimation_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Title = "Select Aseprite PNG File (JSON metadata should be in same folder)",
+                Filter = "PNG Files (Aseprite)|*.png|All Files|*.*",
+                FilterIndex = 1
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                if (DataContext is BallViewModel viewModel)
+                {
+                    var logService = ServiceBootstrapper.GetService<ILogService>();
+                    logService?.LogInformation("User requested Aseprite animation load: {FilePath}", openFileDialog.FileName);
+
+                    // Check if JSON metadata file exists
+                    var directory = Path.GetDirectoryName(openFileDialog.FileName);
+                    var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(openFileDialog.FileName);
+                    var jsonPath = Path.Combine(directory, fileNameWithoutExtension + ".json");
+
+                    if (!File.Exists(jsonPath))
+                    {
+                        var result = MessageBox.Show(
+                            $"JSON metadata file not found: {Path.GetFileName(jsonPath)}\n\n" +
+                            "Aseprite animations require both PNG and JSON files in the same folder.\n" +
+                            "The PNG file will be loaded as a static image instead.\n\n" +
+                            "Do you want to continue?",
+                            "JSON Metadata Missing", 
+                            MessageBoxButton.YesNo, 
+                            MessageBoxImage.Question);
+
+                        if (result != MessageBoxResult.Yes)
+                        {
+                            return;
+                        }
+                    }
+
+                    bool success = await viewModel.SwitchVisualContentTypeAsync(openFileDialog.FileName);
+                    
+                    if (!success)
+                    {
+                        MessageBox.Show("Failed to load Aseprite animation. Please check the file format and try again.", 
+                            "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            var logService = ServiceBootstrapper.GetService<ILogService>();
+            logService?.LogError(ex, "Error loading Aseprite animation");
+            MessageBox.Show($"An error occurred while loading the Aseprite animation: {ex.Message}", 
+                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    #endregion Visual Content Switching Event Handlers
 }

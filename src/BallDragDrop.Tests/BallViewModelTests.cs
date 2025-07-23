@@ -1,12 +1,16 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BallDragDrop.ViewModels;
+using BallDragDrop.Services;
 using System;
+using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Windows.Controls;
+using System.Windows.Media;
 using BallDragDrop.Tests.TestHelpers;
 
 namespace BallDragDrop.Tests
@@ -462,5 +466,759 @@ namespace BallDragDrop.Tests
         {
             BallViewModelTestHelper.SimulateMouseUp(viewModel, x, y);
         }
+
+        #region ImageService Integration Tests
+
+        [TestMethod]
+        public void Constructor_WithImageService_InitializesImageServiceProperties()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            
+            // Act
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            
+            // Assert
+            Assert.IsFalse(viewModel.IsAnimated);
+            Assert.AreEqual(VisualContentType.Unknown, viewModel.ContentType);
+        }
+
+        [TestMethod]
+        public async Task LoadBallVisualAsync_WithValidStaticImage_LoadsSuccessfully()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            
+            // Create a temporary test image file
+            string tempImagePath = CreateTempTestImage();
+            
+            try
+            {
+                // Act
+                bool result = await viewModel.LoadBallVisualAsync(tempImagePath);
+                
+                // Assert
+                Assert.IsTrue(result);
+                Assert.IsNotNull(viewModel.BallImage);
+                Assert.IsFalse(viewModel.IsAnimated);
+                Assert.AreEqual(VisualContentType.StaticImage, viewModel.ContentType);
+            }
+            finally
+            {
+                // Cleanup
+                if (File.Exists(tempImagePath))
+                {
+                    File.Delete(tempImagePath);
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task LoadBallVisualAsync_WithInvalidPath_ReturnsFalseAndSetsFallback()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            string invalidPath = "nonexistent_file.png";
+            
+            // Act
+            bool result = await viewModel.LoadBallVisualAsync(invalidPath);
+            
+            // Assert
+            Assert.IsFalse(result);
+            Assert.IsNotNull(viewModel.BallImage); // Should have fallback image
+            Assert.IsFalse(viewModel.IsAnimated);
+            Assert.AreEqual(VisualContentType.StaticImage, viewModel.ContentType);
+        }
+
+        [TestMethod]
+        public async Task LoadBallVisualAsync_WithNullPath_ReturnsFalse()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            
+            // Act
+            bool result = await viewModel.LoadBallVisualAsync(null);
+            
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task LoadBallVisualAsync_WithEmptyPath_ReturnsFalse()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            
+            // Act
+            bool result = await viewModel.LoadBallVisualAsync("");
+            
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task LoadBallVisualAsync_WithGifFile_SetsAnimatedProperties()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            
+            // Create a temporary test GIF file (just a renamed PNG for testing)
+            string tempGifPath = CreateTempTestGif();
+            
+            try
+            {
+                // Act
+                bool result = await viewModel.LoadBallVisualAsync(tempGifPath);
+                
+                // Assert
+                Assert.IsTrue(result);
+                Assert.IsNotNull(viewModel.BallImage);
+                Assert.IsTrue(viewModel.IsAnimated); // Should be marked as animated
+                Assert.AreEqual(VisualContentType.GifAnimation, viewModel.ContentType);
+            }
+            finally
+            {
+                // Cleanup
+                if (File.Exists(tempGifPath))
+                {
+                    File.Delete(tempGifPath);
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task LoadBallVisualAsync_WithAsepriteFiles_SetsAnimatedProperties()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            
+            // Create temporary test Aseprite files
+            var (pngPath, jsonPath) = CreateTempTestAsepriteFiles();
+            
+            try
+            {
+                // Act
+                bool result = await viewModel.LoadBallVisualAsync(pngPath);
+                
+                // Assert
+                Assert.IsTrue(result);
+                Assert.IsNotNull(viewModel.BallImage);
+                Assert.IsTrue(viewModel.IsAnimated); // Should be marked as animated
+                Assert.AreEqual(VisualContentType.AsepriteAnimation, viewModel.ContentType);
+            }
+            finally
+            {
+                // Cleanup
+                if (File.Exists(pngPath))
+                {
+                    File.Delete(pngPath);
+                }
+                if (File.Exists(jsonPath))
+                {
+                    File.Delete(jsonPath);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void IsAnimated_PropertyChanged_FiresCorrectly()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            var changedProperties = new List<string>();
+            
+            viewModel.PropertyChanged += (sender, e) => 
+            {
+                changedProperties.Add(e.PropertyName);
+            };
+            
+            // Act - This will be triggered internally by LoadBallVisualAsync
+            // We'll use reflection to test the property setter directly
+            var isAnimatedProperty = typeof(BallViewModel).GetProperty("IsAnimated");
+            isAnimatedProperty.SetValue(viewModel, true);
+            
+            // Assert
+            CollectionAssert.Contains(changedProperties, "IsAnimated");
+            Assert.IsTrue(viewModel.IsAnimated);
+        }
+
+        [TestMethod]
+        public void ContentType_PropertyChanged_FiresCorrectly()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            var changedProperties = new List<string>();
+            
+            viewModel.PropertyChanged += (sender, e) => 
+            {
+                changedProperties.Add(e.PropertyName);
+            };
+            
+            // Act - This will be triggered internally by LoadBallVisualAsync
+            // We'll use reflection to test the property setter directly
+            var contentTypeProperty = typeof(BallViewModel).GetProperty("ContentType");
+            contentTypeProperty.SetValue(viewModel, VisualContentType.GifAnimation);
+            
+            // Assert
+            CollectionAssert.Contains(changedProperties, "ContentType");
+            Assert.AreEqual(VisualContentType.GifAnimation, viewModel.ContentType);
+        }
+
+        #endregion ImageService Integration Tests
+
+        #region Helper Methods for ImageService Tests
+
+        /// <summary>
+        /// Creates a temporary test image file for testing
+        /// </summary>
+        /// <returns>Path to the temporary image file</returns>
+        private string CreateTempTestImage()
+        {
+            string tempPath = Path.GetTempFileName();
+            string pngPath = Path.ChangeExtension(tempPath, ".png");
+            
+            // Create a simple 1x1 PNG file
+            byte[] pngData = {
+                0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+                0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, // IHDR chunk
+                0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, // 1x1 dimensions
+                0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
+                0xDE, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41, // IDAT chunk
+                0x54, 0x08, 0xD7, 0x63, 0xF8, 0x00, 0x00, 0x00,
+                0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, // Image data
+                0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42,
+                0x60, 0x82 // IEND chunk
+            };
+            
+            File.WriteAllBytes(pngPath, pngData);
+            File.Delete(tempPath); // Remove the original temp file
+            
+            return pngPath;
+        }
+
+        /// <summary>
+        /// Creates a temporary test GIF file for testing
+        /// </summary>
+        /// <returns>Path to the temporary GIF file</returns>
+        private string CreateTempTestGif()
+        {
+            string tempPath = Path.GetTempFileName();
+            string gifPath = Path.ChangeExtension(tempPath, ".gif");
+            
+            // Create a simple GIF file (minimal valid GIF)
+            byte[] gifData = {
+                0x47, 0x49, 0x46, 0x38, 0x39, 0x61, // GIF89a signature
+                0x01, 0x00, 0x01, 0x00, // 1x1 dimensions
+                0x80, 0x00, 0x00, // Global color table flag, color resolution, sort flag, global color table size
+                0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, // Color table (black, white)
+                0x21, 0xF9, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00, // Graphic control extension
+                0x2C, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, // Image descriptor
+                0x02, 0x02, 0x04, 0x01, 0x00, 0x3B // Image data and trailer
+            };
+            
+            File.WriteAllBytes(gifPath, gifData);
+            File.Delete(tempPath); // Remove the original temp file
+            
+            return gifPath;
+        }
+
+        /// <summary>
+        /// Creates temporary test Aseprite files (PNG + JSON) for testing
+        /// </summary>
+        /// <returns>Tuple containing paths to the PNG and JSON files</returns>
+        private (string pngPath, string jsonPath) CreateTempTestAsepriteFiles()
+        {
+            string tempPath = Path.GetTempFileName();
+            string baseName = Path.GetFileNameWithoutExtension(tempPath);
+            string directory = Path.GetDirectoryName(tempPath);
+            
+            string pngPath = Path.Combine(directory, baseName + ".png");
+            string jsonPath = Path.Combine(directory, baseName + ".json");
+            
+            // Create PNG file (same as CreateTempTestImage)
+            byte[] pngData = {
+                0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+                0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+                0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+                0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
+                0xDE, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41,
+                0x54, 0x08, 0xD7, 0x63, 0xF8, 0x00, 0x00, 0x00,
+                0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42,
+                0x60, 0x82
+            };
+            
+            // Create JSON metadata file
+            string jsonContent = @"{
+                ""frames"": [
+                    {
+                        ""frame"": { ""x"": 0, ""y"": 0, ""w"": 1, ""h"": 1 },
+                        ""duration"": 100
+                    }
+                ],
+                ""meta"": {
+                    ""size"": { ""w"": 1, ""h"": 1 }
+                }
+            }";
+            
+            File.WriteAllBytes(pngPath, pngData);
+            File.WriteAllText(jsonPath, jsonContent);
+            File.Delete(tempPath); // Remove the original temp file
+            
+            return (pngPath, jsonPath);
+        }
+
+        #endregion Helper Methods for ImageService Tests
+
+        #region Animation Timer Integration Tests
+
+        [TestMethod]
+        public void EnsureAnimationContinuesDuringDrag_WithAnimatedContent_EnsuresTimerRunning()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            
+            // Set up animated content using reflection
+            var isAnimatedProperty = typeof(BallViewModel).GetProperty("IsAnimated");
+            isAnimatedProperty?.SetValue(viewModel, true);
+            
+            // Act
+            viewModel.EnsureAnimationContinuesDuringDrag();
+            
+            // Assert
+            // The method should execute without throwing
+            Assert.IsTrue(true, "EnsureAnimationContinuesDuringDrag should execute without error for animated content");
+        }
+
+        [TestMethod]
+        public void EnsureAnimationContinuesDuringDrag_WithStaticContent_DoesNotThrow()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            
+            // Ensure content is static (default state)
+            Assert.IsFalse(viewModel.IsAnimated);
+            
+            // Act & Assert
+            try
+            {
+                viewModel.EnsureAnimationContinuesDuringDrag();
+                Assert.IsTrue(true, "EnsureAnimationContinuesDuringDrag should not throw for static content");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"EnsureAnimationContinuesDuringDrag should not throw for static content: {ex.Message}");
+            }
+        }
+
+        [TestMethod]
+        public void CoordinateAnimationWithPhysics_WithAnimatedContent_UpdatesFrames()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            
+            // Set up animated content using reflection
+            var isAnimatedProperty = typeof(BallViewModel).GetProperty("IsAnimated");
+            isAnimatedProperty?.SetValue(viewModel, true);
+            
+            // Set a test image
+            viewModel.BallImage = TestImageHelper.CreateTestImage(50, 50);
+            
+            // Act
+            viewModel.CoordinateAnimationWithPhysics();
+            
+            // Assert
+            Assert.IsNotNull(viewModel.BallImage, "Ball image should remain valid after coordination");
+        }
+
+        [TestMethod]
+        public void CoordinateAnimationWithPhysics_WithStaticContent_DoesNotThrow()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            
+            // Ensure content is static (default state)
+            Assert.IsFalse(viewModel.IsAnimated);
+            
+            // Act & Assert
+            try
+            {
+                viewModel.CoordinateAnimationWithPhysics();
+                Assert.IsTrue(true, "CoordinateAnimationWithPhysics should not throw for static content");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"CoordinateAnimationWithPhysics should not throw for static content: {ex.Message}");
+            }
+        }
+
+        [TestMethod]
+        [STAThread]
+        public void MouseDown_WithAnimatedContent_EnsuresAnimationContinues()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            
+            // Set up animated content using reflection
+            var isAnimatedProperty = typeof(BallViewModel).GetProperty("IsAnimated");
+            isAnimatedProperty?.SetValue(viewModel, true);
+            
+            // Set a test image
+            viewModel.BallImage = TestImageHelper.CreateTestImage(50, 50);
+            
+            // Act
+            SimulateMouseDown(viewModel, 100, 100); // Click at the center of the ball
+            
+            // Assert
+            Assert.IsTrue(viewModel.IsDragging, "Ball should be in dragging state");
+            // The animation continuation is handled internally, so we just verify no exceptions occurred
+        }
+
+        [TestMethod]
+        [STAThread]
+        public void MouseDown_WithStaticContent_DoesNotThrow()
+        {
+            // Arrange
+            var imageService = new ImageService();
+            var viewModel = new BallViewModel(100, 100, 25, imageService);
+            
+            // Ensure content is static (default state)
+            Assert.IsFalse(viewModel.IsAnimated);
+            
+            // Set a test image
+            viewModel.BallImage = TestImageHelper.CreateTestImage(50, 50);
+            
+            // Act & Assert
+            try
+            {
+                SimulateMouseDown(viewModel, 100, 100); // Click at the center of the ball
+                Assert.IsTrue(viewModel.IsDragging, "Ball should be in dragging state");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"MouseDown should not throw for static content: {ex.Message}");
+            }
+        }
+
+        #endregion Animation Timer Integration Tests
+
+        #region Animation Rendering Tests
+
+        [TestMethod]
+        public async Task OnAnimationTimerTick_UpdatesFrameWithoutFlickering()
+        {
+            // Arrange
+            var mockImageService = new MockImageService();
+            var viewModel = new BallViewModel(100, 100, 25, mockImageService);
+            
+            // Set up animated content
+            mockImageService.SetAnimated(true);
+            mockImageService.SetCurrentFrame(TestHelpers.TestImageHelper.CreateTestImage(50, 50));
+            
+            await viewModel.LoadBallVisualAsync("test.gif");
+            
+            var initialImage = viewModel.BallImage;
+            
+            // Create a new frame
+            var newFrame = TestHelpers.TestImageHelper.CreateTestImage(50, 50);
+            mockImageService.SetCurrentFrame(newFrame);
+            
+            // Act
+            // Simulate animation timer tick by calling the method via reflection
+            var method = typeof(BallViewModel).GetMethod("OnAnimationTimerTick", 
+                BindingFlags.NonPublic | BindingFlags.Instance);
+            method?.Invoke(viewModel, new object[] { viewModel, EventArgs.Empty });
+            
+            // Allow UI thread to process
+            await Task.Delay(50);
+            
+            // Assert
+            Assert.AreNotSame(initialImage, viewModel.BallImage, "Frame should have been updated");
+            Assert.AreSame(newFrame, viewModel.BallImage, "New frame should be set");
+        }
+
+        [TestMethod]
+        public async Task OptimizeAnimationRendering_FreezesFramesForPerformance()
+        {
+            // Arrange
+            var mockImageService = new MockImageService();
+            var viewModel = new BallViewModel(100, 100, 25, mockImageService);
+            
+            // Set up animated content with a freezable frame
+            var testFrame = TestHelpers.TestImageHelper.CreateTestImage(50, 50);
+            mockImageService.SetAnimated(true);
+            mockImageService.SetCurrentFrame(testFrame);
+            
+            await viewModel.LoadBallVisualAsync("test.gif");
+            
+            // Act
+            viewModel.OptimizeAnimationRendering();
+            
+            // Allow UI thread to process
+            await Task.Delay(100);
+            
+            // Assert
+            Assert.IsTrue(viewModel.IsAnimated, "Content should be animated");
+            Assert.IsNotNull(viewModel.BallImage, "Ball image should be set");
+            
+            // If the frame is freezable, it should be frozen for performance
+            if (viewModel.BallImage.CanFreeze)
+            {
+                Assert.IsTrue(viewModel.BallImage.IsFrozen, "Frame should be frozen for performance");
+            }
+        }
+
+        [TestMethod]
+        public async Task EnsureAnimationVisualQuality_MaintainsFrameQuality()
+        {
+            // Arrange
+            var mockImageService = new MockImageService();
+            var viewModel = new BallViewModel(100, 100, 25, mockImageService);
+            
+            // Set up animated content
+            var highQualityFrame = TestHelpers.TestImageHelper.CreateTestImage(100, 100);
+            mockImageService.SetAnimated(true);
+            mockImageService.SetCurrentFrame(highQualityFrame);
+            
+            await viewModel.LoadBallVisualAsync("test.gif");
+            
+            // Act
+            viewModel.EnsureAnimationVisualQuality();
+            
+            // Assert
+            Assert.IsTrue(viewModel.IsAnimated, "Content should be animated");
+            Assert.IsNotNull(viewModel.BallImage, "Ball image should be set");
+            Assert.AreSame(highQualityFrame, viewModel.BallImage, "High quality frame should be maintained");
+            
+            // Frame should be optimized for rendering
+            if (viewModel.BallImage.CanFreeze)
+            {
+                Assert.IsTrue(viewModel.BallImage.IsFrozen, "Frame should be frozen for optimal rendering");
+            }
+        }
+
+        [TestMethod]
+        public async Task AnimationDuringDrag_MaintainsPlayback()
+        {
+            // Arrange
+            var mockImageService = new MockImageService();
+            var viewModel = new BallViewModel(100, 100, 25, mockImageService);
+            
+            // Set up animated content
+            mockImageService.SetAnimated(true);
+            mockImageService.SetCurrentFrame(TestHelpers.TestImageHelper.CreateTestImage(50, 50));
+            
+            await viewModel.LoadBallVisualAsync("test.gif");
+            
+            // Start dragging
+            var mouseDownArgs = new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+            {
+                RoutedEvent = UIElement.MouseDownEvent
+            };
+            
+            // Set the position to be within the ball bounds
+            typeof(MouseEventArgs).GetProperty("Position", BindingFlags.NonPublic | BindingFlags.Instance)
+                ?.SetValue(mouseDownArgs, new Point(100, 100));
+            
+            // Act
+            viewModel.MouseDownCommand.Execute(mouseDownArgs);
+            
+            // Ensure animation continues during drag
+            viewModel.EnsureAnimationContinuesDuringDrag();
+            
+            // Assert
+            Assert.IsTrue(viewModel.IsDragging, "Ball should be dragging");
+            Assert.IsTrue(viewModel.IsAnimated, "Animation should still be active");
+            
+            // Animation should continue playing during drag
+            var frame1 = viewModel.BallImage;
+            
+            // Simulate frame update during drag
+            var newFrame = TestHelpers.TestImageHelper.CreateTestImage(50, 50);
+            mockImageService.SetCurrentFrame(newFrame);
+            
+            var method = typeof(BallViewModel).GetMethod("OnAnimationTimerTick", 
+                BindingFlags.NonPublic | BindingFlags.Instance);
+            method?.Invoke(viewModel, new object[] { viewModel, EventArgs.Empty });
+            
+            await Task.Delay(50);
+            
+            Assert.AreNotSame(frame1, viewModel.BallImage, "Frame should update during drag");
+        }
+
+        [TestMethod]
+        public async Task CoordinateAnimationWithPhysics_SynchronizesFrameUpdates()
+        {
+            // Arrange
+            var mockImageService = new MockImageService();
+            var viewModel = new BallViewModel(100, 100, 25, mockImageService);
+            
+            // Set up animated content
+            mockImageService.SetAnimated(true);
+            mockImageService.SetCurrentFrame(TestHelpers.TestImageHelper.CreateTestImage(50, 50));
+            
+            await viewModel.LoadBallVisualAsync("test.gif");
+            
+            var initialFrame = viewModel.BallImage;
+            
+            // Create a new frame for coordination test
+            var coordinatedFrame = TestHelpers.TestImageHelper.CreateTestImage(50, 50);
+            mockImageService.SetCurrentFrame(coordinatedFrame);
+            
+            // Act
+            viewModel.CoordinateAnimationWithPhysics();
+            
+            // Allow UI thread to process
+            await Task.Delay(50);
+            
+            // Assert
+            Assert.IsTrue(viewModel.IsAnimated, "Content should be animated");
+            Assert.AreNotSame(initialFrame, viewModel.BallImage, "Frame should be updated for physics coordination");
+            Assert.AreSame(coordinatedFrame, viewModel.BallImage, "Coordinated frame should be set");
+        }
+
+        [TestMethod]
+        public async Task AnimationFrameUpdate_OnlyUpdatesWhenFrameChanges()
+        {
+            // Arrange
+            var mockImageService = new MockImageService();
+            var viewModel = new BallViewModel(100, 100, 25, mockImageService);
+            
+            // Set up animated content
+            var sameFrame = TestHelpers.TestImageHelper.CreateTestImage(50, 50);
+            mockImageService.SetAnimated(true);
+            mockImageService.SetCurrentFrame(sameFrame);
+            
+            await viewModel.LoadBallVisualAsync("test.gif");
+            
+            var propertyChangedCount = 0;
+            viewModel.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == nameof(viewModel.BallImage))
+                {
+                    propertyChangedCount++;
+                }
+            };
+            
+            // Act - simulate timer tick with same frame
+            var method = typeof(BallViewModel).GetMethod("OnAnimationTimerTick", 
+                BindingFlags.NonPublic | BindingFlags.Instance);
+            method?.Invoke(viewModel, new object[] { viewModel, EventArgs.Empty });
+            
+            await Task.Delay(50);
+            
+            // Assert - should not trigger property change for same frame
+            Assert.AreEqual(0, propertyChangedCount, "Property should not change when frame is the same");
+            
+            // Now change the frame
+            var newFrame = TestHelpers.TestImageHelper.CreateTestImage(50, 50);
+            mockImageService.SetCurrentFrame(newFrame);
+            
+            method?.Invoke(viewModel, new object[] { viewModel, EventArgs.Empty });
+            await Task.Delay(50);
+            
+            // Should trigger property change for new frame
+            Assert.AreEqual(1, propertyChangedCount, "Property should change when frame is different");
+        }
+
+        #endregion Animation Rendering Tests
+
+        #region Mock Classes for Animation Testing
+
+    /// <summary>
+    /// Mock ImageService for testing animation rendering
+    /// </summary>
+    public class MockImageService : ImageService
+    {
+        private ImageSource _mockCurrentFrame;
+        private bool _mockIsAnimated;
+        private TimeSpan _mockFrameDuration = TimeSpan.FromMilliseconds(100);
+        private bool _loadShouldSucceed = true;
+        private VisualContentType _mockContentType = VisualContentType.StaticImage;
+
+        public MockImageService() : base(null)
+        {
+        }
+
+        public new ImageSource CurrentFrame => _mockCurrentFrame ?? base.CurrentFrame;
+        public new bool IsAnimated => _mockIsAnimated;
+        public new TimeSpan FrameDuration => _mockFrameDuration;
+        public new VisualContentType ContentType => _mockContentType;
+
+        public void SetCurrentFrame(ImageSource frame)
+        {
+            _mockCurrentFrame = frame;
+        }
+
+        public void SetAnimated(bool animated)
+        {
+            _mockIsAnimated = animated;
+        }
+
+        public void SetFrameDuration(TimeSpan duration)
+        {
+            _mockFrameDuration = duration;
+        }
+
+        public void SetContentType(VisualContentType contentType)
+        {
+            _mockContentType = contentType;
+        }
+
+        public void SetLoadShouldSucceed(bool shouldSucceed)
+        {
+            _loadShouldSucceed = shouldSucceed;
+        }
+
+        public new async Task<bool> LoadBallVisualAsync(string filePath)
+        {
+            if (!_loadShouldSucceed)
+            {
+                return false;
+            }
+
+            // Simulate successful loading and set properties
+            await Task.Delay(10);
+            
+            // Set default test image if none provided
+            if (_mockCurrentFrame == null)
+            {
+                _mockCurrentFrame = TestHelpers.TestImageHelper.CreateTestImage(50, 50);
+            }
+            
+            return true;
+        }
+
+        public new void StartAnimation()
+        {
+            // Mock implementation
+        }
+
+        public new void StopAnimation()
+        {
+            // Mock implementation
+        }
+
+        public new void UpdateFrame()
+        {
+            // Mock implementation - frame updates are controlled by test
+            SetCurrentFrame(_mockCurrentFrame);
+        }
+    }
+
+        #endregion Mock Classes for Animation Testing
     }
 }

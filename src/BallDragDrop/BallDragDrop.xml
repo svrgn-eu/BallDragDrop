@@ -342,6 +342,468 @@
             Statistics for specific operation types
             </summary>
         </member>
+        <member name="T:BallDragDrop.Models.AnimationFrame">
+            <summary>
+            Represents a single frame in an animation with memory management capabilities
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationFrame.Image">
+            <summary>
+            Gets or sets the image for this frame
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationFrame.Duration">
+            <summary>
+            Gets or sets the duration this frame should be displayed
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationFrame.SourceRect">
+            <summary>
+            Gets or sets the source rectangle for sprite sheet frames
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationFrame.IsCached">
+            <summary>
+            Gets a value indicating whether this frame is cached in memory
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationFrame.EstimatedMemoryUsage">
+            <summary>
+            Gets the estimated memory usage of this frame in bytes
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationFrame.#ctor">
+            <summary>
+            Initializes a new instance of the AnimationFrame class
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationFrame.#ctor(System.Windows.Media.ImageSource,System.TimeSpan)">
+            <summary>
+            Initializes a new instance of the AnimationFrame class
+            </summary>
+            <param name="image">The image for this frame</param>
+            <param name="duration">The duration this frame should be displayed</param>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationFrame.#ctor(System.Windows.Media.ImageSource,System.TimeSpan,System.Windows.Rect)">
+            <summary>
+            Initializes a new instance of the AnimationFrame class
+            </summary>
+            <param name="image">The image for this frame</param>
+            <param name="duration">The duration this frame should be displayed</param>
+            <param name="sourceRect">The source rectangle for sprite sheet frames</param>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationFrame.OptimizeForMemory">
+            <summary>
+            Optimizes the frame for memory usage by freezing the image source
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationFrame.Dispose">
+            <summary>
+            Disposes of the frame resources
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationFrame.Dispose(System.Boolean)">
+            <summary>
+            Disposes of the frame resources
+            </summary>
+            <param name="disposing">True if disposing managed resources</param>
+        </member>
+        <member name="T:BallDragDrop.Models.AnimationEngine">
+            <summary>
+            Engine for managing animation playback and timing with memory management
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationEngine.Frames">
+            <summary>
+            Gets the list of animation frames
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationEngine.CurrentFrameIndex">
+            <summary>
+            Gets the current frame index
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationEngine.IsPlaying">
+            <summary>
+            Gets a value indicating whether the animation is currently playing
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationEngine.IsLooping">
+            <summary>
+            Gets or sets a value indicating whether the animation should loop
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationEngine.LoopCount">
+            <summary>
+            Gets or sets the number of times the animation should loop (0 = infinite, -1 = no looping)
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationEngine.CurrentLoop">
+            <summary>
+            Gets the current loop iteration (starts at 0)
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationEngine.FrameCount">
+            <summary>
+            Gets the total number of frames in the animation
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationEngine.CurrentMemoryUsage">
+            <summary>
+            Gets the current memory usage of cached frames in bytes
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationEngine.MaxMemoryUsage">
+            <summary>
+            Gets the maximum allowed memory usage for frame caching in bytes
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationEngine.CachedFrameCount">
+            <summary>
+            Gets the number of frames currently cached in memory
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationEngine.CacheHitRatio">
+            <summary>
+            Gets the cache hit ratio as a percentage (0-100)
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.#ctor(BallDragDrop.Contracts.ILogService,System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the AnimationEngine class
+            </summary>
+            <param name="logService">Optional logging service</param>
+            <param name="maxCacheSize">Maximum number of frames to cache (default: 50)</param>
+            <param name="maxMemoryUsageMB">Maximum memory usage for frame caching in MB (default: 100)</param>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.LoadFrames(System.Collections.Generic.List{BallDragDrop.Models.AnimationFrame})">
+            <summary>
+            Loads frames into the animation engine with memory management
+            </summary>
+            <param name="frames">The list of animation frames</param>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.Play">
+            <summary>
+            Starts animation playback
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.Pause">
+            <summary>
+            Pauses animation playback
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.Stop">
+            <summary>
+            Stops animation playback and resets to the first frame
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.NextFrame">
+            <summary>
+            Advances to the next frame
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.GetCurrentFrame">
+            <summary>
+            Gets the current animation frame with caching support
+            </summary>
+            <returns>The current animation frame, or null if no frames are loaded</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.SetCurrentFrame(System.Int32)">
+            <summary>
+            Sets the current frame index for animation playback
+            </summary>
+            <param name="frameIndex">The frame index to set (will be clamped to valid range)</param>
+            <returns>True if the frame index was set successfully, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.Update(System.TimeSpan)">
+            <summary>
+            Updates the animation based on elapsed time
+            </summary>
+            <param name="deltaTime">Time elapsed since last update</param>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.Update">
+            <summary>
+            Updates the animation based on current time
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.PreloadFrames(System.Int32,System.Int32)">
+            <summary>
+            Pre-loads animation frames into cache to prevent stuttering
+            </summary>
+            <param name="startIndex">Starting frame index for pre-loading</param>
+            <param name="count">Number of frames to pre-load</param>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.ClearCache">
+            <summary>
+            Clears the frame cache and releases memory
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.OptimizeMemoryUsage">
+            <summary>
+            Optimizes memory usage by removing least recently used frames from cache
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.GetMemoryStats">
+            <summary>
+            Gets memory usage statistics for monitoring
+            </summary>
+            <returns>Dictionary containing memory usage statistics</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.Dispose">
+            <summary>
+            Disposes of the animation engine and releases all resources
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.CacheFrame(System.Int32)">
+            <summary>
+            Caches a frame at the specified index
+            </summary>
+            <param name="frameIndex">Index of the frame to cache</param>
+            <returns>True if the frame was cached successfully</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.UpdateCacheAccess(System.Int32)">
+            <summary>
+            Updates the cache access order for a frame
+            </summary>
+            <param name="frameIndex">Index of the accessed frame</param>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationEngine.Dispose(System.Boolean)">
+            <summary>
+            Disposes of the animation engine resources
+            </summary>
+            <param name="disposing">True if disposing managed resources</param>
+        </member>
+        <member name="T:BallDragDrop.Models.AsepriteMetadata">
+            <summary>
+            Represents metadata for an Aseprite export
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteMetadata.App">
+            <summary>
+            Gets or sets the application name
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteMetadata.Version">
+            <summary>
+            Gets or sets the version
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteMetadata.Image">
+            <summary>
+            Gets or sets the image filename
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteMetadata.Format">
+            <summary>
+            Gets or sets the format
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteMetadata.Size">
+            <summary>
+            Gets or sets the size information
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteMetadata.Scale">
+            <summary>
+            Gets or sets the scale
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Models.AsepriteSize">
+            <summary>
+            Represents size information for Aseprite export
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteSize.W">
+            <summary>
+            Gets or sets the width
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteSize.H">
+            <summary>
+            Gets or sets the height
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Models.AsepriteFrame">
+            <summary>
+            Represents a frame in an Aseprite export
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteFrame.Frame">
+            <summary>
+            Gets or sets the frame rectangle
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteFrame.Rotated">
+            <summary>
+            Gets or sets whether the frame is rotated
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteFrame.Trimmed">
+            <summary>
+            Gets or sets whether the frame is trimmed
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteFrame.SpriteSourceSize">
+            <summary>
+            Gets or sets the sprite source size
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteFrame.SourceSize">
+            <summary>
+            Gets or sets the source size
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteFrame.Duration">
+            <summary>
+            Gets or sets the frame duration in milliseconds
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Models.AsepriteRect">
+            <summary>
+            Represents a rectangle in Aseprite format
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteRect.X">
+            <summary>
+            Gets or sets the X coordinate
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteRect.Y">
+            <summary>
+            Gets or sets the Y coordinate
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteRect.W">
+            <summary>
+            Gets or sets the width
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteRect.H">
+            <summary>
+            Gets or sets the height
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Models.AsepriteTag">
+            <summary>
+            Represents an animation tag in Aseprite export
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteTag.Name">
+            <summary>
+            Gets or sets the tag name
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteTag.From">
+            <summary>
+            Gets or sets the starting frame index
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteTag.To">
+            <summary>
+            Gets or sets the ending frame index
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteTag.Direction">
+            <summary>
+            Gets or sets the animation direction
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Models.AsepriteData">
+            <summary>
+            Represents the complete Aseprite export data
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteData.Frames">
+            <summary>
+            Gets or sets the frames dictionary
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteData.Meta">
+            <summary>
+            Gets or sets the metadata
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteData.FrameTags">
+            <summary>
+            Gets or sets the animation tags
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AsepriteData.#ctor">
+            <summary>
+            Initializes a new instance of the AsepriteData class
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Models.AsepriteValidationResult">
+            <summary>
+            Represents the result of Aseprite data validation
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteValidationResult.IsValid">
+            <summary>
+            Gets or sets a value indicating whether the validation passed
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AsepriteValidationResult.ErrorMessage">
+            <summary>
+            Gets or sets the error message if validation failed
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AsepriteValidationResult.Success">
+            <summary>
+            Creates a successful validation result
+            </summary>
+            <returns>A validation result indicating success</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.AsepriteValidationResult.Failure(System.String)">
+            <summary>
+            Creates a failed validation result with an error message
+            </summary>
+            <param name="errorMessage">The error message</param>
+            <returns>A validation result indicating failure</returns>
+        </member>
+        <member name="T:BallDragDrop.Models.AsepriteLoader">
+            <summary>
+            Loader for Aseprite PNG+JSON exports
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AsepriteLoader.#ctor(BallDragDrop.Contracts.ILogService)">
+            <summary>
+            Initializes a new instance of the AsepriteLoader class
+            </summary>
+            <param name="logService">Optional logging service</param>
+        </member>
+        <member name="M:BallDragDrop.Models.AsepriteLoader.LoadAsepriteAsync(System.String,System.String)">
+            <summary>
+            Loads Aseprite data from PNG and JSON files
+            </summary>
+            <param name="pngPath">Path to the PNG sprite sheet</param>
+            <param name="jsonPath">Path to the JSON metadata file</param>
+            <returns>The loaded Aseprite data, or null if loading failed</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.AsepriteLoader.ConvertToAnimationFrames(BallDragDrop.Models.AsepriteData,System.Windows.Media.ImageSource)">
+            <summary>
+            Converts Aseprite data to animation frames
+            </summary>
+            <param name="data">The Aseprite data</param>
+            <param name="spriteSheet">The loaded sprite sheet image</param>
+            <returns>List of animation frames</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.AsepriteLoader.ExtractFrame(System.Windows.Media.ImageSource,System.Windows.Rect)">
+            <summary>
+            Extracts a frame from a sprite sheet
+            </summary>
+            <param name="spriteSheet">The sprite sheet image</param>
+            <param name="sourceRect">The source rectangle to extract</param>
+            <returns>The extracted frame image</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.AsepriteLoader.ValidateAsepriteData(BallDragDrop.Models.AsepriteData,System.String)">
+            <summary>
+            Validates the loaded Aseprite data for structural integrity
+            </summary>
+            <param name="data">The Aseprite data to validate</param>
+            <param name="jsonPath">The path to the JSON file for error reporting</param>
+            <returns>Validation result indicating success or failure with error message</returns>
+        </member>
         <member name="T:BallDragDrop.Models.BallModel">
             <summary>
             Represents the data model for a ball in the application.
@@ -723,10 +1185,166 @@
             <param name="exception">The critical exception that occurred</param>
             <param name="applicationState">The current application state</param>
         </member>
+        <member name="T:BallDragDrop.Services.VisualContentType">
+            <summary>
+            Enumeration for supported visual content types
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.GifData">
+            <summary>
+            Data structure for holding GIF animation data
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.GifData.Frames">
+            <summary>
+            Gets or sets the list of animation frames
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.GifData.LoopCount">
+            <summary>
+            Gets or sets the loop count (0 = infinite, -1 = no looping)
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.GifData.TotalDuration">
+            <summary>
+            Gets or sets the total duration of the animation
+            </summary>
+        </member>
         <member name="T:BallDragDrop.Services.ImageService">
             <summary>
-            Service for loading and managing images
+            Service for loading and managing visual content including static images and animations
             </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.ImageService.CurrentFrame">
+            <summary>
+            Gets the current frame for display
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.ImageService.IsAnimated">
+            <summary>
+            Gets a value indicating whether the current content is animated
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.ImageService.FrameDuration">
+            <summary>
+            Gets the duration of the current frame
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.ImageService.ContentType">
+            <summary>
+            Gets the type of the currently loaded visual content
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.#ctor(BallDragDrop.Contracts.ILogService)">
+            <summary>
+            Initializes a new instance of the ImageService class
+            </summary>
+            <param name="logService">Optional logging service</param>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.LoadBallVisualAsync(System.String)">
+            <summary>
+            Loads visual content from the specified file path
+            </summary>
+            <param name="filePath">Path to the visual content file</param>
+            <returns>True if loading was successful, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.StartAnimation">
+            <summary>
+            Starts animation playback if the current content is animated
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.StopAnimation">
+            <summary>
+            Stops animation playback if the current content is animated
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.UpdateFrame">
+            <summary>
+            Updates the current frame for animated content
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.GetFallbackImage">
+            <summary>
+            Gets a fallback image when content cannot be loaded
+            </summary>
+            <returns>ImageSource representing a fallback ball image</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.SwitchVisualContentAsync(System.String,System.Boolean)">
+            <summary>
+            Switches visual content while preserving animation state and playback position
+            </summary>
+            <param name="filePath">Path to the new visual content file</param>
+            <param name="preservePlaybackState">Whether to preserve current animation playback state</param>
+            <returns>True if switching was successful, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.DetectFileType(System.String)">
+            <summary>
+            Detects the type of visual content based on file extension and content
+            </summary>
+            <param name="filePath">Path to the file</param>
+            <returns>The detected visual content type</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.LoadStaticImageAsync(System.String)">
+            <summary>
+            Loads a static image from the specified path
+            </summary>
+            <param name="filePath">Path to the image file</param>
+            <returns>True if loading was successful, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.LoadGifAnimationAsync(System.String)">
+            <summary>
+            Loads a GIF animation from the specified path
+            </summary>
+            <param name="filePath">Path to the GIF file</param>
+            <returns>True if loading was successful, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.LoadAsepriteAnimationAsync(System.String)">
+            <summary>
+            Loads an Aseprite animation from the specified PNG and JSON files
+            </summary>
+            <param name="pngPath">Path to the PNG sprite sheet</param>
+            <returns>True if loading was successful, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.ExtractGifData(System.String,BallDragDrop.Contracts.ILogService)">
+            <summary>
+            Extracts complete GIF data including frames, timing, and loop information
+            </summary>
+            <param name="gifPath">Path to the GIF file</param>
+            <param name="logService">Optional logging service</param>
+            <returns>GifData containing frames and metadata, or null if extraction failed</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.ExtractGifFrames(System.String,BallDragDrop.Contracts.ILogService)">
+            <summary>
+            Extracts frames from a GIF file (legacy method for backward compatibility)
+            </summary>
+            <param name="gifPath">Path to the GIF file</param>
+            <param name="logService">Optional logging service</param>
+            <returns>List of animation frames extracted from the GIF</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.GetGifFrameDelay(System.Windows.Media.Imaging.BitmapMetadata,BallDragDrop.Contracts.ILogService)">
+            <summary>
+            Gets the frame delay from GIF metadata
+            </summary>
+            <param name="metadata">Bitmap metadata from the GIF frame</param>
+            <param name="logService">Optional logging service</param>
+            <returns>TimeSpan representing the frame delay</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.GetGifLoopCount(System.Windows.Media.Imaging.BitmapMetadata,BallDragDrop.Contracts.ILogService)">
+            <summary>
+            Gets the loop count from GIF global metadata
+            </summary>
+            <param name="metadata">Global bitmap metadata from the GIF</param>
+            <param name="logService">Optional logging service</param>
+            <returns>Loop count (0 means infinite loop, -1 means no loop info found)</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ImageService.GetDefaultAnimationSequence(BallDragDrop.Models.AsepriteData,System.Collections.Generic.List{BallDragDrop.Models.AnimationFrame})">
+            <summary>
+            Gets the default animation sequence from Aseprite data
+            If multiple animation tags exist, uses the first one; otherwise uses all frames
+            </summary>
+            <param name="asepriteData">The Aseprite data containing frame tags</param>
+            <param name="allFrames">All available animation frames</param>
+            <returns>List of frames for the default animation sequence</returns>
         </member>
         <member name="M:BallDragDrop.Services.ImageService.LoadImage(System.String,BallDragDrop.Contracts.ILogService)">
             <summary>
@@ -1809,6 +2427,16 @@
             Gets or sets the image source for the ball
             </summary>
         </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.IsAnimated">
+            <summary>
+            Gets a value indicating whether the ball visual is animated
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.ContentType">
+            <summary>
+            Gets the type of visual content currently loaded
+            </summary>
+        </member>
         <member name="P:BallDragDrop.ViewModels.BallViewModel.IsDragging">
             <summary>
             Gets or sets whether the ball is currently being dragged
@@ -1839,19 +2467,21 @@
             Gets the height for binding (Diameter)
             </summary>
         </member>
-        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(BallDragDrop.Contracts.ILogService)">
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(BallDragDrop.Contracts.ILogService,BallDragDrop.Services.ImageService)">
             <summary>
             Initializes a new instance of the BallViewModel class
             </summary>
             <param name="logService">Logging service for tracking user interactions</param>
+            <param name="imageService">Image service for loading and managing visual content</param>
         </member>
-        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(System.Double,System.Double,System.Double)">
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(System.Double,System.Double,System.Double,BallDragDrop.Services.ImageService)">
             <summary>
             Initializes a new instance of the BallViewModel class for testing
             </summary>
             <param name="x">Initial X position</param>
             <param name="y">Initial Y position</param>
             <param name="radius">Ball radius</param>
+            <param name="imageService">Optional image service for testing</param>
         </member>
         <member name="F:BallDragDrop.ViewModels.BallViewModel.MouseHistorySize">
             <summary>
@@ -1868,9 +2498,29 @@
             Logging service for tracking user interactions
             </summary>
         </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._imageService">
+            <summary>
+            Image service for loading and managing visual content
+            </summary>
+        </member>
         <member name="F:BallDragDrop.ViewModels.BallViewModel._ballImage">
             <summary>
             Image source for the ball
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._isAnimated">
+            <summary>
+            Flag indicating whether the ball visual is animated
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._contentType">
+            <summary>
+            Type of visual content currently loaded
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._animationTimer">
+            <summary>
+            Timer for updating animation frames
             </summary>
         </member>
         <member name="F:BallDragDrop.ViewModels.BallViewModel._isDragging">
@@ -1935,6 +2585,77 @@
             <param name="initialX">Initial X position</param>
             <param name="initialY">Initial Y position</param>
             <param name="radius">Ball radius</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.LoadBallVisualAsync(System.String)">
+            <summary>
+            Loads ball visual content from the specified file path
+            </summary>
+            <param name="filePath">Path to the visual content file</param>
+            <returns>True if loading was successful, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.SwitchBallVisualAsync(System.String)">
+            <summary>
+            Switches the ball visual content to a new file without restarting the application
+            Handles transitions between static and animated content while maintaining drag functionality
+            </summary>
+            <param name="filePath">Path to the new visual content file</param>
+            <returns>True if switching was successful, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.SwitchVisualContentTypeAsync(System.String,System.Boolean)">
+            <summary>
+            Switches between different visual content types (static to animated or vice versa)
+            while maintaining all ball functionality
+            </summary>
+            <param name="filePath">Path to the new visual content file</param>
+            <param name="preserveAnimationState">Whether to preserve animation playback state during transition</param>
+            <returns>True if switching was successful, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.GetTransitionType(BallDragDrop.Services.VisualContentType,BallDragDrop.Services.VisualContentType)">
+            <summary>
+            Gets a description of the transition type between two content types
+            </summary>
+            <param name="fromType">The previous content type</param>
+            <param name="toType">The new content type</param>
+            <returns>A string describing the transition</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.StartAnimation">
+            <summary>
+            Starts animation playback if the current content is animated
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.StopAnimation">
+            <summary>
+            Stops animation playback
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.OnAnimationTimerTick(System.Object,System.EventArgs)">
+            <summary>
+            Handles animation timer tick events to update frames with optimized rendering
+            </summary>
+            <param name="sender">Event sender</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.EnsureAnimationContinuesDuringDrag">
+            <summary>
+            Ensures animation continues during drag operations by keeping the timer running
+            This method is called during drag operations to maintain animation playback
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.CoordinateAnimationWithPhysics">
+            <summary>
+            Coordinates animation timing with physics updates by synchronizing frame updates
+            This method should be called from the physics update loop to ensure smooth coordination
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.OptimizeAnimationRendering">
+            <summary>
+            Optimizes animation rendering by pre-loading frames and setting up efficient rendering
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.EnsureAnimationVisualQuality">
+            <summary>
+            Ensures visual quality is maintained during animation playback
+            </summary>
         </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.OnMouseDown(System.Windows.Input.MouseEventArgs)">
             <summary>
@@ -2147,6 +2868,34 @@
             </summary>
             <param name="newWidth">The new width of the window</param>
             <param name="newHeight">The new height of the window</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.SwitchVisual_Click(System.Object,System.Windows.RoutedEventArgs)">
+            <summary>
+            Event handler for switching ball visual content
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.LoadStaticImage_Click(System.Object,System.Windows.RoutedEventArgs)">
+            <summary>
+            Event handler for loading static image content
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.LoadGifAnimation_Click(System.Object,System.Windows.RoutedEventArgs)">
+            <summary>
+            Event handler for loading GIF animation content
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.LoadAsepriteAnimation_Click(System.Object,System.Windows.RoutedEventArgs)">
+            <summary>
+            Event handler for loading Aseprite animation content
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
         </member>
         <member name="F:BallDragDrop.Views.MainWindow.MainCanvas">
             <summary>

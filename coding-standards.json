@@ -81,6 +81,7 @@
     "maxMethodLength": 50,
     "enforceNullChecks": true,
     "detectUnusedVariables": true,
+    "allowNestedClasses": false,
     "enforcementLevel": "warning"
   },
   "buildIntegration": {

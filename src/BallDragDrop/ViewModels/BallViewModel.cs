@@ -2,9 +2,11 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using BallDragDrop.Models;
 using BallDragDrop.Services;
 using BallDragDrop.Contracts;
@@ -98,6 +100,38 @@ namespace BallDragDrop.ViewModels
         }
 
         /// <summary>
+        /// Gets a value indicating whether the ball visual is animated
+        /// </summary>
+        public bool IsAnimated
+        {
+            get => _isAnimated;
+            private set
+            {
+                if (_isAnimated != value)
+                {
+                    _isAnimated = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of visual content currently loaded
+        /// </summary>
+        public VisualContentType ContentType
+        {
+            get => _contentType;
+            private set
+            {
+                if (_contentType != value)
+                {
+                    _contentType = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets whether the ball is currently being dragged
         /// </summary>
         public bool IsDragging
@@ -159,15 +193,19 @@ namespace BallDragDrop.ViewModels
         /// Initializes a new instance of the BallViewModel class
         /// </summary>
         /// <param name="logService">Logging service for tracking user interactions</param>
-        public BallViewModel(ILogService logService)
+        /// <param name="imageService">Image service for loading and managing visual content</param>
+        public BallViewModel(ILogService logService, ImageService imageService = null)
         {
             _logService = logService ?? throw new ArgumentNullException(nameof(logService));
+            _imageService = imageService ?? new ImageService(logService);
             
             // Initialize with default values - will be set via Initialize method
             _ballModel = new BallModel(0, 0, 25);
             _isDragging = false;
             _currentCursor = Cursors.Arrow;
             _ballImage = null!; // Initialize to null! to satisfy non-nullable field requirement
+            _isAnimated = false;
+            _contentType = VisualContentType.Unknown;
             
             // Initialize mouse history arrays for velocity calculation
             _mousePositionHistory = new Point[MouseHistorySize];
@@ -177,6 +215,11 @@ namespace BallDragDrop.ViewModels
             // Initialize event throttler for mouse move events
             // Throttle to 60 updates per second (approximately 16ms)
             _mouseMoveThrottler = new EventThrottler(ProcessMouseMove, 16);
+            
+            // Initialize animation timer for updating frames
+            _animationTimer = new DispatcherTimer();
+            _animationTimer.Interval = TimeSpan.FromMilliseconds(100); // Default 10 FPS, will be adjusted based on content
+            _animationTimer.Tick += OnAnimationTimerTick;
             
             // Initialize commands
             MouseDownCommand = new RelayCommand<MouseEventArgs>(OnMouseDown);
@@ -192,16 +235,20 @@ namespace BallDragDrop.ViewModels
         /// <param name="x">Initial X position</param>
         /// <param name="y">Initial Y position</param>
         /// <param name="radius">Ball radius</param>
-        public BallViewModel(double x, double y, double radius)
+        /// <param name="imageService">Optional image service for testing</param>
+        public BallViewModel(double x, double y, double radius, ImageService imageService = null)
         {
             // For testing, use a null log service or get from app
             _logService = GetLogServiceFromApp();
+            _imageService = imageService ?? new ImageService(_logService);
             
             // Initialize with provided values
             _ballModel = new BallModel(x, y, radius);
             _isDragging = false;
             _currentCursor = Cursors.Arrow;
             _ballImage = null!; // Initialize to null! to satisfy non-nullable field requirement
+            _isAnimated = false;
+            _contentType = VisualContentType.Unknown;
             
             // Initialize mouse history arrays for velocity calculation
             _mousePositionHistory = new Point[MouseHistorySize];
@@ -211,6 +258,11 @@ namespace BallDragDrop.ViewModels
             // Initialize event throttler for mouse move events
             // Throttle to 60 updates per second (approximately 16ms)
             _mouseMoveThrottler = new EventThrottler(ProcessMouseMove, 16);
+            
+            // Initialize animation timer for updating frames
+            _animationTimer = new DispatcherTimer();
+            _animationTimer.Interval = TimeSpan.FromMilliseconds(100); // Default 10 FPS, will be adjusted based on content
+            _animationTimer.Tick += OnAnimationTimerTick;
             
             // Initialize commands
             MouseDownCommand = new RelayCommand<MouseEventArgs>(OnMouseDown);
@@ -244,9 +296,29 @@ namespace BallDragDrop.ViewModels
         private readonly ILogService _logService;
 
         /// <summary>
+        /// Image service for loading and managing visual content
+        /// </summary>
+        private readonly ImageService _imageService;
+
+        /// <summary>
         /// Image source for the ball
         /// </summary>
         private ImageSource _ballImage;
+
+        /// <summary>
+        /// Flag indicating whether the ball visual is animated
+        /// </summary>
+        private bool _isAnimated;
+
+        /// <summary>
+        /// Type of visual content currently loaded
+        /// </summary>
+        private VisualContentType _contentType;
+
+        /// <summary>
+        /// Timer for updating animation frames
+        /// </summary>
+        private readonly DispatcherTimer _animationTimer;
 
         /// <summary>
         /// Flag indicating whether the ball is currently being dragged
@@ -337,6 +409,391 @@ namespace BallDragDrop.ViewModels
         }
 
         /// <summary>
+        /// Loads ball visual content from the specified file path
+        /// </summary>
+        /// <param name="filePath">Path to the visual content file</param>
+        /// <returns>True if loading was successful, false otherwise</returns>
+        public async Task<bool> LoadBallVisualAsync(string filePath)
+        {
+            _logService?.LogMethodEntry(nameof(LoadBallVisualAsync), filePath);
+
+            try
+            {
+                // Stop any current animation
+                StopAnimation();
+
+                // Load the visual content using ImageService
+                bool success = await _imageService.LoadBallVisualAsync(filePath);
+
+                if (success)
+                {
+                    // Update properties from ImageService
+                    BallImage = _imageService.CurrentFrame;
+                    IsAnimated = _imageService.IsAnimated;
+                    ContentType = _imageService.ContentType;
+
+                    // Start animation if content is animated
+                    if (IsAnimated)
+                    {
+                        StartAnimation();
+                    }
+
+                    _logService?.LogInformation("Ball visual loaded successfully: {FilePath} (Animated: {IsAnimated})", 
+                        filePath, IsAnimated);
+                }
+                else
+                {
+                    _logService?.LogWarning("Failed to load ball visual: {FilePath}", filePath);
+                }
+
+                _logService?.LogMethodExit(nameof(LoadBallVisualAsync), success);
+                return success;
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error loading ball visual: {FilePath}", filePath);
+                _logService?.LogMethodExit(nameof(LoadBallVisualAsync), false);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Switches the ball visual content to a new file without restarting the application
+        /// Handles transitions between static and animated content while maintaining drag functionality
+        /// </summary>
+        /// <param name="filePath">Path to the new visual content file</param>
+        /// <returns>True if switching was successful, false otherwise</returns>
+        public async Task<bool> SwitchBallVisualAsync(string filePath)
+        {
+            _logService?.LogMethodEntry(nameof(SwitchBallVisualAsync), filePath);
+
+            try
+            {
+                // Store current state to preserve during transition
+                var wasDragging = IsDragging;
+                var currentPosition = new Point(X, Y);
+                var wasAnimationRunning = IsAnimated && _animationTimer.IsEnabled;
+
+                _logService?.LogDebug("Switching visual content from {CurrentType} to new content. Current state - Dragging: {IsDragging}, Position: ({X}, {Y}), Animation running: {AnimationRunning}", 
+                    ContentType, wasDragging, X, Y, wasAnimationRunning);
+
+                // Temporarily stop animation to prevent conflicts during transition
+                if (wasAnimationRunning)
+                {
+                    StopAnimation();
+                }
+
+                // Load the new visual content
+                bool success = await _imageService.LoadBallVisualAsync(filePath);
+
+                if (success)
+                {
+                    // Update visual properties from ImageService
+                    var newImage = _imageService.CurrentFrame;
+                    var newIsAnimated = _imageService.IsAnimated;
+                    var newContentType = _imageService.ContentType;
+
+                    // Perform smooth transition by updating properties in the correct order
+                    // Update content type first to trigger any necessary UI changes
+                    ContentType = newContentType;
+                    
+                    // Update animation state
+                    IsAnimated = newIsAnimated;
+                    
+                    // Update the image last to ensure smooth visual transition
+                    BallImage = newImage;
+
+                    // Maintain ball position during visual change
+                    X = currentPosition.X;
+                    Y = currentPosition.Y;
+
+                    // Restore animation state if the new content is animated
+                    if (IsAnimated)
+                    {
+                        StartAnimation();
+                    }
+
+                    // Maintain drag state if ball was being dragged
+                    if (wasDragging)
+                    {
+                        IsDragging = true;
+                        // Ensure animation continues during drag if applicable
+                        EnsureAnimationContinuesDuringDrag();
+                    }
+
+                    _logService?.LogInformation("Ball visual switched successfully: {FilePath} (Type: {ContentType}, Animated: {IsAnimated}). Drag state maintained: {IsDragging}", 
+                        filePath, ContentType, IsAnimated, IsDragging);
+                }
+                else
+                {
+                    _logService?.LogWarning("Failed to switch ball visual: {FilePath}. Keeping current visual.", filePath);
+                    
+                    // Restore animation if it was running before the failed switch
+                    if (wasAnimationRunning && IsAnimated)
+                    {
+                        StartAnimation();
+                    }
+                }
+
+                _logService?.LogMethodExit(nameof(SwitchBallVisualAsync), success);
+                return success;
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error switching ball visual: {FilePath}", filePath);
+                
+                // Try to restore previous state on error
+                try
+                {
+                    if (IsAnimated && !_animationTimer.IsEnabled)
+                    {
+                        StartAnimation();
+                    }
+                }
+                catch (Exception restoreEx)
+                {
+                    _logService?.LogError(restoreEx, "Error restoring animation state after failed visual switch");
+                }
+                
+                _logService?.LogMethodExit(nameof(SwitchBallVisualAsync), false);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Switches between different visual content types (static to animated or vice versa)
+        /// while maintaining all ball functionality
+        /// </summary>
+        /// <param name="filePath">Path to the new visual content file</param>
+        /// <param name="preserveAnimationState">Whether to preserve animation playback state during transition</param>
+        /// <returns>True if switching was successful, false otherwise</returns>
+        public async Task<bool> SwitchVisualContentTypeAsync(string filePath, bool preserveAnimationState = true)
+        {
+            _logService?.LogMethodEntry(nameof(SwitchVisualContentTypeAsync), filePath, preserveAnimationState);
+
+            try
+            {
+                var previousContentType = ContentType;
+                var previousAnimationState = IsAnimated && _animationTimer.IsEnabled;
+                
+                // Perform the visual switch
+                bool success = await SwitchBallVisualAsync(filePath);
+                
+                if (success)
+                {
+                    // Log the transition type
+                    string transitionType = GetTransitionType(previousContentType, ContentType);
+                    _logService?.LogInformation("Visual content type transition completed: {TransitionType}. Animation state preserved: {PreserveState}", 
+                        transitionType, preserveAnimationState && previousAnimationState && IsAnimated);
+                    
+                    // Handle specific transition scenarios
+                    if (previousContentType == VisualContentType.StaticImage && IsAnimated)
+                    {
+                        _logService?.LogDebug("Transitioned from static image to animation - starting animation playback");
+                    }
+                    else if (previousContentType != VisualContentType.StaticImage && !IsAnimated)
+                    {
+                        _logService?.LogDebug("Transitioned from animation to static image - animation stopped");
+                    }
+                }
+                
+                _logService?.LogMethodExit(nameof(SwitchVisualContentTypeAsync), success);
+                return success;
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error switching visual content type: {FilePath}", filePath);
+                _logService?.LogMethodExit(nameof(SwitchVisualContentTypeAsync), false);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets a description of the transition type between two content types
+        /// </summary>
+        /// <param name="fromType">The previous content type</param>
+        /// <param name="toType">The new content type</param>
+        /// <returns>A string describing the transition</returns>
+        private string GetTransitionType(VisualContentType fromType, VisualContentType toType)
+        {
+            if (fromType == toType)
+            {
+                return $"Same type ({fromType})";
+            }
+            
+            if (fromType == VisualContentType.StaticImage && toType != VisualContentType.StaticImage)
+            {
+                return $"Static to Animated ({toType})";
+            }
+            
+            if (fromType != VisualContentType.StaticImage && toType == VisualContentType.StaticImage)
+            {
+                return $"Animated ({fromType}) to Static";
+            }
+            
+            return $"Animation type change ({fromType} to {toType})";
+        }
+
+        /// <summary>
+        /// Starts animation playback if the current content is animated
+        /// </summary>
+        private void StartAnimation()
+        {
+            _logService?.LogMethodEntry(nameof(StartAnimation));
+
+            if (IsAnimated)
+            {
+                // Update timer interval based on frame duration
+                if (_imageService.FrameDuration > TimeSpan.Zero)
+                {
+                    _animationTimer.Interval = _imageService.FrameDuration;
+                }
+                else
+                {
+                    _animationTimer.Interval = TimeSpan.FromMilliseconds(100); // Default 10 FPS
+                }
+
+                _imageService.StartAnimation();
+                _animationTimer.Start();
+
+                _logService?.LogDebug("Animation started with interval: {Interval}ms", _animationTimer.Interval.TotalMilliseconds);
+            }
+
+            _logService?.LogMethodExit(nameof(StartAnimation));
+        }
+
+        /// <summary>
+        /// Stops animation playback
+        /// </summary>
+        private void StopAnimation()
+        {
+            _logService?.LogMethodEntry(nameof(StopAnimation));
+
+            _animationTimer.Stop();
+            _imageService.StopAnimation();
+
+            _logService?.LogDebug("Animation stopped");
+            _logService?.LogMethodExit(nameof(StopAnimation));
+        }
+
+        /// <summary>
+        /// Handles animation timer tick events to update frames with optimized rendering
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event arguments</param>
+        private void OnAnimationTimerTick(object sender, EventArgs e)
+        {
+            if (IsAnimated)
+            {
+                // Update frame in ImageService
+                _imageService.UpdateFrame();
+                
+                // Get the new frame
+                var newFrame = _imageService.CurrentFrame;
+                
+                // Only update BallImage if the frame actually changed to prevent unnecessary redraws
+                if (newFrame != null && !ReferenceEquals(BallImage, newFrame))
+                {
+                    // Use Dispatcher.BeginInvoke to ensure smooth frame updates on UI thread
+                    Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        BallImage = newFrame;
+                    }), System.Windows.Threading.DispatcherPriority.Render);
+                }
+
+                // Update timer interval if frame duration changed
+                if (_imageService.FrameDuration > TimeSpan.Zero && _animationTimer.Interval != _imageService.FrameDuration)
+                {
+                    _animationTimer.Interval = _imageService.FrameDuration;
+                    _logService?.LogTrace("Animation timer interval updated to {Interval}ms", _animationTimer.Interval.TotalMilliseconds);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Ensures animation continues during drag operations by keeping the timer running
+        /// This method is called during drag operations to maintain animation playback
+        /// </summary>
+        public void EnsureAnimationContinuesDuringDrag()
+        {
+            if (IsAnimated && !_animationTimer.IsEnabled)
+            {
+                _animationTimer.Start();
+                _logService?.LogDebug("Animation timer restarted during drag operation");
+            }
+        }
+
+        /// <summary>
+        /// Coordinates animation timing with physics updates by synchronizing frame updates
+        /// This method should be called from the physics update loop to ensure smooth coordination
+        /// </summary>
+        public void CoordinateAnimationWithPhysics()
+        {
+            if (IsAnimated)
+            {
+                // Force an animation frame update to coordinate with physics timing
+                // This ensures animation frames are updated in sync with physics calculations
+                OnAnimationTimerTick(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Optimizes animation rendering by pre-loading frames and setting up efficient rendering
+        /// </summary>
+        public void OptimizeAnimationRendering()
+        {
+            if (IsAnimated)
+            {
+                // Ensure the animation timer uses optimal priority for smooth playback
+                _animationTimer.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    // Force a frame update to ensure current frame is properly loaded
+                    _imageService.UpdateFrame();
+                    var currentFrame = _imageService.CurrentFrame;
+                    if (currentFrame != null)
+                    {
+                        // Freeze the image source for better performance
+                        if (currentFrame.CanFreeze && !currentFrame.IsFrozen)
+                        {
+                            currentFrame.Freeze();
+                        }
+                        BallImage = currentFrame;
+                    }
+                }), System.Windows.Threading.DispatcherPriority.Render);
+
+                _logService?.LogDebug("Animation rendering optimized");
+            }
+        }
+
+        /// <summary>
+        /// Ensures visual quality is maintained during animation playback
+        /// </summary>
+        public void EnsureAnimationVisualQuality()
+        {
+            if (IsAnimated)
+            {
+                // Verify that the current frame is properly loaded and rendered
+                var currentFrame = _imageService.CurrentFrame;
+                if (currentFrame != null)
+                {
+                    // Ensure the frame is frozen for optimal rendering performance
+                    if (currentFrame.CanFreeze && !currentFrame.IsFrozen)
+                    {
+                        currentFrame.Freeze();
+                    }
+                    
+                    // Update the bound image if needed
+                    if (!ReferenceEquals(BallImage, currentFrame))
+                    {
+                        BallImage = currentFrame;
+                    }
+                }
+
+                _logService?.LogTrace("Animation visual quality ensured");
+            }
+        }
+
+        /// <summary>
         /// Handles mouse down events
         /// </summary>
         /// <param name="e">Mouse event arguments</param>
@@ -362,13 +819,16 @@ namespace BallDragDrop.ViewModels
                 // Stop any current movement
                 _ballModel.Stop();
 
+                // Ensure animation continues during drag operations
+                EnsureAnimationContinuesDuringDrag();
+
                 // Capture the mouse
                 Mouse.Capture((IInputElement)e.Source);
                 
                 // Reset mouse history when starting a new drag
                 _mouseHistoryCount = 0;
                 
-                _logService?.LogDebug("Ball drag initiated - mouse captured, movement stopped");
+                _logService?.LogDebug("Ball drag initiated - mouse captured, movement stopped, animation maintained");
             }
             else
             {
