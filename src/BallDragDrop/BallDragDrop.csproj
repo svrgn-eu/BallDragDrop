@@ -39,6 +39,12 @@
     </ProjectReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Resources\Images\Ball01.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <!-- Import custom MSBuild targets for coding standards validation -->
   <Import Project="Build\CodingStandards.targets" />
 

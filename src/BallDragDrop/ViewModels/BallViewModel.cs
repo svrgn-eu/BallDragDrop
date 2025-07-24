@@ -238,6 +238,8 @@ namespace BallDragDrop.ViewModels
             MouseDownCommand = new RelayCommand<MouseEventArgs>(OnMouseDown);
             MouseMoveCommand = new RelayCommand<MouseEventArgs>(OnMouseMove);
             MouseUpCommand = new RelayCommand<MouseEventArgs>(OnMouseUp);
+
+            this.LoadDefaultBallImageAsync();
             
             _logService.LogDebug("BallViewModel created with dependency injection");
         }

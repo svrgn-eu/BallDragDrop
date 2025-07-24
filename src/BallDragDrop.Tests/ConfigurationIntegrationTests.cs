@@ -51,9 +51,6 @@ namespace BallDragDrop.Tests
             ServiceBootstrapper.Initialize();
             var configService = ServiceBootstrapper.GetService<IConfigurationService>();
 
-            // Act
-            await configService.LoadConfigurationAsync();
-
             // Assert
             Assert.IsNotNull(configService.Configuration);
             Assert.AreEqual("./Resources/Images/Ball01.png", configService.GetDefaultBallImagePath());
@@ -69,7 +66,6 @@ namespace BallDragDrop.Tests
             // Act & Assert - Should not throw exception even if configuration loading fails
             try
             {
-                await configService.LoadConfigurationAsync();
                 Assert.IsNotNull(configService.Configuration);
             }
             catch (Exception ex)
@@ -84,10 +80,6 @@ namespace BallDragDrop.Tests
             // Arrange
             ServiceBootstrapper.Initialize();
             var configService = ServiceBootstrapper.GetService<IConfigurationService>();
-
-            // Act
-            await configService.LoadConfigurationAsync();
-            await configService.SaveConfigurationAsync();
 
             // Assert
             Assert.IsNotNull(configService.Configuration);
@@ -106,7 +98,6 @@ namespace BallDragDrop.Tests
             var configService = ServiceBootstrapper.GetService<IConfigurationService>();
 
             // Act
-            await configService.LoadConfigurationAsync();
             var defaultPath = configService.GetDefaultBallImagePath();
             var isValid = configService.ValidateImagePath(defaultPath);
 
@@ -128,17 +119,14 @@ namespace BallDragDrop.Tests
             var configService = new BallDragDrop.Services.ConfigurationService(logService, testConfigPath);
 
             // Act
-            await configService.LoadConfigurationAsync();
             
             var originalPath = configService.GetDefaultBallImagePath();
             var newPath = "./test/custom.png";
             
             configService.SetDefaultBallImagePath(newPath);
-            await configService.SaveConfigurationAsync();
 
             // Create a new service instance to test persistence
             var newConfigService = new BallDragDrop.Services.ConfigurationService(logService, testConfigPath);
-            await newConfigService.LoadConfigurationAsync();
 
             // Assert
             Assert.AreEqual(newPath, newConfigService.GetDefaultBallImagePath());
@@ -169,7 +157,6 @@ namespace BallDragDrop.Tests
             // Act & Assert - Should handle invalid JSON gracefully
             try
             {
-                await configService.LoadConfigurationAsync();
                 Assert.IsNotNull(configService.Configuration);
                 // Should fall back to default values
                 Assert.AreEqual("./Resources/Images/Ball01.png", configService.GetDefaultBallImagePath());

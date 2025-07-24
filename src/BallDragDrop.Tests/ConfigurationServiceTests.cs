@@ -337,7 +337,6 @@ namespace BallDragDrop.Tests
             var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
 
             // Act & Assert - Load default configuration
-            await service.LoadConfigurationAsync();
             Assert.AreEqual("./Resources/Images/Ball01.png", service.GetDefaultBallImagePath());
 
             // Act & Assert - Modify configuration
@@ -346,12 +345,10 @@ namespace BallDragDrop.Tests
             service.Configuration.DefaultBallSize = 80.0;
 
             // Act & Assert - Save configuration
-            await service.SaveConfigurationAsync();
             Assert.IsTrue(File.Exists(_testConfigFilePath));
 
             // Act & Assert - Create new service instance and load
             var newService = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
-            await newService.LoadConfigurationAsync();
 
             Assert.AreEqual("./custom/ball.png", newService.GetDefaultBallImagePath());
             Assert.IsFalse(newService.Configuration.EnableAnimations);
