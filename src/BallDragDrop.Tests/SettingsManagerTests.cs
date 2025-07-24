@@ -147,7 +147,7 @@ namespace BallDragDrop.Tests
         public void TestComplexObjects()
         {
             // Create a test object
-            var testObject = new TestObject
+            var testObject = new TestObject  // TODO: Object must implement IConvertible.
             {
                 Name = "Test Object",
                 Value = 42,
