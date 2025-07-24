@@ -33,12 +33,28 @@ namespace BallDragDrop.Tests.TestHelpers
         
         public void LogError(string message, params object[] args) 
         {
-            LogEntries.Add($"ERROR: {string.Format(message, args)}");
+            try
+            {
+                LogEntries.Add($"ERROR: {string.Format(message, args)}");
+            }
+            catch (FormatException)
+            {
+                // If formatting fails, just log the raw message
+                LogEntries.Add($"ERROR: {message}");
+            }
         }
         
         public void LogError(Exception exception, string message, params object[] args) 
         {
-            LogEntries.Add($"ERROR: {string.Format(message, args)} - {exception.Message}");
+            try
+            {
+                LogEntries.Add($"ERROR: {string.Format(message, args)} - {exception.Message}");
+            }
+            catch (FormatException)
+            {
+                // If formatting fails, just log the raw message
+                LogEntries.Add($"ERROR: {message} - {exception.Message}");
+            }
         }
         
         public void LogCritical(string message, params object[] args) 

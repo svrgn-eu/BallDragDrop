@@ -145,6 +145,17 @@ namespace BallDragDrop.ViewModels
                     OnPropertyChanged();
                     // Update cursor when dragging state changes
                     UpdateCursor();
+                    
+                    // Use optimized dual timer system if enabled
+                    if (_isDualTimerOptimized)
+                    {
+                        EnsureDualTimerDragResponsiveness();
+                    }
+                    else
+                    {
+                        // Fallback to original method
+                        EnsureAnimationDoesNotImpactDragResponsiveness();
+                    }
                 }
             }
         }
@@ -194,10 +205,12 @@ namespace BallDragDrop.ViewModels
         /// </summary>
         /// <param name="logService">Logging service for tracking user interactions</param>
         /// <param name="imageService">Image service for loading and managing visual content</param>
-        public BallViewModel(ILogService logService, ImageService imageService = null)
+        /// <param name="configurationService">Configuration service for accessing application settings</param>
+        public BallViewModel(ILogService logService, ImageService imageService = null, IConfigurationService configurationService = null)
         {
             _logService = logService ?? throw new ArgumentNullException(nameof(logService));
             _imageService = imageService ?? new ImageService(logService);
+            _configurationService = configurationService;
             
             // Initialize with default values - will be set via Initialize method
             _ballModel = new BallModel(0, 0, 25);
@@ -269,7 +282,7 @@ namespace BallDragDrop.ViewModels
             MouseMoveCommand = new RelayCommand<MouseEventArgs>(OnMouseMove);
             MouseUpCommand = new RelayCommand<MouseEventArgs>(OnMouseUp);
             
-            _logService?.LogDebug("BallViewModel created for testing at position ({X}, {Y}) with radius {Radius}", x, y, radius);
+            _logService?.LogDebug("BallViewModel created for testing at position ({0}, {1}) with radius {2}", x, y, radius);
         }
 
         #endregion Construction
@@ -301,6 +314,11 @@ namespace BallDragDrop.ViewModels
         private readonly ImageService _imageService;
 
         /// <summary>
+        /// Configuration service for accessing application settings
+        /// </summary>
+        private readonly IConfigurationService _configurationService;
+
+        /// <summary>
         /// Image source for the ball
         /// </summary>
         private ImageSource _ballImage;
@@ -316,9 +334,14 @@ namespace BallDragDrop.ViewModels
         private VisualContentType _contentType;
 
         /// <summary>
-        /// Timer for updating animation frames
+        /// Timer for updating animation frames (optimized for source frame rates)
         /// </summary>
-        private readonly DispatcherTimer _animationTimer;
+        private DispatcherTimer _animationTimer;
+
+        /// <summary>
+        /// Flag to track if dual timer optimization is enabled
+        /// </summary>
+        private bool _isDualTimerOptimized = false;
 
         /// <summary>
         /// Flag indicating whether the ball is currently being dragged
@@ -370,6 +393,11 @@ namespace BallDragDrop.ViewModels
         /// </summary>
         private MouseEventArgs _lastMouseMoveArgs;
 
+        /// <summary>
+        /// Timestamp of the last animation frame update for coordination with physics
+        /// </summary>
+        private DateTime _lastAnimationUpdate = DateTime.Now;
+
         #endregion Fields
 
         #region Events
@@ -404,7 +432,7 @@ namespace BallDragDrop.ViewModels
             OnPropertyChanged(nameof(Width));
             OnPropertyChanged(nameof(Height));
             
-            _logService.LogDebug("BallViewModel initialized at position ({X}, {Y}) with radius {Radius}", 
+            _logService.LogDebug("BallViewModel initialized at position ({0}, {1}) with radius {2}", 
                 initialX, initialY, radius);
         }
 
@@ -458,6 +486,72 @@ namespace BallDragDrop.ViewModels
         }
 
         /// <summary>
+        /// Loads the default ball image from configuration
+        /// </summary>
+        /// <returns>True if loading was successful, false otherwise</returns>
+        public async Task<bool> LoadDefaultBallImageAsync()
+        {
+            _logService?.LogMethodEntry(nameof(LoadDefaultBallImageAsync));
+
+            try
+            {
+                if (_configurationService == null)
+                {
+                    _logService?.LogWarning("Configuration service not available, cannot load default ball image");
+                    _logService?.LogMethodExit(nameof(LoadDefaultBallImageAsync), false);
+                    return false;
+                }
+
+                var defaultImagePath = _configurationService.GetDefaultBallImagePath();
+                _logService?.LogDebug("Loading default ball image from configuration: {ImagePath}", defaultImagePath);
+
+                // Validate the image path
+                if (!_configurationService.ValidateImagePath(defaultImagePath))
+                {
+                    _logService?.LogWarning("Default ball image path is invalid: {ImagePath}", defaultImagePath);
+                    
+                    // Try to use a fallback image
+                    var fallbackPath = "./Resources/Images/Ball01.png";
+                    if (_configurationService.ValidateImagePath(fallbackPath))
+                    {
+                        _logService?.LogInformation("Using fallback image path: {FallbackPath}", fallbackPath);
+                        defaultImagePath = fallbackPath;
+                        
+                        // Update configuration with the working fallback path
+                        _configurationService.SetDefaultBallImagePath(fallbackPath);
+                    }
+                    else
+                    {
+                        _logService?.LogError("Both default and fallback image paths are invalid");
+                        _logService?.LogMethodExit(nameof(LoadDefaultBallImageAsync), false);
+                        return false;
+                    }
+                }
+
+                // Load the ball visual
+                bool success = await LoadBallVisualAsync(defaultImagePath);
+                
+                if (success)
+                {
+                    _logService?.LogInformation("Default ball image loaded successfully from: {ImagePath}", defaultImagePath);
+                }
+                else
+                {
+                    _logService?.LogError("Failed to load default ball image from: {ImagePath}", defaultImagePath);
+                }
+
+                _logService?.LogMethodExit(nameof(LoadDefaultBallImageAsync), success);
+                return success;
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error loading default ball image from configuration");
+                _logService?.LogMethodExit(nameof(LoadDefaultBallImageAsync), false);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Switches the ball visual content to a new file without restarting the application
         /// Handles transitions between static and animated content while maintaining drag functionality
         /// </summary>
@@ -474,7 +568,7 @@ namespace BallDragDrop.ViewModels
                 var currentPosition = new Point(X, Y);
                 var wasAnimationRunning = IsAnimated && _animationTimer.IsEnabled;
 
-                _logService?.LogDebug("Switching visual content from {CurrentType} to new content. Current state - Dragging: {IsDragging}, Position: ({X}, {Y}), Animation running: {AnimationRunning}", 
+                _logService?.LogDebug("Switching visual content from {0} to new content. Current state - Dragging: {1}, Position: ({2}, {3}), Animation running: {4}", 
                     ContentType, wasDragging, X, Y, wasAnimationRunning);
 
                 // Temporarily stop animation to prevent conflicts during transition
@@ -656,7 +750,7 @@ namespace BallDragDrop.ViewModels
                 _imageService.StartAnimation();
                 _animationTimer.Start();
 
-                _logService?.LogDebug("Animation started with interval: {Interval}ms", _animationTimer.Interval.TotalMilliseconds);
+                _logService?.LogDebug("Animation started with interval: {0}ms", _animationTimer.Interval.TotalMilliseconds);
             }
 
             _logService?.LogMethodExit(nameof(StartAnimation));
@@ -711,6 +805,67 @@ namespace BallDragDrop.ViewModels
         }
 
         /// <summary>
+        /// Optimized animation timer tick handler that respects source frame rates
+        /// while ensuring physics updates are not impacted
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event arguments</param>
+        private void OnOptimizedAnimationTimerTick(object sender, EventArgs e)
+        {
+            if (IsAnimated)
+            {
+                // Check if we should skip this frame update during high physics activity
+                if (IsDragging && _imageService.FrameDuration.TotalMilliseconds < 33) // Skip if faster than 30 FPS during drag
+                {
+                    return;
+                }
+
+                // Update frame in ImageService with timing coordination
+                var frameUpdateStart = DateTime.Now;
+                _imageService.UpdateFrame();
+                
+                // Get the new frame
+                var newFrame = _imageService.CurrentFrame;
+                
+                // Only update BallImage if the frame actually changed to prevent unnecessary redraws
+                if (newFrame != null && !ReferenceEquals(BallImage, newFrame))
+                {
+                    // Use background priority to not interfere with physics updates
+                    Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        BallImage = newFrame;
+                    }), System.Windows.Threading.DispatcherPriority.Background);
+                }
+
+                // Dynamically adjust timer interval based on source frame rate and system performance
+                var frameUpdateTime = DateTime.Now - frameUpdateStart;
+                if (_imageService.FrameDuration > TimeSpan.Zero)
+                {
+                    var targetInterval = _imageService.FrameDuration;
+                    
+                    // Ensure minimum interval to prevent overwhelming the system
+                    if (targetInterval.TotalMilliseconds < 16) // Don't exceed 60 FPS for animations
+                    {
+                        targetInterval = TimeSpan.FromMilliseconds(16);
+                    }
+                    
+                    // Adjust for processing time to maintain accurate frame rate
+                    var adjustedInterval = targetInterval.Add(frameUpdateTime);
+                    
+                    if (_animationTimer.Interval != adjustedInterval)
+                    {
+                        _animationTimer.Interval = adjustedInterval;
+                        _logService?.LogTrace("Animation timer interval adjusted to {Interval}ms (source: {SourceInterval}ms, processing: {ProcessingTime}ms)", 
+                            adjustedInterval.TotalMilliseconds, targetInterval.TotalMilliseconds, frameUpdateTime.TotalMilliseconds);
+                    }
+                }
+
+                // Update last animation update timestamp for coordination
+                _lastAnimationUpdate = DateTime.Now;
+            }
+        }
+
+        /// <summary>
         /// Ensures animation continues during drag operations by keeping the timer running
         /// This method is called during drag operations to maintain animation playback
         /// </summary>
@@ -729,11 +884,170 @@ namespace BallDragDrop.ViewModels
         /// </summary>
         public void CoordinateAnimationWithPhysics()
         {
+            // Use optimized dual timer coordination if enabled
+            if (_isDualTimerOptimized)
+            {
+                CoordinateDualTimerSystem();
+                return;
+            }
+
+            // Fallback to original coordination method
             if (IsAnimated)
             {
-                // Force an animation frame update to coordinate with physics timing
-                // This ensures animation frames are updated in sync with physics calculations
-                OnAnimationTimerTick(this, EventArgs.Empty);
+                var now = DateTime.Now;
+                var timeSinceLastAnimationUpdate = now - _lastAnimationUpdate;
+                
+                // Only coordinate if enough time has passed based on source frame rate
+                // This prevents animation updates from interfering with 60 FPS physics updates
+                if (timeSinceLastAnimationUpdate >= _imageService.FrameDuration)
+                {
+                    // Use background priority to ensure physics updates take precedence
+                    Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        if (IsAnimated) // Double-check in case animation stopped
+                        {
+                            _imageService.UpdateFrame();
+                            var newFrame = _imageService.CurrentFrame;
+                            
+                            if (newFrame != null && !ReferenceEquals(BallImage, newFrame))
+                            {
+                                BallImage = newFrame;
+                            }
+                        }
+                    }), System.Windows.Threading.DispatcherPriority.Background);
+                    
+                    _lastAnimationUpdate = now;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Optimizes animation timer to respect source frame rates while maintaining physics smoothness
+        /// Separates animation frame updates from physics updates for better performance
+        /// </summary>
+        public void OptimizeAnimationTiming()
+        {
+            if (IsAnimated && _animationTimer != null)
+            {
+                // Ensure animation timer uses background priority to not interfere with physics
+                if (_animationTimer.Dispatcher != null)
+                {
+                    // Stop current timer
+                    _animationTimer.Stop();
+                    
+                    // Create new optimized timer with background priority to separate from physics updates
+                    var optimizedTimer = new DispatcherTimer(DispatcherPriority.Background, _animationTimer.Dispatcher);
+                    
+                    // Set interval based on source animation frame rate to respect original timing
+                    if (_imageService.FrameDuration > TimeSpan.Zero)
+                    {
+                        optimizedTimer.Interval = _imageService.FrameDuration;
+                    }
+                    else
+                    {
+                        // Default to 10 FPS for unknown frame rates to avoid overwhelming the system
+                        optimizedTimer.Interval = TimeSpan.FromMilliseconds(100);
+                    }
+                    
+                    // Transfer event handler
+                    optimizedTimer.Tick += OnOptimizedAnimationTimerTick;
+                    
+                    // Replace the timer
+                    _animationTimer.Tick -= OnAnimationTimerTick;
+                    _animationTimer = optimizedTimer;
+                    
+                    // Start the optimized timer
+                    _animationTimer.Start();
+                    
+                    _logService?.LogDebug("Animation timer optimized - Priority: Background, Interval: {0}ms (Source frame rate respected)", 
+                        optimizedTimer.Interval.TotalMilliseconds);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Ensures animation performance doesn't impact drag responsiveness
+        /// Temporarily adjusts animation timing during drag operations
+        /// </summary>
+        public void EnsureAnimationDoesNotImpactDragResponsiveness()
+        {
+            if (IsAnimated && IsDragging)
+            {
+                // During drag operations, reduce animation update frequency to maintain responsiveness
+                // Cap animation at 20 FPS during drag to prioritize physics updates
+                var maxDragInterval = TimeSpan.FromMilliseconds(50); // 20 FPS max during drag
+                
+                if (_animationTimer != null && _animationTimer.Interval < maxDragInterval)
+                {
+                    var originalInterval = _animationTimer.Interval;
+                    _animationTimer.Interval = maxDragInterval;
+                    
+                    // Ensure animation timer uses lowest priority during drag
+                    if (_animationTimer is DispatcherTimer dispatcherTimer)
+                    {
+                        // Stop and recreate with lowest priority if needed
+                        var wasRunning = dispatcherTimer.IsEnabled;
+                        dispatcherTimer.Stop();
+                        
+                        var lowPriorityTimer = new DispatcherTimer(DispatcherPriority.SystemIdle, dispatcherTimer.Dispatcher)
+                        {
+                            Interval = maxDragInterval
+                        };
+                        lowPriorityTimer.Tick += OnOptimizedAnimationTimerTick;
+                        
+                        _animationTimer.Tick -= OnOptimizedAnimationTimerTick;
+                        _animationTimer.Tick -= OnAnimationTimerTick;
+                        _animationTimer = lowPriorityTimer;
+                        
+                        if (wasRunning)
+                        {
+                            _animationTimer.Start();
+                        }
+                    }
+                    
+                    _logService?.LogTrace("Animation frequency reduced during drag: {OriginalInterval}ms -> {NewInterval}ms (Priority: SystemIdle)", 
+                        originalInterval.TotalMilliseconds, _animationTimer.Interval.TotalMilliseconds);
+                }
+            }
+            else if (IsAnimated && !IsDragging)
+            {
+                // Restore original animation timing and priority when not dragging
+                if (_imageService.FrameDuration > TimeSpan.Zero && 
+                    _animationTimer != null)
+                {
+                    var targetInterval = _imageService.FrameDuration;
+                    
+                    // Ensure minimum interval to prevent overwhelming the system
+                    if (targetInterval.TotalMilliseconds < 16)
+                    {
+                        targetInterval = TimeSpan.FromMilliseconds(16);
+                    }
+                    
+                    if (_animationTimer.Interval != targetInterval)
+                    {
+                        var wasRunning = _animationTimer.IsEnabled;
+                        _animationTimer.Stop();
+                        
+                        // Restore background priority for normal operation
+                        var normalPriorityTimer = new DispatcherTimer(DispatcherPriority.Background, _animationTimer.Dispatcher)
+                        {
+                            Interval = targetInterval
+                        };
+                        normalPriorityTimer.Tick += OnOptimizedAnimationTimerTick;
+                        
+                        _animationTimer.Tick -= OnOptimizedAnimationTimerTick;
+                        _animationTimer.Tick -= OnAnimationTimerTick;
+                        _animationTimer = normalPriorityTimer;
+                        
+                        if (wasRunning)
+                        {
+                            _animationTimer.Start();
+                        }
+                        
+                        _logService?.LogTrace("Animation frequency restored after drag: {Interval}ms (Priority: Background)", 
+                            _animationTimer.Interval.TotalMilliseconds);
+                    }
+                }
             }
         }
 
@@ -766,6 +1080,237 @@ namespace BallDragDrop.ViewModels
         }
 
         /// <summary>
+        /// Gets comprehensive animation timing metrics for performance monitoring
+        /// </summary>
+        /// <returns>Animation timing metrics including FPS, coordination status, and performance indicators</returns>
+        public AnimationTimingMetrics GetAnimationTimingMetrics()
+        {
+            var metrics = new AnimationTimingMetrics
+            {
+                IsAnimated = IsAnimated,
+                AnimationTimerEnabled = _animationTimer?.IsEnabled ?? false,
+                AnimationTimerInterval = _animationTimer?.Interval ?? TimeSpan.Zero,
+                SourceFrameDuration = _imageService?.FrameDuration ?? TimeSpan.Zero,
+                LastAnimationUpdate = _lastAnimationUpdate,
+                IsDragging = IsDragging,
+                ContentType = ContentType
+            };
+
+            // Calculate effective animation FPS
+            if (metrics.AnimationTimerInterval.TotalSeconds > 0)
+            {
+                metrics.EffectiveAnimationFPS = 1.0 / metrics.AnimationTimerInterval.TotalSeconds;
+            }
+
+            // Calculate source animation FPS
+            if (metrics.SourceFrameDuration.TotalSeconds > 0)
+            {
+                metrics.SourceAnimationFPS = 1.0 / metrics.SourceFrameDuration.TotalSeconds;
+            }
+
+            return metrics;
+        }
+
+        /// <summary>
+        /// Optimizes the dual timer system by separating physics and animation updates
+        /// Physics runs at 60 FPS while animation respects source frame rates
+        /// </summary>
+        public void OptimizeDualTimerSystem()
+        {
+            _logService?.LogMethodEntry(nameof(OptimizeDualTimerSystem));
+
+            if (!_isDualTimerOptimized)
+            {
+                // Optimize animation timer to use background priority
+                // This ensures physics updates (handled by MainWindow) take precedence
+                if (_animationTimer != null)
+                {
+                    var wasRunning = _animationTimer.IsEnabled;
+                    var currentInterval = _animationTimer.Interval;
+                    
+                    // Stop current timer
+                    _animationTimer.Stop();
+                    _animationTimer.Tick -= OnAnimationTimerTick;
+                    _animationTimer.Tick -= OnOptimizedAnimationTimerTick;
+
+                    // Create new optimized timer with background priority
+                    _animationTimer = new DispatcherTimer(DispatcherPriority.Background)
+                    {
+                        Interval = currentInterval
+                    };
+                    _animationTimer.Tick += OnOptimizedDualTimerAnimationTick;
+
+                    // Restart if it was running
+                    if (wasRunning)
+                    {
+                        _animationTimer.Start();
+                    }
+                }
+
+                _isDualTimerOptimized = true;
+                _logService?.LogDebug("Dual timer system optimized - Animation timer using background priority");
+            }
+
+            _logService?.LogMethodExit(nameof(OptimizeDualTimerSystem));
+        }
+
+        /// <summary>
+        /// Optimized animation timer tick handler for dual timer system
+        /// Respects source frame rates while ensuring physics updates are not impacted
+        /// </summary>
+        /// <param name="sender">Timer sender</param>
+        /// <param name="e">Event arguments</param>
+        private void OnOptimizedDualTimerAnimationTick(object sender, EventArgs e)
+        {
+            if (!IsAnimated) return;
+
+            // During drag operations, reduce animation frequency to maintain responsiveness
+            if (IsDragging)
+            {
+                // Limit animation to 20 FPS during drag to prioritize physics responsiveness
+                var maxDragInterval = TimeSpan.FromMilliseconds(50); // 20 FPS
+                if (_animationTimer.Interval < maxDragInterval)
+                {
+                    _animationTimer.Interval = maxDragInterval;
+                    _logService?.LogTrace("Animation frequency reduced during drag: {Interval}ms", 
+                        _animationTimer.Interval.TotalMilliseconds);
+                }
+            }
+            else
+            {
+                // Restore source frame rate when not dragging
+                var sourceInterval = _imageService?.FrameDuration ?? TimeSpan.FromMilliseconds(100);
+                
+                // Ensure minimum interval to prevent overwhelming the system (max 60 FPS)
+                if (sourceInterval.TotalMilliseconds < 16.67)
+                {
+                    sourceInterval = TimeSpan.FromMilliseconds(16.67);
+                }
+
+                if (_animationTimer.Interval != sourceInterval)
+                {
+                    _animationTimer.Interval = sourceInterval;
+                    _logService?.LogTrace("Animation frequency restored to source rate: {Interval}ms", 
+                        _animationTimer.Interval.TotalMilliseconds);
+                }
+            }
+
+            // Update frame with low priority to not interfere with physics
+            Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (IsAnimated) // Double-check in case animation stopped
+                {
+                    _imageService?.UpdateFrame();
+                    var newFrame = _imageService?.CurrentFrame;
+                    
+                    if (newFrame != null && !ReferenceEquals(BallImage, newFrame))
+                    {
+                        BallImage = newFrame;
+                    }
+                }
+                
+                _lastAnimationUpdate = DateTime.Now;
+            }), DispatcherPriority.Background);
+        }
+
+        /// <summary>
+        /// Ensures animation performance doesn't impact drag responsiveness in dual timer system
+        /// </summary>
+        public void EnsureDualTimerDragResponsiveness()
+        {
+            if (_isDualTimerOptimized && IsAnimated)
+            {
+                if (IsDragging)
+                {
+                    // During drag, use system idle priority for animation updates
+                    if (_animationTimer != null)
+                    {
+                        var wasRunning = _animationTimer.IsEnabled;
+                        var currentInterval = _animationTimer.Interval;
+                        
+                        _animationTimer.Stop();
+                        _animationTimer.Tick -= OnOptimizedDualTimerAnimationTick;
+
+                        // Create ultra-low priority timer for drag operations
+                        _animationTimer = new DispatcherTimer(DispatcherPriority.SystemIdle)
+                        {
+                            Interval = TimeSpan.FromMilliseconds(50) // 20 FPS max during drag
+                        };
+                        _animationTimer.Tick += OnOptimizedDualTimerAnimationTick;
+
+                        if (wasRunning)
+                        {
+                            _animationTimer.Start();
+                        }
+
+                        _logService?.LogTrace("Animation timer switched to SystemIdle priority during drag");
+                    }
+                }
+                else
+                {
+                    // Restore background priority when not dragging
+                    if (_animationTimer != null)
+                    {
+                        var wasRunning = _animationTimer.IsEnabled;
+                        var sourceInterval = _imageService?.FrameDuration ?? TimeSpan.FromMilliseconds(100);
+                        
+                        _animationTimer.Stop();
+                        _animationTimer.Tick -= OnOptimizedDualTimerAnimationTick;
+
+                        _animationTimer = new DispatcherTimer(DispatcherPriority.Background)
+                        {
+                            Interval = sourceInterval
+                        };
+                        _animationTimer.Tick += OnOptimizedDualTimerAnimationTick;
+
+                        if (wasRunning)
+                        {
+                            _animationTimer.Start();
+                        }
+
+                        _logService?.LogTrace("Animation timer restored to Background priority after drag");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Coordinates animation timing with physics updates in the dual timer system
+        /// Ensures smooth operation between 60 FPS physics and variable animation frame rates
+        /// </summary>
+        public void CoordinateDualTimerSystem()
+        {
+            if (_isDualTimerOptimized && IsAnimated)
+            {
+                var now = DateTime.Now;
+                var timeSinceLastUpdate = now - _lastAnimationUpdate;
+                var sourceFrameDuration = _imageService?.FrameDuration ?? TimeSpan.FromMilliseconds(100);
+
+                // Only update animation frame if enough time has passed based on source frame rate
+                // This prevents animation updates from interfering with 60 FPS physics updates
+                if (timeSinceLastUpdate >= sourceFrameDuration)
+                {
+                    // Use background priority to ensure physics updates take precedence
+                    Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        if (IsAnimated) // Double-check in case animation stopped
+                        {
+                            _imageService?.UpdateFrame();
+                            var newFrame = _imageService?.CurrentFrame;
+                            
+                            if (newFrame != null && !ReferenceEquals(BallImage, newFrame))
+                            {
+                                BallImage = newFrame;
+                            }
+                        }
+                    }), DispatcherPriority.Background);
+                    
+                    _lastAnimationUpdate = now;
+                }
+            }
+        }
+
+        /// <summary>
         /// Ensures visual quality is maintained during animation playback
         /// </summary>
         public void EnsureAnimationVisualQuality()
@@ -792,6 +1337,8 @@ namespace BallDragDrop.ViewModels
                 _logService?.LogTrace("Animation visual quality ensured");
             }
         }
+
+
 
         /// <summary>
         /// Handles mouse down events
@@ -926,7 +1473,7 @@ namespace BallDragDrop.ViewModels
             // Log performance metrics for mouse processing at debug level
             if (stopwatch.ElapsedMilliseconds > 5) // Only log if processing took more than 5ms
             {
-                _logService?.LogDebug("Mouse move processing took {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
+                _logService?.LogDebug("Mouse move processing took {0}ms", stopwatch.ElapsedMilliseconds);
             }
         }
         
@@ -1029,7 +1576,7 @@ namespace BallDragDrop.ViewModels
                     else
                     {
                         // Not a throw, stop the ball
-                        _logService?.LogDebug("Ball dropped (velocity too low for throw): ({VelX:F1}, {VelY:F1})", velocityX, velocityY);
+                        _logService?.LogDebug("Ball dropped (velocity too low for throw): ({0:F1}, {1:F1})", velocityX, velocityY);
                         _ballModel.Stop();
                     }
                     
@@ -1093,7 +1640,7 @@ namespace BallDragDrop.ViewModels
             
             if (wasConstrained)
             {
-                _logService?.LogDebug("Ball position constrained from ({OriginalX:F1}, {OriginalY:F1}) to ({NewX:F1}, {NewY:F1})", 
+                _logService?.LogDebug("Ball position constrained from ({0:F1}, {1:F1}) to ({2:F1}, {3:F1})", 
                     originalX, originalY, X, Y);
                 
                 // Notify UI that position properties have changed

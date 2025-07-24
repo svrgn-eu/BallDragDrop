@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -33,6 +33,11 @@ public partial class App : Application
     /// Settings manager for application configuration
     /// </summary>
     private SettingsManager _settingsManager;
+    
+    /// <summary>
+    /// Configuration service for application configuration
+    /// </summary>
+    private IConfigurationService _configurationService;
 
     #endregion Fields
     
@@ -86,12 +91,15 @@ public partial class App : Application
             splashScreen.Show();
             
             // Start initialization in the background
-            Task.Run(() => 
+            Task.Run(async () => 
             {
                 try
                 {
                     // Initialize application settings
                     InitializeSettings();
+                    
+                    // Initialize default ball image from configuration
+                    await InitializeDefaultBallImageAsync();
                     
                     // Update splash screen status
                     splashScreen.UpdateStatus("Initialization complete");
@@ -386,6 +394,23 @@ public partial class App : Application
             // Get settings manager from dependency injection
             _settingsManager = ServiceBootstrapper.GetService<SettingsManager>();
             
+            // Get configuration service from dependency injection
+            _configurationService = ServiceBootstrapper.GetService<IConfigurationService>();
+            
+            // Initialize configuration first
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await _configurationService.InitializeAsync();
+                    _logService?.LogInformation("Configuration initialized successfully");
+                }
+                catch (Exception ex)
+                {
+                    _logService?.LogError(ex, "Failed to initialize configuration, using defaults");
+                }
+            });
+            
             // Load existing settings
             bool settingsLoaded = _settingsManager.LoadSettings();
             
@@ -418,7 +443,7 @@ public partial class App : Application
             }
             
             // Log successful initialization
-            _logService?.LogInformation("Application settings initialized");
+            _logService?.LogInformation("Application settings and configuration initialized");
         }
         catch (Exception ex)
         {
@@ -459,6 +484,9 @@ public partial class App : Application
             // Save the settings
             bool saved = _settingsManager.SaveSettings();
             
+            // Configuration is automatically saved by Config.Net when values change
+            _logService?.LogInformation("Configuration will be automatically persisted by Config.Net");
+            
             // Log result
             if (saved)
             {
@@ -492,6 +520,51 @@ public partial class App : Application
     public ILogService GetLogService()
     {
         return _logService;
+    }
+    
+    /// <summary>
+    /// Gets the configuration service instance
+    /// </summary>
+    /// <returns>The configuration service instance</returns>
+    public IConfigurationService GetConfigurationService()
+    {
+        return _configurationService;
+    }
+    
+    /// <summary>
+    /// Initializes the default ball image from configuration
+    /// </summary>
+    private async Task InitializeDefaultBallImageAsync()
+    {
+        try
+        {
+            if (_configurationService == null)
+            {
+                _logService?.LogWarning("Configuration service not initialized, skipping default ball image setup");
+                return;
+            }
+            
+            var defaultImagePath = _configurationService.GetDefaultBallImagePath();
+            _logService?.LogInformation("Default ball image path from configuration: {ImagePath}", defaultImagePath);
+            
+            // Validate the image path
+            if (!_configurationService.ValidateImagePath(defaultImagePath))
+            {
+                _logService?.LogWarning("Default ball image path is invalid: {ImagePath}", defaultImagePath);
+                
+                // Try to set a fallback path
+                var fallbackPath = "./Resources/Images/Ball01.png";
+                if (_configurationService.ValidateImagePath(fallbackPath))
+                {
+                    _configurationService.SetDefaultBallImagePath(fallbackPath);
+                    _logService?.LogInformation("Updated default ball image path to fallback: {FallbackPath}", fallbackPath);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logService?.LogError(ex, "Failed to initialize default ball image from configuration");
+        }
     }
 
     #endregion Methods

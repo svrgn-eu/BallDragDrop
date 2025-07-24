@@ -17,6 +17,16 @@ namespace BallDragDrop.Services
         /// </summary>
         public event EventHandler<PerformanceMetricsEventArgs> MetricsUpdated;
 
+        /// <summary>
+        /// Gets the average frame time in milliseconds
+        /// </summary>
+        public double AverageFrameTime => _averageFrameTimeMs;
+
+        /// <summary>
+        /// Gets the average physics update time in milliseconds
+        /// </summary>
+        public double AveragePhysicsTime => _averagePhysicsTimeMs;
+
         #endregion Properties
         
         #region Construction

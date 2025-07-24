@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using BallDragDrop.Bootstrapper;
 using BallDragDrop.Services;
 using BallDragDrop.Contracts;
+using BallDragDrop.Models;
 using BallDragDrop.ViewModels;
 using Microsoft.Win32;
 using Path = System.IO.Path;
@@ -50,8 +51,8 @@ public partial class MainWindow : Window
         this.Loaded += Window_Loaded;
         this.Closed += MainWindow_Closed;
         
-        // Set up rendering event for physics updates
-        CompositionTarget.Rendering += CompositionTarget_Rendering;
+        // Initialize optimized dual timer system
+        InitializeOptimizedTimers();
         
         Debug.WriteLine("MainWindow initialized");
     }
@@ -84,6 +85,21 @@ public partial class MainWindow : Window
     /// Debug counter for physics updates
     /// </summary>
     private int _physicsUpdateCounter = 0;
+    
+    /// <summary>
+    /// High-precision timer for physics updates (60 FPS)
+    /// </summary>
+    private DispatcherTimer _physicsTimer;
+    
+    /// <summary>
+    /// Target physics update interval (60 FPS = ~16.67ms)
+    /// </summary>
+    private readonly TimeSpan _physicsUpdateInterval = TimeSpan.FromMilliseconds(1000.0 / 60.0);
+    
+    /// <summary>
+    /// Flag to track if we're using optimized dual timer system
+    /// </summary>
+    private bool _useOptimizedTimers = true;
 
     #endregion Fields
     
@@ -96,8 +112,8 @@ public partial class MainWindow : Window
     /// <param name="e">Event data</param>
     private void MainWindow_Closed(object sender, EventArgs e)
     {
-        // Clean up event handlers
-        CompositionTarget.Rendering -= CompositionTarget_Rendering;
+        // Clean up timers and event handlers
+        CleanupOptimizedTimers();
     }
     
     /// <summary>
@@ -284,10 +300,18 @@ public partial class MainWindow : Window
             // Check if the ball has velocity after release (was thrown)
             if (Math.Abs(viewModel._ballModel.VelocityX) > 0.1 || Math.Abs(viewModel._ballModel.VelocityY) > 0.1)
             {
-                // Start the physics simulation
+                // Start the physics simulation using optimized timer system
                 _isPhysicsRunning = true;
-                _lastPhysicsUpdate = DateTime.Now;
                 _physicsUpdateCounter = 0;
+                
+                if (_useOptimizedTimers)
+                {
+                    StartPhysicsTimer();
+                }
+                else
+                {
+                    _lastPhysicsUpdate = DateTime.Now;
+                }
                 
                 Debug.WriteLine($"Ball thrown with velocity: ({viewModel._ballModel.VelocityX:F2}, {viewModel._ballModel.VelocityY:F2})");
             }
@@ -413,6 +437,318 @@ public partial class MainWindow : Window
     }
 
     #endregion Event Handlers
+
+    #region Optimized Timer System
+
+    /// <summary>
+    /// Initializes the optimized dual timer system
+    /// Separates physics updates (60 FPS) from animation frame updates
+    /// </summary>
+    private void InitializeOptimizedTimers()
+    {
+        if (_useOptimizedTimers)
+        {
+            // Initialize dedicated physics timer for 60 FPS updates
+            _physicsTimer = new DispatcherTimer(DispatcherPriority.Normal)
+            {
+                Interval = _physicsUpdateInterval
+            };
+            _physicsTimer.Tick += PhysicsTimer_Tick;
+            
+            Debug.WriteLine($"Optimized dual timer system initialized - Physics: {_physicsUpdateInterval.TotalMilliseconds:F2}ms");
+        }
+        else
+        {
+            // Fallback to original CompositionTarget.Rendering approach
+            CompositionTarget.Rendering += CompositionTarget_Rendering;
+            Debug.WriteLine("Using legacy CompositionTarget.Rendering for physics updates");
+        }
+    }
+
+    /// <summary>
+    /// Cleans up the optimized timer system
+    /// </summary>
+    private void CleanupOptimizedTimers()
+    {
+        if (_useOptimizedTimers)
+        {
+            _physicsTimer?.Stop();
+            if (_physicsTimer != null)
+            {
+                _physicsTimer.Tick -= PhysicsTimer_Tick;
+                _physicsTimer = null;
+            }
+        }
+        else
+        {
+            CompositionTarget.Rendering -= CompositionTarget_Rendering;
+        }
+        
+        Debug.WriteLine("Timer system cleaned up");
+    }
+
+    /// <summary>
+    /// Starts the physics timer when physics simulation begins
+    /// </summary>
+    private void StartPhysicsTimer()
+    {
+        if (_useOptimizedTimers && _physicsTimer != null && !_physicsTimer.IsEnabled)
+        {
+            _lastPhysicsUpdate = DateTime.Now;
+            _physicsTimer.Start();
+            Debug.WriteLine("Physics timer started");
+        }
+    }
+
+    /// <summary>
+    /// Stops the physics timer when physics simulation ends
+    /// </summary>
+    private void StopPhysicsTimer()
+    {
+        if (_useOptimizedTimers && _physicsTimer != null && _physicsTimer.IsEnabled)
+        {
+            _physicsTimer.Stop();
+            Debug.WriteLine("Physics timer stopped");
+        }
+    }
+
+    /// <summary>
+    /// Dedicated physics timer tick handler for 60 FPS physics updates
+    /// Separated from animation frame updates for optimal performance
+    /// </summary>
+    /// <param name="sender">Timer sender</param>
+    /// <param name="e">Event arguments</param>
+    private void PhysicsTimer_Tick(object sender, EventArgs e)
+    {
+        // Start measuring frame time
+        _performanceMonitor.BeginFrameTime();
+        
+        // Get current time for physics calculations
+        DateTime currentTime = DateTime.Now;
+        
+        // Get the BallViewModel from the DataContext
+        if (DataContext is BallViewModel viewModel)
+        {
+            // Handle drag operations with immediate responsiveness
+            if (viewModel.IsDragging && Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed)
+            {
+                var mousePosition = Mouse.GetPosition(MainCanvas);
+                UpdateBallPositionToMouse(viewModel, mousePosition);
+                
+                // Stop physics simulation during drag but keep timer running for responsiveness
+                if (_isPhysicsRunning)
+                {
+                    _isPhysicsRunning = false;
+                    viewModel._ballModel.Stop();
+                    Debug.WriteLine("Physics paused: Ball is being dragged");
+                }
+                
+                // Animation updates are handled separately by BallViewModel's animation timer
+                // This ensures drag responsiveness is not affected by animation frame rates
+                // Coordinate animation timing to ensure smooth operation during drag
+                viewModel.CoordinateAnimationWithPhysics();
+            }
+            // Handle physics-based movement when not dragging
+            else if (!viewModel.IsDragging && _isPhysicsRunning)
+            {
+                // Calculate time step for consistent 60 FPS physics
+                double timeStep = (currentTime - _lastPhysicsUpdate).TotalSeconds;
+                
+                // Clamp time step to prevent large jumps (maintain 60 FPS consistency)
+                timeStep = Math.Min(timeStep, _physicsUpdateInterval.TotalSeconds * 2);
+                
+                // Start measuring physics update time
+                _performanceMonitor.BeginPhysicsTime();
+                
+                // Store the old position for comparison
+                double oldX = viewModel._ballModel.X;
+                double oldY = viewModel._ballModel.Y;
+                
+                // Update the ball's position and velocity using physics
+                var result = _physicsEngine.UpdateBall(
+                    viewModel._ballModel,
+                    timeStep,
+                    0, 0,
+                    MainCanvas.Width,
+                    MainCanvas.Height);
+                
+                // End measuring physics update time
+                _performanceMonitor.EndPhysicsTime();
+                
+                // Check if the position has changed
+                if (Math.Abs(oldX - viewModel._ballModel.X) > 0.01 || Math.Abs(oldY - viewModel._ballModel.Y) > 0.01)
+                {
+                    // Update the view model's position to match the model
+                    viewModel.X = viewModel._ballModel.X;
+                    viewModel.Y = viewModel._ballModel.Y;
+                    
+                    // Force UI update with high priority for smooth physics
+                    Dispatcher.InvokeAsync(() => {
+                        Canvas.SetLeft(BallImage, viewModel.Left);
+                        Canvas.SetTop(BallImage, viewModel.Top);
+                    }, DispatcherPriority.Render);
+                }
+                
+                // Increment the physics update counter
+                _physicsUpdateCounter++;
+                
+                // Debug output (limit to reduce spam)
+                if (_physicsUpdateCounter % 60 == 0) // Every second at 60 FPS
+                {
+                    Debug.WriteLine($"Physics update #{_physicsUpdateCounter}: Position=({viewModel.X:F2}, {viewModel.Y:F2}), Velocity=({viewModel._ballModel.VelocityX:F2}, {viewModel._ballModel.VelocityY:F2})");
+                }
+                
+                // If the ball has stopped moving, stop physics updates
+                if (!result.IsMoving)
+                {
+                    _isPhysicsRunning = false;
+                    StopPhysicsTimer();
+                    
+                    // Ensure the ball is completely stopped
+                    viewModel._ballModel.Stop();
+                    
+                    Debug.WriteLine("Physics stopped: Ball no longer moving");
+                }
+                
+                // Update the last physics update time
+                _lastPhysicsUpdate = currentTime;
+            }
+            else if (_isPhysicsRunning && !_physicsTimer.IsEnabled)
+            {
+                // Physics should be running but timer is stopped - restart it
+                StartPhysicsTimer();
+            }
+        }
+        
+        // End measuring frame time
+        _performanceMonitor.EndFrameTime();
+    }
+
+    /// <summary>
+    /// Enables or disables the optimized dual timer system
+    /// </summary>
+    /// <param name="useOptimized">True to use optimized timers, false for legacy approach</param>
+    public void SetOptimizedTimerMode(bool useOptimized)
+    {
+        if (_useOptimizedTimers != useOptimized)
+        {
+            // Clean up current system
+            CleanupOptimizedTimers();
+            
+            // Switch mode
+            _useOptimizedTimers = useOptimized;
+            
+            // Initialize new system
+            InitializeOptimizedTimers();
+            
+            Debug.WriteLine($"Timer system switched to: {(useOptimized ? "Optimized" : "Legacy")}");
+        }
+    }
+
+    /// <summary>
+    /// Gets performance metrics for the dual timer system
+    /// </summary>
+    /// <returns>Performance metrics including physics FPS and animation coordination</returns>
+    public TimerPerformanceMetrics GetTimerPerformanceMetrics()
+    {
+        return new TimerPerformanceMetrics
+        {
+            PhysicsTimerEnabled = _physicsTimer?.IsEnabled ?? false,
+            PhysicsUpdateInterval = _physicsUpdateInterval,
+            IsPhysicsRunning = _isPhysicsRunning,
+            PhysicsUpdateCount = _physicsUpdateCounter,
+            UseOptimizedTimers = _useOptimizedTimers,
+            AverageFrameTime = _performanceMonitor.AverageFrameTime,
+            AveragePhysicsTime = _performanceMonitor.AveragePhysicsTime
+        };
+    }
+
+    /// <summary>
+    /// Optimizes the dual timer system coordination
+    /// Ensures physics updates (60 FPS) are separated from animation frame updates
+    /// </summary>
+    public void OptimizeDualTimerCoordination()
+    {
+        if (_useOptimizedTimers && DataContext is BallViewModel viewModel)
+        {
+            // Enable optimized dual timer system in BallViewModel
+            viewModel.OptimizeDualTimerSystem();
+            
+            // Optimize animation timing to respect source frame rates
+            viewModel.OptimizeAnimationTiming();
+            
+            // Ensure animation doesn't impact drag responsiveness
+            viewModel.EnsureAnimationDoesNotImpactDragResponsiveness();
+            
+            // Adjust physics timer priority if needed
+            if (_physicsTimer != null)
+            {
+                // Ensure physics timer uses normal priority for consistent 60 FPS
+                var currentPriority = _physicsTimer.Dispatcher.Thread.Priority;
+                if (currentPriority != System.Threading.ThreadPriority.Normal)
+                {
+                    _physicsTimer.Dispatcher.Thread.Priority = System.Threading.ThreadPriority.Normal;
+                }
+            }
+            
+            Debug.WriteLine("Dual timer system coordination optimized");
+        }
+    }
+
+    /// <summary>
+    /// Gets comprehensive timing metrics for both physics and animation systems
+    /// </summary>
+    /// <returns>Combined timing metrics</returns>
+    public DualTimerCoordinationMetrics GetDualTimerCoordinationMetrics()
+    {
+        var physicsMetrics = GetTimerPerformanceMetrics();
+        var animationMetrics = DataContext is BallViewModel viewModel ? 
+            viewModel.GetAnimationTimingMetrics() : 
+            new AnimationTimingMetrics();
+
+        return new DualTimerCoordinationMetrics
+        {
+            PhysicsMetrics = physicsMetrics,
+            AnimationMetrics = animationMetrics,
+            IsCoordinationOptimal = IsTimerCoordinationOptimal(physicsMetrics, animationMetrics),
+            CoordinationEfficiency = CalculateCoordinationEfficiency(physicsMetrics, animationMetrics)
+        };
+    }
+
+    /// <summary>
+    /// Determines if timer coordination is optimal
+    /// </summary>
+    /// <param name="physicsMetrics">Physics timer metrics</param>
+    /// <param name="animationMetrics">Animation timer metrics</param>
+    /// <returns>True if coordination is optimal</returns>
+    private bool IsTimerCoordinationOptimal(TimerPerformanceMetrics physicsMetrics, AnimationTimingMetrics animationMetrics)
+    {
+        // Physics should maintain 60 FPS when running
+        var physicsOptimal = !physicsMetrics.IsPhysicsRunning || physicsMetrics.IsPhysicsTimingOptimal;
+        
+        // Animation should respect source frame rate and be optimized for drag
+        var animationOptimal = !animationMetrics.IsAnimated || 
+            (animationMetrics.IsRespectingSourceFrameRate && animationMetrics.IsOptimizedForDrag);
+        
+        return physicsOptimal && animationOptimal;
+    }
+
+    /// <summary>
+    /// Calculates the coordination efficiency between physics and animation timers
+    /// </summary>
+    /// <param name="physicsMetrics">Physics timer metrics</param>
+    /// <param name="animationMetrics">Animation timer metrics</param>
+    /// <returns>Coordination efficiency percentage</returns>
+    private double CalculateCoordinationEfficiency(TimerPerformanceMetrics physicsMetrics, AnimationTimingMetrics animationMetrics)
+    {
+        var physicsEfficiency = physicsMetrics.PhysicsTimingEfficiency;
+        var animationEfficiency = animationMetrics.IsPerformanceAcceptable ? 100.0 : 50.0;
+        
+        // Weight physics efficiency higher since it's more critical for responsiveness
+        return (physicsEfficiency * 0.7) + (animationEfficiency * 0.3);
+    }
+
+    #endregion Optimized Timer System
 
     #region Methods
 

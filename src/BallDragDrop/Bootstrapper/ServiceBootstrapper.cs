@@ -93,6 +93,9 @@ namespace BallDragDrop.Bootstrapper
             services.AddSingleton<SettingsManager>(provider => 
                 new SettingsManager(provider.GetRequiredService<ILogService>()));
             
+            // Register ConfigurationService
+            services.AddSingleton<IConfigurationService, ConfigurationService>();
+            
             // ImageService uses static methods, so no registration needed
             // EventThrottler and PerformanceMonitor are created as needed with specific parameters
         }
@@ -129,7 +132,11 @@ namespace BallDragDrop.Bootstrapper
         /// </summary>
         private static void RegisterViewModels(IServiceCollection services)
         {
-            services.AddTransient<BallViewModel>();
+            services.AddTransient<BallViewModel>(provider => 
+                new BallViewModel(
+                    provider.GetRequiredService<ILogService>(),
+                    null, // ImageService will be created internally
+                    provider.GetRequiredService<IConfigurationService>()));
         }
 
         /// <summary>

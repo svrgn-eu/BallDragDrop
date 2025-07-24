@@ -21,6 +21,7 @@ graph TD
     C --> F[ImageService]
     F --> G[AnimationEngine]
     F --> H[AsepriteLoader]
+    C --> L[ConfigurationService]
     B --> I[ResourceDictionary]
     I --> J[Styles/Templates]
     I --> K[Ball Visuals]
@@ -34,7 +35,8 @@ graph TD
 6. **ImageService**: Handles loading and managing static images and animations.
 7. **AnimationEngine**: Manages animation playback, frame timing, and animation state.
 8. **AsepriteLoader**: Specialized loader for Aseprite PNG+JSON exports.
-9. **ResourceDictionary**: Contains styles, templates, and resources used in the application.
+9. **ConfigurationService**: Manages application settings including the default ball image path.
+10. **ResourceDictionary**: Contains styles, templates, and resources used in the application.
 
 ## Components and Interfaces
 
@@ -71,6 +73,7 @@ public class BallViewModel : INotifyPropertyChanged
     private BallModel _ball;
     private PhysicsEngine _physicsEngine;
     private ImageService _imageService;
+    private ConfigurationService _configurationService;
     private DispatcherTimer _animationTimer;
     
     // Properties for binding
@@ -88,6 +91,7 @@ public class BallViewModel : INotifyPropertyChanged
     
     // Methods for handling drag, drop, and throw
     public async Task LoadBallVisualAsync(string filePath)
+    public async Task LoadDefaultBallImageAsync()
     private void OnAnimationTimerTick(object sender, EventArgs e)
     private void UpdateBallImage()
     
@@ -234,6 +238,37 @@ public class AsepriteTag
     public int From { get; set; }
     public int To { get; set; }
     public string Direction { get; set; }
+}
+```
+
+### ConfigurationService
+
+The ConfigurationService will handle application settings and configuration management. It will:
+- Load and save application configuration
+- Provide access to configurable settings like default ball image path
+- Handle configuration validation and fallback values
+- Persist configuration changes across application sessions
+
+```csharp
+public class ConfigurationService
+{
+    private const string DefaultBallImagePath = "./src/BallDragDrop/Resources/Images/Ball01.png";
+    private const string ConfigFileName = "appsettings.json";
+    
+    public AppConfiguration Configuration { get; private set; }
+    
+    public async Task LoadConfigurationAsync()
+    public async Task SaveConfigurationAsync()
+    public string GetDefaultBallImagePath()
+    public void SetDefaultBallImagePath(string path)
+    public bool ValidateImagePath(string path)
+}
+
+public class AppConfiguration
+{
+    public string DefaultBallImagePath { get; set; } = "./src/BallDragDrop/Resources/Images/Ball01.png";
+    public bool EnableAnimations { get; set; } = true;
+    public double DefaultBallSize { get; set; } = 50.0;
 }
 ```
 

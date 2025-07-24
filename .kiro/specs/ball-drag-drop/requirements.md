@@ -86,7 +86,19 @@ This document outlines the requirements for a desktop application that allows us
 9. WHEN the ball visual is changed THEN the system SHALL update the display without requiring application restart.
 10. IF JSON metadata is missing for a PNG sprite sheet THEN the system SHALL attempt to treat it as a static image or provide appropriate error feedback.
 
-### Requirement 7: Technology Stack
+### Requirement 7: Application Configuration
+
+**User Story:** As a user, I want the application to have configurable settings including the default ball image, so that I can customize the application behavior according to my preferences.
+
+#### Acceptance Criteria
+
+1. WHEN the application starts THEN the system SHALL load the default ball image from "./src/BallDragDrop/Resources/Images/Ball01.png".
+2. WHEN the application configuration is accessed THEN the system SHALL provide a way to specify the default ball image path.
+3. WHEN the default ball image path is configured THEN the system SHALL use the specified image as the initial ball visual.
+4. WHEN the configured default image cannot be loaded THEN the system SHALL fall back to the built-in default image or display an appropriate error message.
+5. WHEN the application configuration is modified THEN the system SHALL persist the changes for future application sessions.
+
+### Requirement 8: Technology Stack
 
 **User Story:** As a developer, I want the application to be built using .NET 9 with WPF, so that it leverages modern development frameworks and capabilities.
 

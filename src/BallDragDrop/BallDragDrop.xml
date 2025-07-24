@@ -27,6 +27,11 @@
             Settings manager for application configuration
             </summary>
         </member>
+        <member name="F:BallDragDrop.App._configurationService">
+            <summary>
+            Configuration service for application configuration
+            </summary>
+        </member>
         <member name="M:BallDragDrop.App.Application_Startup(System.Object,System.Windows.StartupEventArgs)">
             <summary>
             Application startup event handler from XAML
@@ -131,6 +136,17 @@
             </summary>
             <returns>The logging service instance</returns>
         </member>
+        <member name="M:BallDragDrop.App.GetConfigurationService">
+            <summary>
+            Gets the configuration service instance
+            </summary>
+            <returns>The configuration service instance</returns>
+        </member>
+        <member name="M:BallDragDrop.App.InitializeDefaultBallImageAsync">
+            <summary>
+            Initializes the default ball image from configuration
+            </summary>
+        </member>
         <member name="M:BallDragDrop.App.InitializeComponent">
             <summary>
             InitializeComponent
@@ -227,6 +243,61 @@
         <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.Dispose">
             <summary>
             Disposes the service provider and cleans up resources
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Contracts.IConfigurationService">
+            <summary>
+            Interface for application configuration management using Config.Net
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Contracts.IConfigurationService.Configuration">
+            <summary>
+            Gets the application configuration
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IConfigurationService.InitializeAsync">
+            <summary>
+            Initializes the configuration service
+            </summary>
+            <returns>A task representing the asynchronous operation</returns>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IConfigurationService.GetDefaultBallImagePath">
+            <summary>
+            Gets the default ball image path from configuration
+            </summary>
+            <returns>The default ball image path</returns>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IConfigurationService.SetDefaultBallImagePath(System.String)">
+            <summary>
+            Sets the default ball image path in configuration
+            </summary>
+            <param name="path">The path to set as default</param>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IConfigurationService.ValidateImagePath(System.String)">
+            <summary>
+            Validates if the specified image path exists and is accessible
+            </summary>
+            <param name="path">The image path to validate</param>
+            <returns>True if the path is valid, false otherwise</returns>
+        </member>
+        <member name="T:BallDragDrop.Contracts.IAppConfiguration">
+            <summary>
+            Application configuration interface using Config.Net
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Contracts.IAppConfiguration.DefaultBallImagePath">
+            <summary>
+            Gets or sets the default ball image path
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Contracts.IAppConfiguration.EnableAnimations">
+            <summary>
+            Gets or sets whether animations are enabled
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Contracts.IAppConfiguration.DefaultBallSize">
+            <summary>
+            Gets or sets the default ball size
             </summary>
         </member>
         <member name="T:BallDragDrop.Contracts.IExceptionHandlingService">
@@ -572,6 +643,83 @@
             Disposes of the animation engine resources
             </summary>
             <param name="disposing">True if disposing managed resources</param>
+        </member>
+        <member name="T:BallDragDrop.Models.AnimationTimingMetrics">
+            <summary>
+            Metrics for animation timing performance in the dual timer system
+            Used to monitor animation frame rate coordination with physics updates
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationTimingMetrics.IsAnimated">
+            <summary>
+            Gets or sets whether the ball visual is currently animated
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationTimingMetrics.AnimationTimerEnabled">
+            <summary>
+            Gets or sets whether the animation timer is currently enabled
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationTimingMetrics.AnimationTimerInterval">
+            <summary>
+            Gets or sets the current animation timer interval
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationTimingMetrics.SourceFrameDuration">
+            <summary>
+            Gets or sets the source frame duration from the original animation
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationTimingMetrics.LastAnimationUpdate">
+            <summary>
+            Gets or sets the timestamp of the last animation frame update
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationTimingMetrics.IsDragging">
+            <summary>
+            Gets or sets whether the ball is currently being dragged
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationTimingMetrics.ContentType">
+            <summary>
+            Gets or sets the type of visual content currently loaded
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationTimingMetrics.EffectiveAnimationFPS">
+            <summary>
+            Gets the effective animation FPS based on current timer interval
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationTimingMetrics.SourceAnimationFPS">
+            <summary>
+            Gets the source animation FPS based on original frame duration
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationTimingMetrics.IsRespectingSourceFrameRate">
+            <summary>
+            Gets whether the animation timing is respecting the source frame rate
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationTimingMetrics.IsOptimizedForDrag">
+            <summary>
+            Gets whether the animation timing is optimized for drag operations
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationTimingMetrics.TimeSinceLastUpdate">
+            <summary>
+            Gets the time since the last animation update
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.AnimationTimingMetrics.IsPerformanceAcceptable">
+            <summary>
+            Gets whether the animation timing is within acceptable performance bounds
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.AnimationTimingMetrics.ToString">
+            <summary>
+            Returns a string representation of the animation timing metrics
+            </summary>
+            <returns>Formatted animation timing metrics string</returns>
         </member>
         <member name="T:BallDragDrop.Models.AsepriteMetadata">
             <summary>
@@ -928,6 +1076,63 @@
             <param name="maxY">Maximum Y coordinate</param>
             <returns>True if the position was constrained, false otherwise</returns>
         </member>
+        <member name="T:BallDragDrop.Models.DualTimerCoordinationMetrics">
+            <summary>
+            Comprehensive metrics for dual timer system coordination
+            Combines physics and animation timing metrics for performance analysis
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.DualTimerCoordinationMetrics.PhysicsMetrics">
+            <summary>
+            Gets or sets the physics timer performance metrics
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.DualTimerCoordinationMetrics.AnimationMetrics">
+            <summary>
+            Gets or sets the animation timing metrics
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.DualTimerCoordinationMetrics.IsCoordinationOptimal">
+            <summary>
+            Gets or sets whether the timer coordination is optimal
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.DualTimerCoordinationMetrics.CoordinationEfficiency">
+            <summary>
+            Gets or sets the coordination efficiency as a percentage
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.DualTimerCoordinationMetrics.IsPerformanceAcceptable">
+            <summary>
+            Gets whether both timers are performing within acceptable bounds
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.DualTimerCoordinationMetrics.IsProperlySeparated">
+            <summary>
+            Gets whether the system is properly separating physics and animation updates
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.DualTimerCoordinationMetrics.IsDragResponsive">
+            <summary>
+            Gets whether drag responsiveness is being maintained
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.DualTimerCoordinationMetrics.IsRespectingSourceFrameRates">
+            <summary>
+            Gets whether source animation frame rates are being respected
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.DualTimerCoordinationMetrics.SystemHealthScore">
+            <summary>
+            Gets the overall system health score (0-100)
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.DualTimerCoordinationMetrics.ToString">
+            <summary>
+            Returns a string representation of the dual timer coordination metrics
+            </summary>
+            <returns>Formatted coordination metrics string</returns>
+        </member>
         <member name="T:BallDragDrop.Models.PhysicsEngine">
             <summary>
             Provides physics calculations for ball movement including velocity, friction, and collisions.
@@ -1079,6 +1284,121 @@
             <param name="ball1">The first ball</param>
             <param name="ball2">The second ball</param>
             <returns>True if the balls are colliding, false otherwise</returns>
+        </member>
+        <member name="T:BallDragDrop.Models.TimerPerformanceMetrics">
+            <summary>
+            Performance metrics for the dual timer system
+            Used to monitor and optimize physics and animation timing coordination
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.TimerPerformanceMetrics.PhysicsTimerEnabled">
+            <summary>
+            Gets or sets whether the physics timer is currently enabled
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.TimerPerformanceMetrics.PhysicsUpdateInterval">
+            <summary>
+            Gets or sets the physics update interval (target: 60 FPS = ~16.67ms)
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.TimerPerformanceMetrics.IsPhysicsRunning">
+            <summary>
+            Gets or sets whether physics simulation is currently running
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.TimerPerformanceMetrics.PhysicsUpdateCount">
+            <summary>
+            Gets or sets the total number of physics updates performed
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.TimerPerformanceMetrics.UseOptimizedTimers">
+            <summary>
+            Gets or sets whether the optimized dual timer system is being used
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.TimerPerformanceMetrics.AverageFrameTime">
+            <summary>
+            Gets or sets the average frame time in milliseconds
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.TimerPerformanceMetrics.AveragePhysicsTime">
+            <summary>
+            Gets or sets the average physics update time in milliseconds
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.TimerPerformanceMetrics.PhysicsFPS">
+            <summary>
+            Gets the effective physics FPS based on the update interval
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.TimerPerformanceMetrics.FrameFPS">
+            <summary>
+            Gets the effective frame FPS based on average frame time
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.TimerPerformanceMetrics.IsPhysicsTimingOptimal">
+            <summary>
+            Gets whether the physics timing is meeting the 60 FPS target
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.TimerPerformanceMetrics.PhysicsTimingEfficiency">
+            <summary>
+            Gets the physics timing efficiency as a percentage
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.TimerPerformanceMetrics.ToString">
+            <summary>
+            Returns a string representation of the performance metrics
+            </summary>
+            <returns>Formatted performance metrics string</returns>
+        </member>
+        <member name="T:BallDragDrop.Services.ConfigurationService">
+            <summary>
+            Service for managing application configuration using Config.Net
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.ConfigurationService.#ctor(BallDragDrop.Contracts.ILogService)">
+            <summary>
+            Initializes a new instance of the ConfigurationService class
+            </summary>
+            <param name="logService">The logging service</param>
+        </member>
+        <member name="M:BallDragDrop.Services.ConfigurationService.#ctor(BallDragDrop.Contracts.ILogService,System.String)">
+            <summary>
+            Initializes a new instance of the ConfigurationService class with a custom config file path (for testing)
+            </summary>
+            <param name="logService">The logging service</param>
+            <param name="configFilePath">The custom configuration file path</param>
+        </member>
+        <member name="P:BallDragDrop.Services.ConfigurationService.Configuration">
+            <summary>
+            Gets the application configuration
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.ConfigurationService.InitializeAsync">
+            <summary>
+            Initializes the configuration service using Config.Net
+            </summary>
+            <returns>A task representing the asynchronous operation</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ConfigurationService.GetDefaultBallImagePath">
+            <summary>
+            Gets the default ball image path from configuration
+            </summary>
+            <returns>The default ball image path</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ConfigurationService.SetDefaultBallImagePath(System.String)">
+            <summary>
+            Sets the default ball image path in configuration
+            </summary>
+            <param name="path">The path to set as default</param>
+        </member>
+        <member name="M:BallDragDrop.Services.ConfigurationService.ValidateImagePath(System.String)">
+            <summary>
+            Validates if the specified image path exists and is accessible
+            </summary>
+            <param name="path">The image path to validate</param>
+            <returns>True if the path is valid, false otherwise</returns>
         </member>
         <member name="T:BallDragDrop.Services.EventThrottler">
             <summary>
@@ -1639,6 +1959,16 @@
         <member name="E:BallDragDrop.Services.PerformanceMonitor.MetricsUpdated">
             <summary>
             Event raised when performance metrics are updated
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.PerformanceMonitor.AverageFrameTime">
+            <summary>
+            Gets the average frame time in milliseconds
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.PerformanceMonitor.AveragePhysicsTime">
+            <summary>
+            Gets the average physics update time in milliseconds
             </summary>
         </member>
         <member name="M:BallDragDrop.Services.PerformanceMonitor.#ctor(System.Int32)">
@@ -2467,12 +2797,13 @@
             Gets the height for binding (Diameter)
             </summary>
         </member>
-        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(BallDragDrop.Contracts.ILogService,BallDragDrop.Services.ImageService)">
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(BallDragDrop.Contracts.ILogService,BallDragDrop.Services.ImageService,BallDragDrop.Contracts.IConfigurationService)">
             <summary>
             Initializes a new instance of the BallViewModel class
             </summary>
             <param name="logService">Logging service for tracking user interactions</param>
             <param name="imageService">Image service for loading and managing visual content</param>
+            <param name="configurationService">Configuration service for accessing application settings</param>
         </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(System.Double,System.Double,System.Double,BallDragDrop.Services.ImageService)">
             <summary>
@@ -2503,6 +2834,11 @@
             Image service for loading and managing visual content
             </summary>
         </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._configurationService">
+            <summary>
+            Configuration service for accessing application settings
+            </summary>
+        </member>
         <member name="F:BallDragDrop.ViewModels.BallViewModel._ballImage">
             <summary>
             Image source for the ball
@@ -2520,7 +2856,12 @@
         </member>
         <member name="F:BallDragDrop.ViewModels.BallViewModel._animationTimer">
             <summary>
-            Timer for updating animation frames
+            Timer for updating animation frames (optimized for source frame rates)
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._isDualTimerOptimized">
+            <summary>
+            Flag to track if dual timer optimization is enabled
             </summary>
         </member>
         <member name="F:BallDragDrop.ViewModels.BallViewModel._isDragging">
@@ -2573,6 +2914,11 @@
             Last mouse move event arguments for throttled processing
             </summary>
         </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._lastAnimationUpdate">
+            <summary>
+            Timestamp of the last animation frame update for coordination with physics
+            </summary>
+        </member>
         <member name="E:BallDragDrop.ViewModels.BallViewModel.PropertyChanged">
             <summary>
             Event that is raised when a property value changes
@@ -2591,6 +2937,12 @@
             Loads ball visual content from the specified file path
             </summary>
             <param name="filePath">Path to the visual content file</param>
+            <returns>True if loading was successful, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.LoadDefaultBallImageAsync">
+            <summary>
+            Loads the default ball image from configuration
+            </summary>
             <returns>True if loading was successful, false otherwise</returns>
         </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.SwitchBallVisualAsync(System.String)">
@@ -2635,6 +2987,14 @@
             <param name="sender">Event sender</param>
             <param name="e">Event arguments</param>
         </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.OnOptimizedAnimationTimerTick(System.Object,System.EventArgs)">
+            <summary>
+            Optimized animation timer tick handler that respects source frame rates
+            while ensuring physics updates are not impacted
+            </summary>
+            <param name="sender">Event sender</param>
+            <param name="e">Event arguments</param>
+        </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.EnsureAnimationContinuesDuringDrag">
             <summary>
             Ensures animation continues during drag operations by keeping the timer running
@@ -2647,9 +3007,52 @@
             This method should be called from the physics update loop to ensure smooth coordination
             </summary>
         </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.OptimizeAnimationTiming">
+            <summary>
+            Optimizes animation timer to respect source frame rates while maintaining physics smoothness
+            Separates animation frame updates from physics updates for better performance
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.EnsureAnimationDoesNotImpactDragResponsiveness">
+            <summary>
+            Ensures animation performance doesn't impact drag responsiveness
+            Temporarily adjusts animation timing during drag operations
+            </summary>
+        </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.OptimizeAnimationRendering">
             <summary>
             Optimizes animation rendering by pre-loading frames and setting up efficient rendering
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.GetAnimationTimingMetrics">
+            <summary>
+            Gets comprehensive animation timing metrics for performance monitoring
+            </summary>
+            <returns>Animation timing metrics including FPS, coordination status, and performance indicators</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.OptimizeDualTimerSystem">
+            <summary>
+            Optimizes the dual timer system by separating physics and animation updates
+            Physics runs at 60 FPS while animation respects source frame rates
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.OnOptimizedDualTimerAnimationTick(System.Object,System.EventArgs)">
+            <summary>
+            Optimized animation timer tick handler for dual timer system
+            Respects source frame rates while ensuring physics updates are not impacted
+            </summary>
+            <param name="sender">Timer sender</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.EnsureDualTimerDragResponsiveness">
+            <summary>
+            Ensures animation performance doesn't impact drag responsiveness in dual timer system
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.CoordinateDualTimerSystem">
+            <summary>
+            Coordinates animation timing with physics updates in the dual timer system
+            Ensures smooth operation between 60 FPS physics and variable animation frame rates
             </summary>
         </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.EnsureAnimationVisualQuality">
@@ -2797,6 +3200,21 @@
             Debug counter for physics updates
             </summary>
         </member>
+        <member name="F:BallDragDrop.Views.MainWindow._physicsTimer">
+            <summary>
+            High-precision timer for physics updates (60 FPS)
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.MainWindow._physicsUpdateInterval">
+            <summary>
+            Target physics update interval (60 FPS = ~16.67ms)
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.MainWindow._useOptimizedTimers">
+            <summary>
+            Flag to track if we're using optimized dual timer system
+            </summary>
+        </member>
         <member name="M:BallDragDrop.Views.MainWindow.MainWindow_Closed(System.Object,System.EventArgs)">
             <summary>
             Event handler for window closed event
@@ -2845,6 +3263,75 @@
             </summary>
             <param name="sender">The source of the event</param>
             <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.InitializeOptimizedTimers">
+            <summary>
+            Initializes the optimized dual timer system
+            Separates physics updates (60 FPS) from animation frame updates
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.CleanupOptimizedTimers">
+            <summary>
+            Cleans up the optimized timer system
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.StartPhysicsTimer">
+            <summary>
+            Starts the physics timer when physics simulation begins
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.StopPhysicsTimer">
+            <summary>
+            Stops the physics timer when physics simulation ends
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.PhysicsTimer_Tick(System.Object,System.EventArgs)">
+            <summary>
+            Dedicated physics timer tick handler for 60 FPS physics updates
+            Separated from animation frame updates for optimal performance
+            </summary>
+            <param name="sender">Timer sender</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.SetOptimizedTimerMode(System.Boolean)">
+            <summary>
+            Enables or disables the optimized dual timer system
+            </summary>
+            <param name="useOptimized">True to use optimized timers, false for legacy approach</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.GetTimerPerformanceMetrics">
+            <summary>
+            Gets performance metrics for the dual timer system
+            </summary>
+            <returns>Performance metrics including physics FPS and animation coordination</returns>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.OptimizeDualTimerCoordination">
+            <summary>
+            Optimizes the dual timer system coordination
+            Ensures physics updates (60 FPS) are separated from animation frame updates
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.GetDualTimerCoordinationMetrics">
+            <summary>
+            Gets comprehensive timing metrics for both physics and animation systems
+            </summary>
+            <returns>Combined timing metrics</returns>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.IsTimerCoordinationOptimal(BallDragDrop.Models.TimerPerformanceMetrics,BallDragDrop.Models.AnimationTimingMetrics)">
+            <summary>
+            Determines if timer coordination is optimal
+            </summary>
+            <param name="physicsMetrics">Physics timer metrics</param>
+            <param name="animationMetrics">Animation timer metrics</param>
+            <returns>True if coordination is optimal</returns>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.CalculateCoordinationEfficiency(BallDragDrop.Models.TimerPerformanceMetrics,BallDragDrop.Models.AnimationTimingMetrics)">
+            <summary>
+            Calculates the coordination efficiency between physics and animation timers
+            </summary>
+            <param name="physicsMetrics">Physics timer metrics</param>
+            <param name="animationMetrics">Animation timer metrics</param>
+            <returns>Coordination efficiency percentage</returns>
         </member>
         <member name="M:BallDragDrop.Views.MainWindow.UpdateBallPositionToMouse(BallDragDrop.ViewModels.BallViewModel,System.Windows.Point)">
             <summary>

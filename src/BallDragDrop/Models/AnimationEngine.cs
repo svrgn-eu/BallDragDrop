@@ -228,7 +228,7 @@ namespace BallDragDrop.Models
             _currentMemoryUsage = 0;
             CacheHitRatio = 0.0;
 
-            _logService?.LogDebug("AnimationEngine initialized with cache size: {MaxCacheSize}, max memory: {MaxMemoryMB}MB", 
+            _logService?.LogDebug("AnimationEngine initialized with cache size: {0}, max memory: {1}MB", 
                 _maxCacheSize, maxMemoryUsageMB);
         }
 

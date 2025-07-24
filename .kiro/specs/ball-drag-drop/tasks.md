@@ -217,7 +217,8 @@
     - Write performance tests for memory usage
     - _Requirements: 6.8_
   
-  - [ ] 15.2 Optimize dual timer system
+  - [x] 15.2 Optimize dual timer system
+
     - Separate physics updates (60 FPS) from animation frame updates
     - Respect source animation frame rates while maintaining physics smoothness
     - Ensure animation performance doesn't impact drag responsiveness
@@ -225,10 +226,18 @@
     - _Requirements: 6.8_
 
 - [ ] 16. Comprehensive testing for animation features
-  - [ ] 16.1 Create integration tests for animation system
+
+
+
+
+
+  - [x] 16.1 Create integration tests for animation system
+
+
     - Test ImageService with AnimationEngine integration
     - Test animation playback during drag operations
     - Test visual switching between different content types
+    - Correct endless test for DualTimerSystemPerformanceTests - should come to an end
     - _Requirements: All animation requirements_
   
   - [ ] 16.2 Add file format testing
@@ -238,8 +247,38 @@
     - Test error handling for corrupted or missing files
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.10_
 
-- [ ] 17. Get tests into green status
+- [-] 17. Implement application configuration system
+
+
+  - [x] 17.1 Create ConfigurationService class
+
+
+    - leverage config.NET for configuration
+    - create interface for Configurationservice
+    - Implement configuration loading and saving functionality
+    - Add support for JSON-based configuration file
+    - Define AppConfiguration class with default ball image path setting
+    - Write unit tests for configuration management
+    - _Requirements: 7.1, 7.2, 7.3, 7.5_
+  
+  - [x] 17.2 Integrate configuration with application startup
+
+
+    - Load configuration during application initialization
+    - Set default ball image from configuration on startup
+    - Handle configuration loading errors gracefully
+    - Write integration tests for configuration loading
+    - _Requirements: 7.1, 7.4_
+  
+  - [ ] 17.3 Update BallViewModel to use configuration
+    - Modify BallViewModel to use ConfigurationService
+    - Implement LoadDefaultBallImageAsync method
+    - Add configuration validation for image paths
+    - Write unit tests for configuration integration
+    - _Requirements: 7.2, 7.3, 7.4_
+
+- [ ] 18. Get tests into green status
   - Check if all tests are necessary
   - Fix any remaining issues in the tests
-  - Ensure all new animation tests pass
+  - Ensure all new animation and configuration tests pass
   - _Requirements: All_
