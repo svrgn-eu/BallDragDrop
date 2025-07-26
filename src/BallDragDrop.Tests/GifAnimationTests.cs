@@ -41,7 +41,7 @@ namespace BallDragDrop.Tests
         {
             _logService = new SimpleLogService();
             _imageService = new ImageService(_logService);
-            _testDataDirectory = Path.Combine(TestContext.TestDir, "TestData");
+            _testDataDirectory = Path.Combine(TestContext.TestRunDirectory, "TestData");
             
             // Create test data directory if it doesn't exist
             if (!Directory.Exists(_testDataDirectory))

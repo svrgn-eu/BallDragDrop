@@ -93,8 +93,14 @@ namespace BallDragDrop.Bootstrapper
             services.AddSingleton<SettingsManager>(provider => 
                 new SettingsManager(provider.GetRequiredService<ILogService>()));
             
-            // Register ConfigurationService
-            services.AddSingleton<IConfigurationService, ConfigurationService>();
+            // Register ConfigurationService with initialization
+            services.AddSingleton<IConfigurationService>(provider =>
+            {
+                var logService = provider.GetRequiredService<ILogService>();
+                var configService = new ConfigurationService(logService);
+                configService.Initialize(); // Initialize synchronously for DI
+                return configService;
+            });
             
             // ImageService uses static methods, so no registration needed
             // EventThrottler and PerformanceMonitor are created as needed with specific parameters

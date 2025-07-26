@@ -270,15 +270,29 @@
     - Write integration tests for configuration loading
     - _Requirements: 7.1, 7.4_
   
-  - [ ] 17.3 Update BallViewModel to use configuration
+  - [x] 17.3 Update BallViewModel to use configuration
     - Modify BallViewModel to use ConfigurationService
     - Implement LoadDefaultBallImageAsync method
     - Add configuration validation for image paths
     - Write unit tests for configuration integration
     - _Requirements: 7.2, 7.3, 7.4_
 
-- [ ] 18. Get tests into green status
-  - Check if all tests are necessary
-  - Fix any remaining issues in the tests
-  - Ensure all new animation and configuration tests pass
-  - _Requirements: All_
+- [-] 18. Testing
+  - [ ] 18.1 remove endless loops in tests
+    - remove endless loops in tests
+    - _Requirements: All_
+
+  - [ ] 18.2 adjust code quality
+
+
+
+
+    - Remove all warnings in the test project
+    - Remove one exception in ./src/Directory.Build.props, run tests and remove the reason for the warning, and repeat
+    - _Requirements: All_
+
+  - [ ] 18.3 Get tests into green status
+    - Check if all tests are necessary
+    - Fix any remaining issues in the tests
+    - Ensure all new animation and configuration tests pass
+    - _Requirements: All_

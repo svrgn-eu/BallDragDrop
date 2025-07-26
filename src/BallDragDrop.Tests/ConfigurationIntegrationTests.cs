@@ -35,9 +35,6 @@ namespace BallDragDrop.Tests
             {
                 Directory.Delete(_testConfigDirectory, true);
             }
-            
-            // Dispose service bootstrapper
-            ServiceBootstrapper.Dispose();
         }
 
         #endregion Test Setup and Cleanup
@@ -45,7 +42,7 @@ namespace BallDragDrop.Tests
         #region Integration Tests
 
         [TestMethod]
-        public async Task ConfigurationService_ApplicationStartup_ShouldLoadConfigurationSuccessfully()
+        public void ConfigurationService_ApplicationStartup_ShouldLoadConfigurationSuccessfully()
         {
             // Arrange
             ServiceBootstrapper.Initialize();
@@ -117,6 +114,7 @@ namespace BallDragDrop.Tests
             // Create a custom configuration service for this test
             var logService = new BallDragDrop.Services.SimpleLogService();
             var configService = new BallDragDrop.Services.ConfigurationService(logService, testConfigPath);
+            configService.Initialize();
 
             // Act
             
@@ -127,6 +125,7 @@ namespace BallDragDrop.Tests
 
             // Create a new service instance to test persistence
             var newConfigService = new BallDragDrop.Services.ConfigurationService(logService, testConfigPath);
+            newConfigService.Initialize();
 
             // Assert
             Assert.AreEqual(newPath, newConfigService.GetDefaultBallImagePath());

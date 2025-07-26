@@ -14,9 +14,21 @@ namespace BallDragDrop.Services
     /// </summary>
     public enum VisualContentType
     {
+        /// <summary>
+        /// Static image content
+        /// </summary>
         StaticImage,
+        /// <summary>
+        /// GIF animation content
+        /// </summary>
         GifAnimation,
+        /// <summary>
+        /// Aseprite animation content
+        /// </summary>
         AsepriteAnimation,
+        /// <summary>
+        /// Unknown content type
+        /// </summary>
         Unknown
     }
 

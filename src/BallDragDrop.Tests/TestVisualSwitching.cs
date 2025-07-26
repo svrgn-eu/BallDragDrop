@@ -9,7 +9,7 @@ namespace TestVisualSwitching
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task<int> Main(string[] args)
         {
             Console.WriteLine("Testing Visual Content Switching Functionality...");
             
@@ -77,10 +77,12 @@ namespace TestVisualSwitching
             {
                 Console.WriteLine($"Error: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return 1;
             }
             
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
+            return 0;
         }
         
         private static string CreateTestImage(string directory, string fileName, Color color)

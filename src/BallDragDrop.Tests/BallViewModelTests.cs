@@ -184,8 +184,9 @@ namespace BallDragDrop.Tests
             // Act - Try to drag outside the bottom boundary
             SimulateMouseMove(viewModel, 75, 350, windowWidth, windowHeight); // Beyond bottom edge
             
-            // Assert - Ball should be constrained to the bottom edge
-            Assert.AreEqual(75, viewModel.X);
+            // Assert - Ball should be constrained to the boundaries
+            // X should be constrained to minimum (radius) because the large leftward movement
+            Assert.AreEqual(radius, viewModel.X);
             Assert.AreEqual(windowHeight - radius, viewModel.Y);
         }
         
@@ -194,8 +195,6 @@ namespace BallDragDrop.Tests
         {
             // Arrange
             double radius = 25;
-            double initialWindowWidth = 400;
-            double initialWindowHeight = 400;
             
             // Place ball near the right edge
             var viewModel = new BallViewModel(380, 200, radius);

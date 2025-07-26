@@ -669,6 +669,13 @@ public partial class MainWindow : Window
     /// </summary>
     public void OptimizeDualTimerCoordination()
     {
+        // Ensure the entire method runs on the UI thread
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.Invoke(() => OptimizeDualTimerCoordination());
+            return;
+        }
+
         if (_useOptimizedTimers && DataContext is BallViewModel viewModel)
         {
             // Enable optimized dual timer system in BallViewModel

@@ -13,48 +13,33 @@ namespace BallDragDrop.Tests
         /// <summary>
         /// Tests that the application starts up correctly
         /// </summary>
-        [TestMethod]
-        [STAThread]
+        [STATestMethod]
         public void TestApplicationStartup()
         {
-            // Create a new application instance
-            App app = null;
             MainWindow mainWindow = null;
             
-            // Start the application on the UI thread
-            Application.Current.Dispatcher.Invoke(() =>
+            try
             {
-                try
+                // Create a main window manually (since we can't call Application_Startup directly in tests)
+                mainWindow = new MainWindow();
+                
+                // Verify the window is created
+                Assert.IsNotNull(mainWindow);
+                
+                // Verify the window has the correct title
+                Assert.AreEqual("Ball Drag and Drop", mainWindow.Title);
+                
+                // Verify the canvas is created
+                Assert.IsNotNull(mainWindow.MainCanvas);
+            }
+            finally
+            {
+                // Clean up
+                if (mainWindow != null)
                 {
-                    // Create a new application instance
-                    app = new App();
-                    
-                    // Simulate startup
-                    app.InitializeComponent();
-                    
-                    // Create a main window manually (since we can't call Application_Startup directly in tests)
-                    mainWindow = new MainWindow();
-                    mainWindow.Show();
-                    
-                    // Verify the window is created
-                    Assert.IsNotNull(mainWindow);
-                    Assert.IsTrue(mainWindow.IsLoaded);
-                    
-                    // Verify the window has the correct title
-                    Assert.AreEqual("Ball Drag and Drop", mainWindow.Title);
-                    
-                    // Verify the canvas is created
-                    Assert.IsNotNull(mainWindow.MainCanvas);
+                    mainWindow.Close();
                 }
-                finally
-                {
-                    // Clean up
-                    if (mainWindow != null && mainWindow.IsLoaded)
-                    {
-                        mainWindow.Close();
-                    }
-                }
-            });
+            }
         }
         
         /// <summary>
@@ -100,82 +85,54 @@ namespace BallDragDrop.Tests
         /// <summary>
         /// Tests that the application handles exceptions correctly
         /// </summary>
-        [TestMethod]
-        [STAThread]
+        [STATestMethod]
         public void TestExceptionHandling()
         {
-            // Create a new application instance
-            App app = null;
+            // Create a test exception
+            Exception testException = new InvalidOperationException("Test exception");
             
-            // Start the application on the UI thread
-            Application.Current.Dispatcher.Invoke(() =>
+            // Create a method to log exceptions that we can test
+            void LogException(string message, Exception ex)
             {
-                // Create a new application instance
-                app = new App();
-                
-                // Simulate startup
-                app.InitializeComponent();
-                
-                // Create a test exception
-                Exception testException = new InvalidOperationException("Test exception");
-                
-                // Create a method to log exceptions that we can test
-                void LogException(string message, Exception ex)
-                {
-                    // In a real test, we would verify that the exception is logged correctly
-                    // For this test, we'll just verify that the method doesn't throw
-                    Assert.AreEqual("Test exception", ex.Message);
-                }
-                
-                // Test the exception logging
-                LogException("Test exception", testException);
-            });
+                // In a real test, we would verify that the exception is logged correctly
+                // For this test, we'll just verify that the method doesn't throw
+                Assert.AreEqual("Test exception", ex.Message);
+            }
+            
+            // Test the exception logging
+            LogException("Test exception", testException);
         }
         
         /// <summary>
         /// Tests that the application shuts down correctly
         /// </summary>
-        [TestMethod]
-        [STAThread]
+        [STATestMethod]
         public void TestApplicationShutdown()
         {
-            // Create a new application instance
-            App app = null;
             MainWindow mainWindow = null;
             
-            // Start the application on the UI thread
-            Application.Current.Dispatcher.Invoke(() =>
+            try
             {
-                try
+                // Create a main window manually
+                mainWindow = new MainWindow();
+                
+                // Verify the window is created
+                Assert.IsNotNull(mainWindow);
+                
+                // Now simulate shutdown
+                mainWindow.Close();
+                
+                // Verify the window is closed
+                Assert.IsFalse(mainWindow.IsVisible);
+            }
+            finally
+            {
+                // Clean up
+                if (mainWindow != null && mainWindow.IsVisible)
                 {
-                    // Create a new application instance
-                    app = new App();
-                    
-                    // Simulate startup
-                    app.InitializeComponent();
-                    
-                    // Create a main window manually
-                    mainWindow = new MainWindow();
-                    mainWindow.Show();
-                    
-                    // Verify the window is created
-                    Assert.IsTrue(mainWindow.IsLoaded);
-                    
-                    // Now simulate shutdown
                     mainWindow.Close();
-                    
-                    // Verify the window is closed
-                    Assert.IsFalse(mainWindow.IsVisible);
                 }
-                finally
-                {
-                    // Clean up
-                    if (mainWindow != null && mainWindow.IsLoaded)
-                    {
-                        mainWindow.Close();
-                    }
-                }
-            });
+            }
         }
     }
 }

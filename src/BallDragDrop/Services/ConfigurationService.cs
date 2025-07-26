@@ -73,10 +73,9 @@ namespace BallDragDrop.Services
         /// <summary>
         /// Initializes the configuration service using Config.Net
         /// </summary>
-        /// <returns>A task representing the asynchronous operation</returns>
-        public async Task InitializeAsync()
+        public void Initialize()
         {
-            _logService?.LogMethodEntry(nameof(InitializeAsync));
+            _logService?.LogMethodEntry(nameof(Initialize));
             
             try
             {
@@ -98,7 +97,7 @@ namespace BallDragDrop.Services
                 _logService?.LogDebug("Animations enabled: {EnableAnimations}", _configuration.EnableAnimations);
                 _logService?.LogDebug("Default ball size: {DefaultBallSize}", _configuration.DefaultBallSize);
                 
-                _logService?.LogMethodExit(nameof(InitializeAsync));
+                _logService?.LogMethodExit(nameof(Initialize));
             }
             catch (Exception ex)
             {
@@ -109,7 +108,7 @@ namespace BallDragDrop.Services
                     .Build();
                 
                 _logService?.LogWarning("Using fallback in-memory configuration due to initialization error");
-                _logService?.LogMethodExit(nameof(InitializeAsync));
+                _logService?.LogMethodExit(nameof(Initialize));
             }
         }
 

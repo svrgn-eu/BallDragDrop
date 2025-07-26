@@ -22,7 +22,7 @@ namespace BallDragDrop.Tests
             // Perform some logging operations
             for (int i = 0; i < 100; i++)
             {
-                logService.LogInformation("Test message {Index}", i);
+                logService.LogInformation("Test message {0}", i);
             }
 
             // Wait for async processing

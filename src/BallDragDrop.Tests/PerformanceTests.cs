@@ -158,7 +158,9 @@ namespace BallDragDrop.Tests
             testStopwatch.Start();
             
             // Run physics updates for the test duration
-            while (testStopwatch.Elapsed.TotalSeconds < TestDurationSeconds)
+            const int maxIterations = TestDurationSeconds * 60 * 10; // 10x expected iterations as safety limit
+            var iterations = 0;
+            while (testStopwatch.Elapsed.TotalSeconds < TestDurationSeconds && iterations < maxIterations)
             {
                 // Measure the time to update the physics
                 updateStopwatch.Restart();
@@ -179,6 +181,8 @@ namespace BallDragDrop.Tests
                 {
                     Thread.Sleep(1);
                 }
+                
+                iterations++;
             }
             
             // Stop the test timer
@@ -242,7 +246,9 @@ namespace BallDragDrop.Tests
             testStopwatch.Start();
             
             // Run physics updates for the test duration
-            while (testStopwatch.Elapsed.TotalSeconds < TestDurationSeconds)
+            const int maxIterations = TestDurationSeconds * 60 * 10; // 10x expected iterations as safety limit
+            var iterations = 0;
+            while (testStopwatch.Elapsed.TotalSeconds < TestDurationSeconds && iterations < maxIterations)
             {
                 // Measure the time to update all balls
                 updateStopwatch.Restart();
@@ -264,6 +270,7 @@ namespace BallDragDrop.Tests
                 
                 // Update metrics
                 updateCount++;
+                iterations++;
                 totalUpdateTimeMs += updateTimeMs;
                 maxUpdateTimeMs = Math.Max(maxUpdateTimeMs, updateTimeMs);
                 
@@ -552,12 +559,12 @@ namespace BallDragDrop.Tests
             
             for (int i = 0; i < LoggingTestIterations; i++)
             {
-                logService.LogInformation("Batch test message {Index} at {Timestamp}", i, DateTime.UtcNow);
+                logService.LogInformation("Batch test message {0} at {1}", i, DateTime.UtcNow);
                 
                 // Add some variety in log levels
-                if (i % 10 == 0) logService.LogDebug("Debug message {Index}", i);
-                if (i % 50 == 0) logService.LogWarning("Warning message {Index}", i);
-                if (i % 100 == 0) logService.LogError("Error message {Index}", i);
+                if (i % 10 == 0) logService.LogDebug("Debug message {0}", i);
+                if (i % 50 == 0) logService.LogWarning("Warning message {0}", i);
+                if (i % 100 == 0) logService.LogError("Error message {0}", i);
             }
             
             burstStopwatch.Stop();

@@ -35,26 +35,54 @@ namespace BallDragDrop.Tests
                 .Callback<Exception, string, object[]>((ex, msg, args) =>
                 {
                     _loggedException.Add(ex);
-                    _loggedMessages.Add(string.Format(msg, args));
+                    try
+                    {
+                        _loggedMessages.Add(string.Format(msg, args));
+                    }
+                    catch (FormatException)
+                    {
+                        _loggedMessages.Add(msg);
+                    }
                 });
 
             _mockLogService.Setup(x => x.LogCritical(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<object[]>()))
                 .Callback<Exception, string, object[]>((ex, msg, args) =>
                 {
                     _loggedException.Add(ex);
-                    _loggedMessages.Add(string.Format(msg, args));
+                    try
+                    {
+                        _loggedMessages.Add(string.Format(msg, args));
+                    }
+                    catch (FormatException)
+                    {
+                        _loggedMessages.Add(msg);
+                    }
                 });
 
             _mockLogService.Setup(x => x.LogInformation(It.IsAny<string>(), It.IsAny<object[]>()))
                 .Callback<string, object[]>((msg, args) =>
                 {
-                    _loggedMessages.Add(string.Format(msg, args));
+                    try
+                    {
+                        _loggedMessages.Add(string.Format(msg, args));
+                    }
+                    catch (FormatException)
+                    {
+                        _loggedMessages.Add(msg);
+                    }
                 });
 
             _mockLogService.Setup(x => x.LogWarning(It.IsAny<string>(), It.IsAny<object[]>()))
                 .Callback<string, object[]>((msg, args) =>
                 {
-                    _loggedMessages.Add(string.Format(msg, args));
+                    try
+                    {
+                        _loggedMessages.Add(string.Format(msg, args));
+                    }
+                    catch (FormatException)
+                    {
+                        _loggedMessages.Add(msg);
+                    }
                 });
 
             _exceptionHandlingService = new ExceptionHandlingService(_mockLogService.Object);

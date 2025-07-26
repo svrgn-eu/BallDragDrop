@@ -72,7 +72,7 @@ namespace BallDragDrop.Tests.TestHelpers
             // Get the current mouse position
             var lastMousePositionField = typeof(BallViewModel).GetField("_lastMousePosition", 
                 BindingFlags.NonPublic | BindingFlags.Instance);
-            var lastMousePosition = (Point)lastMousePositionField?.GetValue(viewModel);
+            var lastMousePosition = (Point)(lastMousePositionField?.GetValue(viewModel) ?? new Point());
             
             // Calculate the delta
             double deltaX = x - lastMousePosition.X;

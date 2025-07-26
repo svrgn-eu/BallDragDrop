@@ -158,7 +158,7 @@ namespace BallDragDrop.Services.Performance
                 _performanceMonitor.RecordBatchProcessing(batch.Count, stopwatch.Elapsed);
                 _performanceMonitor.RecordLogEntriesProcessed(batch.Count);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 stopwatch.Stop();
                 
@@ -221,7 +221,7 @@ namespace BallDragDrop.Services.Performance
                 stopwatch.Stop();
                 _performanceMonitor.RecordLoggingOperation(item.Level.ToString(), stopwatch.Elapsed);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 stopwatch.Stop();
                 _performanceMonitor.RecordLoggingOperation($"{item.Level}_Error", stopwatch.Elapsed);

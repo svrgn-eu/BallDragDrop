@@ -16,8 +16,7 @@ namespace BallDragDrop.Contracts
         /// <summary>
         /// Initializes the configuration service
         /// </summary>
-        /// <returns>A task representing the asynchronous operation</returns>
-        Task InitializeAsync();
+        void Initialize();
 
         /// <summary>
         /// Gets the default ball image path from configuration

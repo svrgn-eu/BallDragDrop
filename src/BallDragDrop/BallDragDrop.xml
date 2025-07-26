@@ -142,7 +142,7 @@
             </summary>
             <returns>The configuration service instance</returns>
         </member>
-        <member name="M:BallDragDrop.App.InitializeDefaultBallImageAsync">
+        <member name="M:BallDragDrop.App.InitializeDefaultBallImage">
             <summary>
             Initializes the default ball image from configuration
             </summary>
@@ -255,11 +255,10 @@
             Gets the application configuration
             </summary>
         </member>
-        <member name="M:BallDragDrop.Contracts.IConfigurationService.InitializeAsync">
+        <member name="M:BallDragDrop.Contracts.IConfigurationService.Initialize">
             <summary>
             Initializes the configuration service
             </summary>
-            <returns>A task representing the asynchronous operation</returns>
         </member>
         <member name="M:BallDragDrop.Contracts.IConfigurationService.GetDefaultBallImagePath">
             <summary>
@@ -347,6 +346,36 @@
         <member name="T:BallDragDrop.Contracts.LogLevel">
             <summary>
             Log levels enumeration
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Contracts.LogLevel.Trace">
+            <summary>
+            Trace level logging
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Contracts.LogLevel.Debug">
+            <summary>
+            Debug level logging
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Contracts.LogLevel.Information">
+            <summary>
+            Information level logging
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Contracts.LogLevel.Warning">
+            <summary>
+            Warning level logging
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Contracts.LogLevel.Error">
+            <summary>
+            Error level logging
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Contracts.LogLevel.Critical">
+            <summary>
+            Critical level logging
             </summary>
         </member>
         <member name="T:BallDragDrop.Contracts.IMethodLoggingInterceptor">
@@ -1375,11 +1404,10 @@
             Gets the application configuration
             </summary>
         </member>
-        <member name="M:BallDragDrop.Services.ConfigurationService.InitializeAsync">
+        <member name="M:BallDragDrop.Services.ConfigurationService.Initialize">
             <summary>
             Initializes the configuration service using Config.Net
             </summary>
-            <returns>A task representing the asynchronous operation</returns>
         </member>
         <member name="M:BallDragDrop.Services.ConfigurationService.GetDefaultBallImagePath">
             <summary>
@@ -1508,6 +1536,26 @@
         <member name="T:BallDragDrop.Services.VisualContentType">
             <summary>
             Enumeration for supported visual content types
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.VisualContentType.StaticImage">
+            <summary>
+            Static image content
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.VisualContentType.GifAnimation">
+            <summary>
+            GIF animation content
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.VisualContentType.AsepriteAnimation">
+            <summary>
+            Aseprite animation content
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.VisualContentType.Unknown">
+            <summary>
+            Unknown content type
             </summary>
         </member>
         <member name="T:BallDragDrop.Services.GifData">
@@ -2924,13 +2972,13 @@
             Event that is raised when a property value changes
             </summary>
         </member>
-        <member name="M:BallDragDrop.ViewModels.BallViewModel.Initialize(System.Double,System.Double,System.Double)">
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.Initialize(System.Double,System.Double,System.Nullable{System.Double})">
             <summary>
             Initializes the ball position and properties
             </summary>
             <param name="initialX">Initial X position</param>
             <param name="initialY">Initial Y position</param>
-            <param name="radius">Ball radius</param>
+            <param name="radius">Ball radius (if not provided, uses configuration default)</param>
         </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.LoadBallVisualAsync(System.String)">
             <summary>
@@ -2944,6 +2992,18 @@
             Loads the default ball image from configuration
             </summary>
             <returns>True if loading was successful, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.GetDefaultBallSizeFromConfiguration">
+            <summary>
+            Gets the default ball size from configuration
+            </summary>
+            <returns>The default ball size from configuration, or 25.0 as fallback</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.ValidateAndUpdateConfiguration">
+            <summary>
+            Validates the current configuration settings and updates them if necessary
+            </summary>
+            <returns>True if configuration is valid or was successfully updated, false otherwise</returns>
         </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.SwitchBallVisualAsync(System.String)">
             <summary>

@@ -13,22 +13,54 @@ namespace BallDragDrop.Tests.TestHelpers
 
         public void LogTrace(string message, params object[] args) 
         {
-            LogEntries.Add($"TRACE: {string.Format(message, args)}");
+            try
+            {
+                LogEntries.Add($"TRACE: {string.Format(message, args)}");
+            }
+            catch (FormatException)
+            {
+                // If formatting fails, just log the raw message
+                LogEntries.Add($"TRACE: {message}");
+            }
         }
         
         public void LogDebug(string message, params object[] args) 
         {
-            LogEntries.Add($"DEBUG: {string.Format(message, args)}");
+            try
+            {
+                LogEntries.Add($"DEBUG: {string.Format(message, args)}");
+            }
+            catch (FormatException)
+            {
+                // If formatting fails, just log the raw message
+                LogEntries.Add($"DEBUG: {message}");
+            }
         }
         
         public void LogInformation(string message, params object[] args) 
         {
-            LogEntries.Add($"INFO: {string.Format(message, args)}");
+            try
+            {
+                LogEntries.Add($"INFO: {string.Format(message, args)}");
+            }
+            catch (FormatException)
+            {
+                // If formatting fails, just log the raw message
+                LogEntries.Add($"INFO: {message}");
+            }
         }
         
         public void LogWarning(string message, params object[] args) 
         {
-            LogEntries.Add($"WARN: {string.Format(message, args)}");
+            try
+            {
+                LogEntries.Add($"WARN: {string.Format(message, args)}");
+            }
+            catch (FormatException)
+            {
+                // If formatting fails, just log the raw message
+                LogEntries.Add($"WARN: {message}");
+            }
         }
         
         public void LogError(string message, params object[] args) 
@@ -59,22 +91,54 @@ namespace BallDragDrop.Tests.TestHelpers
         
         public void LogCritical(string message, params object[] args) 
         {
-            LogEntries.Add($"CRITICAL: {string.Format(message, args)}");
+            try
+            {
+                LogEntries.Add($"CRITICAL: {string.Format(message, args)}");
+            }
+            catch (FormatException)
+            {
+                // If formatting fails, just log the raw message
+                LogEntries.Add($"CRITICAL: {message}");
+            }
         }
         
         public void LogCritical(Exception exception, string message, params object[] args) 
         {
-            LogEntries.Add($"CRITICAL: {string.Format(message, args)} - {exception.Message}");
+            try
+            {
+                LogEntries.Add($"CRITICAL: {string.Format(message, args)} - {exception.Message}");
+            }
+            catch (FormatException)
+            {
+                // If formatting fails, just log the raw message
+                LogEntries.Add($"CRITICAL: {message} - {exception.Message}");
+            }
         }
         
         public void LogStructured(LogLevel level, string messageTemplate, params object[] propertyValues) 
         {
-            LogEntries.Add($"{level}: {string.Format(messageTemplate, propertyValues)}");
+            try
+            {
+                LogEntries.Add($"{level}: {string.Format(messageTemplate, propertyValues)}");
+            }
+            catch (FormatException)
+            {
+                // If formatting fails, just log the raw message
+                LogEntries.Add($"{level}: {messageTemplate}");
+            }
         }
         
         public void LogStructured(LogLevel level, Exception exception, string messageTemplate, params object[] propertyValues) 
         {
-            LogEntries.Add($"{level}: {string.Format(messageTemplate, propertyValues)} - {exception.Message}");
+            try
+            {
+                LogEntries.Add($"{level}: {string.Format(messageTemplate, propertyValues)} - {exception.Message}");
+            }
+            catch (FormatException)
+            {
+                // If formatting fails, just log the raw message
+                LogEntries.Add($"{level}: {messageTemplate} - {exception.Message}");
+            }
         }
         
         public IDisposable BeginScope(string scopeName, params object[] parameters) => new TestScope();

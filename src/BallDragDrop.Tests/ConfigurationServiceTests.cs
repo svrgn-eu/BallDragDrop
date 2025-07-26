@@ -50,7 +50,7 @@ namespace BallDragDrop.Tests
         {
             // Act
             var service = new ConfigurationService(_mockLogService.Object);
-            await service.InitializeAsync();
+            service.Initialize();
 
             // Assert
             Assert.IsNotNull(service.Configuration);
@@ -64,7 +64,7 @@ namespace BallDragDrop.Tests
         {
             // Act
             var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
-            await service.InitializeAsync();
+            service.Initialize();
 
             // Assert
             Assert.IsNotNull(service.Configuration);
@@ -98,7 +98,7 @@ namespace BallDragDrop.Tests
             var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
 
             // Act
-            await service.InitializeAsync();
+            service.Initialize();
 
             // Assert
             Assert.IsNotNull(service.Configuration);
@@ -121,7 +121,7 @@ namespace BallDragDrop.Tests
             var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
 
             // Act
-            await service.InitializeAsync();
+            service.Initialize();
 
             // Assert
             Assert.AreEqual("./test/path.png", service.Configuration.DefaultBallImagePath);
@@ -137,7 +137,7 @@ namespace BallDragDrop.Tests
             var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
 
             // Act
-            await service.InitializeAsync();
+            service.Initialize();
 
             // Assert
             Assert.IsNotNull(service.Configuration);
@@ -154,7 +154,7 @@ namespace BallDragDrop.Tests
         {
             // Arrange
             var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
-            await service.InitializeAsync();
+            service.Initialize();
             service.Configuration.DefaultBallImagePath = "./test/custom.png";
 
             // Act
@@ -169,7 +169,7 @@ namespace BallDragDrop.Tests
         {
             // Arrange
             var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
-            await service.InitializeAsync();
+            service.Initialize();
 
             // Act
             var result = service.GetDefaultBallImagePath();
@@ -187,7 +187,7 @@ namespace BallDragDrop.Tests
         {
             // Arrange
             var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
-            await service.InitializeAsync();
+            service.Initialize();
             var newPath = "./new/path.png";
 
             // Act
@@ -203,7 +203,7 @@ namespace BallDragDrop.Tests
         {
             // Arrange
             var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
-            await service.InitializeAsync();
+            service.Initialize();
 
             // Act
             service.SetDefaultBallImagePath(null);
@@ -335,6 +335,7 @@ namespace BallDragDrop.Tests
         {
             // Arrange
             var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+            service.Initialize();
 
             // Act & Assert - Load default configuration
             Assert.AreEqual("./Resources/Images/Ball01.png", service.GetDefaultBallImagePath());
@@ -349,6 +350,7 @@ namespace BallDragDrop.Tests
 
             // Act & Assert - Create new service instance and load
             var newService = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+            newService.Initialize();
 
             Assert.AreEqual("./custom/ball.png", newService.GetDefaultBallImagePath());
             Assert.IsFalse(newService.Configuration.EnableAnimations);

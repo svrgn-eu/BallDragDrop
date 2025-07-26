@@ -31,7 +31,7 @@ namespace BallDragDrop.Tests
             
             var mousePositionHistory = mousePositionHistoryField.GetValue(viewModel) as Point[];
             var mouseTimestampHistory = mouseTimestampHistoryField.GetValue(viewModel) as DateTime[];
-            var mouseHistoryCount = (int)mouseHistoryCountField.GetValue(viewModel);
+            var mouseHistoryCount = (int)(mouseHistoryCountField.GetValue(viewModel) ?? 0);
             
             Assert.IsNotNull(mousePositionHistory);
             Assert.IsNotNull(mouseTimestampHistory);
@@ -58,7 +58,7 @@ namespace BallDragDrop.Tests
             Assert.IsNotNull(storeMousePositionMethod);
             
             // Initial count should be 0
-            int initialCount = (int)mouseHistoryCountField.GetValue(viewModel);
+            int initialCount = (int)(mouseHistoryCountField.GetValue(viewModel) ?? 0);
             Assert.AreEqual(0, initialCount);
             
             // Act - Call the StoreMousePosition method directly
@@ -67,7 +67,7 @@ namespace BallDragDrop.Tests
             storeMousePositionMethod.Invoke(viewModel, new object[] { position, timestamp });
             
             // Assert - Count should be incremented
-            int newCount = (int)mouseHistoryCountField.GetValue(viewModel);
+            int newCount = (int)(mouseHistoryCountField.GetValue(viewModel) ?? 0);
             Assert.AreEqual(1, newCount);
             
             // Get the stored position and timestamp
@@ -109,7 +109,7 @@ namespace BallDragDrop.Tests
             }
             
             // Verify history is full
-            int count = (int)mouseHistoryCountField.GetValue(viewModel);
+            int count = (int)(mouseHistoryCountField.GetValue(viewModel) ?? 0);
             Assert.AreEqual(10, count);
             
             var mousePositionHistory = mousePositionHistoryField.GetValue(viewModel) as Point[];
@@ -125,7 +125,7 @@ namespace BallDragDrop.Tests
             storeMousePositionMethod.Invoke(viewModel, new object[] { newPosition, newTimestamp });
             
             // Assert - Count should still be 10
-            count = (int)mouseHistoryCountField.GetValue(viewModel);
+            count = (int)(mouseHistoryCountField.GetValue(viewModel) ?? 0);
             Assert.AreEqual(10, count);
             
             // Get the updated arrays
@@ -162,7 +162,7 @@ namespace BallDragDrop.Tests
             }
             
             // Verify history has items
-            int countBefore = (int)mouseHistoryCountField.GetValue(viewModel);
+            int countBefore = (int)(mouseHistoryCountField.GetValue(viewModel) ?? 0);
             Assert.AreEqual(3, countBefore);
             
             // Start dragging
@@ -172,7 +172,7 @@ namespace BallDragDrop.Tests
             BallViewModelTestHelper.SimulateMouseUp(viewModel, 120, 120);
             
             // Assert - History count should be reset to 0
-            int countAfter = (int)mouseHistoryCountField.GetValue(viewModel);
+            int countAfter = (int)(mouseHistoryCountField.GetValue(viewModel) ?? 0);
             Assert.AreEqual(0, countAfter);
         }
     }

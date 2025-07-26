@@ -212,8 +212,11 @@ namespace BallDragDrop.ViewModels
             _imageService = imageService ?? new ImageService(logService);
             _configurationService = configurationService;
             
+            // Get default ball size from configuration, fallback to 25 if not available
+            double defaultBallSize = GetDefaultBallSizeFromConfiguration();
+            
             // Initialize with default values - will be set via Initialize method
-            _ballModel = new BallModel(0, 0, 25);
+            _ballModel = new BallModel(0, 0, defaultBallSize);
             _isDragging = false;
             _currentCursor = Cursors.Arrow;
             _ballImage = null!; // Initialize to null! to satisfy non-nullable field requirement
@@ -239,7 +242,18 @@ namespace BallDragDrop.ViewModels
             MouseMoveCommand = new RelayCommand<MouseEventArgs>(OnMouseMove);
             MouseUpCommand = new RelayCommand<MouseEventArgs>(OnMouseUp);
 
-            this.LoadDefaultBallImageAsync();
+            // Load default ball image asynchronously (fire-and-forget with error handling)
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await LoadDefaultBallImageAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logService?.LogError(ex, "Error loading default ball image during construction");
+                }
+            });
             
             _logService.LogDebug("BallViewModel created with dependency injection");
         }
@@ -418,12 +432,12 @@ namespace BallDragDrop.ViewModels
         /// </summary>
         /// <param name="initialX">Initial X position</param>
         /// <param name="initialY">Initial Y position</param>
-        /// <param name="radius">Ball radius</param>
-        public void Initialize(double initialX, double initialY, double radius = 25)
+        /// <param name="radius">Ball radius (if not provided, uses configuration default)</param>
+        public void Initialize(double initialX, double initialY, double? radius = null)
         {
             _ballModel.X = initialX;
             _ballModel.Y = initialY;
-            _ballModel.Radius = radius;
+            _ballModel.Radius = radius ?? GetDefaultBallSizeFromConfiguration();
             
             // Notify property changes
             OnPropertyChanged(nameof(X));
@@ -549,6 +563,124 @@ namespace BallDragDrop.ViewModels
             {
                 _logService?.LogError(ex, "Error loading default ball image from configuration");
                 _logService?.LogMethodExit(nameof(LoadDefaultBallImageAsync), false);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the default ball size from configuration
+        /// </summary>
+        /// <returns>The default ball size from configuration, or 25.0 as fallback</returns>
+        private double GetDefaultBallSizeFromConfiguration()
+        {
+            _logService?.LogMethodEntry(nameof(GetDefaultBallSizeFromConfiguration));
+
+            try
+            {
+                if (_configurationService?.Configuration != null)
+                {
+                    var defaultSize = _configurationService.Configuration.DefaultBallSize;
+                    _logService?.LogDebug("Using default ball size from configuration: {DefaultSize}", defaultSize);
+                    _logService?.LogMethodExit(nameof(GetDefaultBallSizeFromConfiguration), defaultSize);
+                    return defaultSize;
+                }
+                else
+                {
+                    const double fallbackSize = 25.0;
+                    _logService?.LogDebug("Configuration service not available, using fallback ball size: {FallbackSize}", fallbackSize);
+                    _logService?.LogMethodExit(nameof(GetDefaultBallSizeFromConfiguration), fallbackSize);
+                    return fallbackSize;
+                }
+            }
+            catch (Exception ex)
+            {
+                const double fallbackSize = 25.0;
+                _logService?.LogError(ex, "Error getting default ball size from configuration, using fallback: {FallbackSize}", fallbackSize);
+                _logService?.LogMethodExit(nameof(GetDefaultBallSizeFromConfiguration), fallbackSize);
+                return fallbackSize;
+            }
+        }
+
+        /// <summary>
+        /// Validates the current configuration settings and updates them if necessary
+        /// </summary>
+        /// <returns>True if configuration is valid or was successfully updated, false otherwise</returns>
+        public bool ValidateAndUpdateConfiguration()
+        {
+            _logService?.LogMethodEntry(nameof(ValidateAndUpdateConfiguration));
+
+            try
+            {
+                if (_configurationService == null)
+                {
+                    _logService?.LogWarning("Configuration service not available for validation");
+                    _logService?.LogMethodExit(nameof(ValidateAndUpdateConfiguration), false);
+                    return false;
+                }
+
+                bool configurationUpdated = false;
+
+                // Validate default ball image path
+                var currentImagePath = _configurationService.GetDefaultBallImagePath();
+                if (!_configurationService.ValidateImagePath(currentImagePath))
+                {
+                    _logService?.LogWarning("Current default ball image path is invalid: {ImagePath}", currentImagePath);
+                    
+                    // Try to find a valid fallback
+                    var fallbackPaths = new[]
+                    {
+                        "./Resources/Images/Ball01.png",
+                        "./src/BallDragDrop/Resources/Images/Ball01.png",
+                        "Resources/Images/Ball01.png"
+                    };
+
+                    foreach (var fallbackPath in fallbackPaths)
+                    {
+                        if (_configurationService.ValidateImagePath(fallbackPath))
+                        {
+                            _logService?.LogInformation("Updating configuration with valid fallback image path: {FallbackPath}", fallbackPath);
+                            _configurationService.SetDefaultBallImagePath(fallbackPath);
+                            configurationUpdated = true;
+                            break;
+                        }
+                    }
+
+                    if (!configurationUpdated)
+                    {
+                        _logService?.LogError("No valid fallback image path found for configuration");
+                        _logService?.LogMethodExit(nameof(ValidateAndUpdateConfiguration), false);
+                        return false;
+                    }
+                }
+
+                // Validate default ball size
+                if (_configurationService.Configuration != null)
+                {
+                    var defaultSize = _configurationService.Configuration.DefaultBallSize;
+                    if (defaultSize <= 0 || defaultSize > 200) // Reasonable bounds for ball size
+                    {
+                        _logService?.LogWarning("Default ball size is out of reasonable bounds: {DefaultSize}. Resetting to 50.0", defaultSize);
+                        _configurationService.Configuration.DefaultBallSize = 50.0;
+                        configurationUpdated = true;
+                    }
+                }
+
+                if (configurationUpdated)
+                {
+                    _logService?.LogInformation("Configuration validation completed with updates");
+                }
+                else
+                {
+                    _logService?.LogDebug("Configuration validation completed - no updates needed");
+                }
+
+                _logService?.LogMethodExit(nameof(ValidateAndUpdateConfiguration), true);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error validating and updating configuration");
+                _logService?.LogMethodExit(nameof(ValidateAndUpdateConfiguration), false);
                 return false;
             }
         }

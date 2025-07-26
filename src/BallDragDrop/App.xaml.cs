@@ -91,7 +91,7 @@ public partial class App : Application
             splashScreen.Show();
             
             // Start initialization in the background
-            Task.Run(async () => 
+            Task.Run(() => 
             {
                 try
                 {
@@ -99,7 +99,7 @@ public partial class App : Application
                     InitializeSettings();
                     
                     // Initialize default ball image from configuration
-                    await InitializeDefaultBallImageAsync();
+                    InitializeDefaultBallImage();
                     
                     // Update splash screen status
                     splashScreen.UpdateStatus("Initialization complete");
@@ -398,11 +398,11 @@ public partial class App : Application
             _configurationService = ServiceBootstrapper.GetService<IConfigurationService>();
             
             // Initialize configuration first
-            Task.Run(async () =>
+            Task.Run(() =>
             {
                 try
                 {
-                    await _configurationService.InitializeAsync();
+                    _configurationService.Initialize();
                     _logService?.LogInformation("Configuration initialized successfully");
                 }
                 catch (Exception ex)
@@ -534,7 +534,7 @@ public partial class App : Application
     /// <summary>
     /// Initializes the default ball image from configuration
     /// </summary>
-    private async Task InitializeDefaultBallImageAsync()
+    private void InitializeDefaultBallImage()
     {
         try
         {
