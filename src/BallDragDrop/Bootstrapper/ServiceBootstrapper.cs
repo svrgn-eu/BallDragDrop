@@ -143,6 +143,17 @@ namespace BallDragDrop.Bootstrapper
                     provider.GetRequiredService<ILogService>(),
                     null, // ImageService will be created internally
                     provider.GetRequiredService<IConfigurationService>()));
+
+            services.AddTransient<StatusBarViewModel>(provider =>
+                new StatusBarViewModel(
+                    provider.GetRequiredService<ILogService>(),
+                    provider.GetRequiredService<PerformanceMonitor>()));
+
+            services.AddTransient<MainWindowViewModel>(provider =>
+                new MainWindowViewModel(
+                    provider.GetRequiredService<BallViewModel>(),
+                    provider.GetRequiredService<StatusBarViewModel>(),
+                    provider.GetRequiredService<ILogService>()));
         }
 
         /// <summary>
@@ -150,7 +161,8 @@ namespace BallDragDrop.Bootstrapper
         /// </summary>
         private static void RegisterApplicationServices(IServiceCollection services)
         {
-            // Additional application services can be registered here
+            // Register PerformanceMonitor as singleton with 60 FPS target
+            services.AddSingleton<PerformanceMonitor>(provider => new PerformanceMonitor(60));
         }
 
         /// <summary>

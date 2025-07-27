@@ -11,7 +11,9 @@
         Width="800"
         MinHeight="400"
         MinWidth="600"
+        WindowStartupLocation="CenterScreen"
         SizeChanged="Window_SizeChanged"
+        Loaded="Window_Loaded"
         Background="#F0F0F0"
         Cursor="{Binding CurrentCursor}"
         RenderOptions.BitmapScalingMode="HighQuality"
@@ -25,9 +27,20 @@
         </Style>
     </Window.Resources>
     
-    <!-- Add menu bar for visual content switching -->
-    <DockPanel>
-        <Menu DockPanel.Dock="Top" Background="#F0F0F0">
+    <!-- Complete layout with menu, canvas, and status bar -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20px" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="30px" />
+        </Grid.RowDefinitions>
+        <!-- Menu at top -->
+        <Menu Grid.Row="0" Background="#F0F0F0">
+            <MenuItem Header="_File">
+                <MenuItem Header="Reset" />
+                <Separator />
+                <MenuItem Header="Quit" />
+            </MenuItem>
             <MenuItem Header="_Visual">
                 <MenuItem Header="_Switch Ball Visual..." Click="SwitchVisual_Click" />
                 <Separator />
@@ -36,61 +49,81 @@
                 <MenuItem Header="_Load Aseprite Animation..." Click="LoadAsepriteAnimation_Click" />
             </MenuItem>
         </Menu>
+
+        <!-- Status bar at bottom -->
+        <StatusBar Grid.Row="2" Background="LightBlue" BorderBrush="Blue" BorderThickness="2">
+            <StatusBarItem MinWidth="150">
+                <TextBlock Text="{Binding StatusBarViewModel.AssetName, FallbackValue='Asset: [Loading...]'}" 
+                          FontWeight="Bold" Padding="5,2" />
+            </StatusBarItem>
+            <StatusBarItem MinWidth="100">
+                <TextBlock Text="{Binding StatusBarViewModel.StatusText, FallbackValue='Status: [Loading...]'}" 
+                          FontWeight="Bold" Padding="5,2" />
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right" MinWidth="150">
+                <StackPanel Orientation="Horizontal" Margin="5,2">
+                    <TextBlock Text="{Binding StatusBarViewModel.CurrentFpsDisplay, FallbackValue='FPS: --'}" 
+                              FontWeight="Bold" />
+                    <TextBlock Text=" | " FontWeight="Bold" Margin="5,0" />
+                    <TextBlock Text="{Binding StatusBarViewModel.AverageFpsDisplay, FallbackValue='Avg: --'}" 
+                              FontWeight="Bold" />
+                </StackPanel>
+            </StatusBarItem>
+        </StatusBar>
     
-        <!-- Enable hardware acceleration for the main canvas -->
+        <!-- Main canvas fills remaining space -->
         <Canvas x:Name="MainCanvas" 
                 x:FieldModifier="public"
                 Background="White" 
                 ClipToBounds="True"
                 MouseMove="BallImage_MouseMove"
                 RenderOptions.EdgeMode="Aliased"
-                CacheMode="BitmapCache">
-        <!-- Ball UI element with optimized rendering for animations -->
-        <Image x:Name="BallImage"
-               Source="{Binding BallImage}"
-               Width="{Binding Width}"
-               Height="{Binding Height}"
-               Canvas.Left="{Binding Left}"
-               Canvas.Top="{Binding Top}"
-               RenderOptions.BitmapScalingMode="HighQuality"
-               RenderOptions.EdgeMode="Aliased"
-               RenderOptions.ClearTypeHint="Enabled"
-               MouseDown="BallImage_MouseDown"
-               MouseUp="BallImage_MouseUp"
-               Stretch="Uniform"
-               RenderTransformOrigin="0.5,0.5"
-               CacheMode="BitmapCache"
-               SnapsToDevicePixels="True"
-               UseLayoutRounding="True">
-            <Image.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <RotateTransform/>
-                </TransformGroup>
-            </Image.RenderTransform>
-            <Image.Effect>
-                <DropShadowEffect ShadowDepth="3" Direction="315" Color="Black" Opacity="0.3" BlurRadius="5" RenderingBias="Performance"/>
-            </Image.Effect>
-            <!-- Animation-specific optimizations -->
-            <Image.Style>
-                <Style TargetType="Image">
-                    <!-- Optimize for animation performance -->
-                    <Setter Property="RenderOptions.CacheInvalidationThresholdMinimum" Value="0.5" />
-                    <Setter Property="RenderOptions.CacheInvalidationThresholdMaximum" Value="2.0" />
-                    <!-- Smooth animation transitions -->
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsAnimated}" Value="True">
-                            <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
-                            <Setter Property="RenderOptions.EdgeMode" Value="Unspecified" />
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding IsAnimated}" Value="False">
-                            <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
-                            <Setter Property="RenderOptions.EdgeMode" Value="Aliased" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Image.Style>
-        </Image>
-    </Canvas>
-    </DockPanel>
+                CacheMode="BitmapCache"
+                Grid.Row="1"
+                Margin="2">
+            <!-- Ball UI element -->
+            <Image x:Name="BallImage"
+                   Source="{Binding BallImage}"
+                   Width="{Binding Width}"
+                   Height="{Binding Height}"
+                   Canvas.Left="{Binding Left}"
+                   Canvas.Top="{Binding Top}"
+                   RenderOptions.BitmapScalingMode="HighQuality"
+                   RenderOptions.EdgeMode="Aliased"
+                   RenderOptions.ClearTypeHint="Enabled"
+                   MouseDown="BallImage_MouseDown"
+                   MouseUp="BallImage_MouseUp"
+                   Stretch="Uniform"
+                   RenderTransformOrigin="0.5,0.5"
+                   CacheMode="BitmapCache"
+                   SnapsToDevicePixels="True"
+                   UseLayoutRounding="True">
+                <Image.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <RotateTransform/>
+                    </TransformGroup>
+                </Image.RenderTransform>
+                <Image.Effect>
+                    <DropShadowEffect ShadowDepth="3" Direction="315" Color="Black" Opacity="0.3" BlurRadius="5" RenderingBias="Performance"/>
+                </Image.Effect>
+                <Image.Style>
+                    <Style TargetType="Image">
+                        <Setter Property="RenderOptions.CacheInvalidationThresholdMinimum" Value="0.5" />
+                        <Setter Property="RenderOptions.CacheInvalidationThresholdMaximum" Value="2.0" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsAnimated}" Value="True">
+                                <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
+                                <Setter Property="RenderOptions.EdgeMode" Value="Unspecified" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsAnimated}" Value="False">
+                                <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
+                                <Setter Property="RenderOptions.EdgeMode" Value="Aliased" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Image.Style>
+            </Image>
+        </Canvas>
+    </Grid>
 </Window>

@@ -245,6 +245,83 @@
             Disposes the service provider and cleans up resources
             </summary>
         </member>
+        <member name="T:BallDragDrop.Constants">
+            <summary>
+            Centralized constants for the BallDragDrop application
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.UI_CHROME_HEIGHT_OFFSET">
+            <summary>
+            Height offset to account for menu bar, status bar, borders, and other UI chrome
+            This value ensures the canvas doesn't overlap with the status bar
+            Adjust this value if the layout changes or on different DPI settings
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.MOUSE_HISTORY_SIZE">
+            <summary>
+            Size of the mouse position history buffer for velocity calculation
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.DEFAULT_BALL_SIZE">
+            <summary>
+            Default ball size when configuration is not available
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.MAX_ASSET_NAME_LENGTH">
+            <summary>
+            Maximum length for asset names displayed in the status bar
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.DEFAULT_FRICTION_COEFFICIENT">
+            <summary>
+            Default friction coefficient for ball movement
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.DEFAULT_GRAVITY">
+            <summary>
+            Default gravity acceleration
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.DEFAULT_BOUNCE_FACTOR">
+            <summary>
+            Default bounce factor for collisions
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.VELOCITY_THRESHOLD">
+            <summary>
+            Velocity threshold below which the ball is considered stopped
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.DEFAULT_BALL_IMAGE_PATH">
+            <summary>
+            Default path to the ball image resource
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.CONFIG_FILE_NAME">
+            <summary>
+            Configuration file name
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.MAX_ACCEPTABLE_FRAME_TIME_MS">
+            <summary>
+            Maximum acceptable frame time in milliseconds (~60 FPS)
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.MAX_ACCEPTABLE_PHYSICS_UPDATE_TIME_MS">
+            <summary>
+            Maximum acceptable physics update time in milliseconds
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.MAX_ACCEPTABLE_LOGGING_OVERHEAD_MS">
+            <summary>
+            Maximum acceptable logging overhead in milliseconds per operation
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.MAX_ACCEPTABLE_MEMORY_OVERHEAD_MB">
+            <summary>
+            Maximum acceptable memory overhead in megabytes
+            </summary>
+        </member>
         <member name="T:BallDragDrop.Contracts.IConfigurationService">
             <summary>
             Interface for application configuration management using Config.Net
@@ -1162,6 +1239,28 @@
             </summary>
             <returns>Formatted coordination metrics string</returns>
         </member>
+        <member name="T:BallDragDrop.Models.FpsReading">
+            <summary>
+            Represents a single FPS reading with timestamp
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.FpsReading.Fps">
+            <summary>
+            Gets or sets the FPS value
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.FpsReading.Timestamp">
+            <summary>
+            Gets or sets the timestamp when this reading was taken
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.FpsReading.#ctor(System.Double,System.DateTime)">
+            <summary>
+            Initializes a new instance of the FpsReading struct
+            </summary>
+            <param name="fps">The FPS value</param>
+            <param name="timestamp">The timestamp when this reading was taken</param>
+        </member>
         <member name="T:BallDragDrop.Models.PhysicsEngine">
             <summary>
             Provides physics calculations for ball movement including velocity, friction, and collisions.
@@ -1532,6 +1631,65 @@
             </summary>
             <param name="exception">The critical exception that occurred</param>
             <param name="applicationState">The current application state</param>
+        </member>
+        <member name="T:BallDragDrop.Services.FpsCalculator">
+            <summary>
+            Utility class for calculating 10-second rolling average FPS
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.FpsCalculator._fpsReadings">
+            <summary>
+            List storing FPS readings for the last 10 seconds
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.FpsCalculator._lock">
+            <summary>
+            Lock object for thread-safe access to FPS readings
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.FpsCalculator._timeWindow">
+            <summary>
+            Time window for calculating average (10 seconds)
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.FpsCalculator.AverageFps">
+            <summary>
+            Gets the current 10-second average FPS
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.FpsCalculator.#ctor">
+            <summary>
+            Initializes a new instance of the FpsCalculator class
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.FpsCalculator.AddFpsReading(System.Double)">
+            <summary>
+            Adds a new FPS reading to the calculation
+            </summary>
+            <param name="fps">The FPS value to add</param>
+        </member>
+        <member name="M:BallDragDrop.Services.FpsCalculator.GetAverageFps">
+            <summary>
+            Gets the current 10-second average FPS
+            </summary>
+            <returns>The average FPS over the last 10 seconds, or 0 if no valid readings</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.FpsCalculator.CleanupOldReadings(System.DateTime)">
+            <summary>
+            Removes FPS readings older than the time window
+            </summary>
+            <param name="currentTime">Current timestamp for comparison</param>
+        </member>
+        <member name="M:BallDragDrop.Services.FpsCalculator.GetReadingCount">
+            <summary>
+            Gets the number of FPS readings currently stored
+            </summary>
+            <returns>The count of FPS readings</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.FpsCalculator.Clear">
+            <summary>
+            Clears all FPS readings
+            </summary>
         </member>
         <member name="T:BallDragDrop.Services.VisualContentType">
             <summary>
@@ -2009,6 +2167,11 @@
             Event raised when performance metrics are updated
             </summary>
         </member>
+        <member name="E:BallDragDrop.Services.PerformanceMonitor.FpsUpdated">
+            <summary>
+            Event raised when FPS values are updated for real-time notifications
+            </summary>
+        </member>
         <member name="P:BallDragDrop.Services.PerformanceMonitor.AverageFrameTime">
             <summary>
             Gets the average frame time in milliseconds
@@ -2017,6 +2180,11 @@
         <member name="P:BallDragDrop.Services.PerformanceMonitor.AveragePhysicsTime">
             <summary>
             Gets the average physics update time in milliseconds
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.PerformanceMonitor.CurrentFps">
+            <summary>
+            Gets the current frames per second
             </summary>
         </member>
         <member name="M:BallDragDrop.Services.PerformanceMonitor.#ctor(System.Int32)">
@@ -2096,6 +2264,26 @@
             Timestamp of the last frame rendering
             </summary>
         </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._currentFps">
+            <summary>
+            Current frames per second value
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._lock">
+            <summary>
+            Lock object for thread-safe access to FPS data
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._lastFpsUpdate">
+            <summary>
+            Timestamp of the last FPS update
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.PerformanceMonitor._fpsUpdateInterval">
+            <summary>
+            Interval for FPS update notifications (100ms = 10 Hz)
+            </summary>
+        </member>
         <member name="M:BallDragDrop.Services.PerformanceMonitor.BeginFrameTime">
             <summary>
             Begins measuring a new frame time
@@ -2122,6 +2310,11 @@
             </summary>
             <param name="forceRender">Whether to force rendering regardless of frame rate</param>
             <returns>True if a new frame should be rendered, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.PerformanceMonitor.SafeUpdateMetrics">
+            <summary>
+            Safely updates performance metrics with exception handling
+            </summary>
         </member>
         <member name="M:BallDragDrop.Services.PerformanceMonitor.UpdateMetrics">
             <summary>
@@ -2172,6 +2365,16 @@
         <member name="P:BallDragDrop.Services.PerformanceMetricsEventArgs.PhysicsCount">
             <summary>
             Gets or sets the number of physics updates since the last metrics update
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.FpsUpdatedEventArgs">
+            <summary>
+            Event arguments for FPS updates
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.FpsUpdatedEventArgs.CurrentFps">
+            <summary>
+            Gets or sets the current frames per second
             </summary>
         </member>
         <member name="T:BallDragDrop.Services.Performance.AsyncLogProcessor">
@@ -2815,6 +3018,11 @@
             Gets the type of visual content currently loaded
             </summary>
         </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.AssetName">
+            <summary>
+            Gets the name of the currently loaded asset
+            </summary>
+        </member>
         <member name="P:BallDragDrop.ViewModels.BallViewModel.IsDragging">
             <summary>
             Gets or sets whether the ball is currently being dragged
@@ -2862,11 +3070,6 @@
             <param name="radius">Ball radius</param>
             <param name="imageService">Optional image service for testing</param>
         </member>
-        <member name="F:BallDragDrop.ViewModels.BallViewModel.MouseHistorySize">
-            <summary>
-            Size of the mouse position history buffer for velocity calculation
-            </summary>
-        </member>
         <member name="F:BallDragDrop.ViewModels.BallViewModel._ballModel">
             <summary>
             The underlying ball model (internal for MainWindow access)
@@ -2900,6 +3103,11 @@
         <member name="F:BallDragDrop.ViewModels.BallViewModel._contentType">
             <summary>
             Type of visual content currently loaded
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._assetName">
+            <summary>
+            Name of the currently loaded asset
             </summary>
         </member>
         <member name="F:BallDragDrop.ViewModels.BallViewModel._animationTimer">
@@ -3176,6 +3384,13 @@
             </summary>
             <param name="propertyName">Name of the property that changed</param>
         </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.ExtractAssetNameFromPath(System.String)">
+            <summary>
+            Extracts the asset name from a file path
+            </summary>
+            <param name="filePath">The file path to extract the asset name from</param>
+            <returns>The extracted asset name, or "No Asset" if extraction fails</returns>
+        </member>
         <member name="T:BallDragDrop.ViewModels.RelayCommand`1">
             <summary>
             A simple implementation of ICommand for the view model
@@ -3217,6 +3432,221 @@
             </summary>
             <param name="parameter">Data used by the command</param>
         </member>
+        <member name="T:BallDragDrop.ViewModels.MainWindowViewModel">
+            <summary>
+            Main window view model that aggregates all child view models
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.MainWindowViewModel._logService">
+            <summary>
+            Logging service for tracking operations
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.MainWindowViewModel._ballViewModel">
+            <summary>
+            Ball view model instance
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.MainWindowViewModel._statusBarViewModel">
+            <summary>
+            Status bar view model instance
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.MainWindowViewModel._disposed">
+            <summary>
+            Flag to track if the object has been disposed
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.MainWindowViewModel.BallViewModel">
+            <summary>
+            Gets the ball view model
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.MainWindowViewModel.StatusBarViewModel">
+            <summary>
+            Gets the status bar view model
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.MainWindowViewModel.#ctor(BallDragDrop.ViewModels.BallViewModel,BallDragDrop.ViewModels.StatusBarViewModel,BallDragDrop.Contracts.ILogService)">
+            <summary>
+            Initializes a new instance of the MainWindowViewModel class
+            </summary>
+            <param name="ballViewModel">Ball view model instance</param>
+            <param name="statusBarViewModel">Status bar view model instance</param>
+            <param name="logService">Logging service for tracking operations</param>
+        </member>
+        <member name="E:BallDragDrop.ViewModels.MainWindowViewModel.PropertyChanged">
+            <summary>
+            Event that is raised when a property value changes
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.MainWindowViewModel.OnBallViewModelPropertyChanged(System.Object,System.ComponentModel.PropertyChangedEventArgs)">
+            <summary>
+            Handles property changes from the BallViewModel and forwards them
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.MainWindowViewModel.OnPropertyChanged(System.String)">
+            <summary>
+            Raises the PropertyChanged event
+            </summary>
+            <param name="propertyName">Name of the property that changed</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.MainWindowViewModel.Dispose">
+            <summary>
+            Disposes the view model and cleans up resources
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.MainWindowViewModel.Dispose(System.Boolean)">
+            <summary>
+            Disposes the view model and cleans up resources
+            </summary>
+            <param name="disposing">True if disposing managed resources</param>
+        </member>
+        <member name="T:BallDragDrop.ViewModels.StatusBarViewModel">
+            <summary>
+            View model for the status bar, implementing INotifyPropertyChanged for UI binding
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._logService">
+            <summary>
+            Logging service for tracking status bar operations
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._performanceMonitor">
+            <summary>
+            Performance monitor service for FPS data
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._ballViewModel">
+            <summary>
+            Ball view model for asset information
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._fpsCalculator">
+            <summary>
+            FPS calculator for 10-second rolling average
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._currentFps">
+            <summary>
+            Current frames per second value
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._averageFps">
+            <summary>
+            Average frames per second over the last 10 seconds
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._assetName">
+            <summary>
+            Name of the currently loaded asset
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._statusText">
+            <summary>
+            Status text field
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._disposed">
+            <summary>
+            Flag to track if the object has been disposed
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.StatusBarViewModel.CurrentFps">
+            <summary>
+            Gets or sets the current frames per second
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.StatusBarViewModel.AverageFps">
+            <summary>
+            Gets or sets the average frames per second over the last 10 seconds
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.StatusBarViewModel.CurrentFpsDisplay">
+            <summary>
+            Gets the formatted current FPS display string
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.StatusBarViewModel.AverageFpsDisplay">
+            <summary>
+            Gets the formatted average FPS display string
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.StatusBarViewModel.AssetName">
+            <summary>
+            Gets or sets the name of the currently loaded asset
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.StatusBarViewModel.StatusText">
+            <summary>
+            Gets or sets the status text
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.#ctor(BallDragDrop.Contracts.ILogService,BallDragDrop.Services.PerformanceMonitor)">
+            <summary>
+            Initializes a new instance of the StatusBarViewModel class
+            </summary>
+            <param name="logService">Logging service for tracking status bar operations</param>
+            <param name="performanceMonitor">Performance monitor service for FPS data</param>
+        </member>
+        <member name="E:BallDragDrop.ViewModels.StatusBarViewModel.PropertyChanged">
+            <summary>
+            Event that is raised when a property value changes
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.OnFpsUpdated(System.Object,BallDragDrop.Services.FpsUpdatedEventArgs)">
+            <summary>
+            Handles FPS updates from the PerformanceMonitor
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data containing FPS information</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.OnBallViewModelPropertyChanged(System.Object,System.ComponentModel.PropertyChangedEventArgs)">
+            <summary>
+            Handles property changes from the BallViewModel
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data containing property change information</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.ConnectToBallViewModel(BallDragDrop.ViewModels.BallViewModel)">
+            <summary>
+            Connects the StatusBarViewModel to a BallViewModel for asset information
+            </summary>
+            <param name="ballViewModel">The BallViewModel to connect to</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.ProcessAssetName(System.String)">
+            <summary>
+            Processes the asset name with truncation and default handling
+            </summary>
+            <param name="rawAssetName">The raw asset name from BallViewModel</param>
+            <returns>The processed asset name suitable for display</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.SanitizeFpsValue(System.Double)">
+            <summary>
+            Sanitizes FPS values to ensure they are valid for display
+            </summary>
+            <param name="fps">The FPS value to sanitize</param>
+            <returns>A sanitized FPS value</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.OnPropertyChanged(System.String)">
+            <summary>
+            Raises the PropertyChanged event
+            </summary>
+            <param name="propertyName">Name of the property that changed</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.Dispose">
+            <summary>
+            Disposes the view model and cleans up resources
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.Dispose(System.Boolean)">
+            <summary>
+            Disposes the view model and cleans up resources
+            </summary>
+            <param name="disposing">True if disposing managed resources</param>
+        </member>
         <member name="T:BallDragDrop.Views.MainWindow">
             <summary>
             Interaction logic for MainWindow.xaml
@@ -3233,6 +3663,11 @@
         <member name="M:BallDragDrop.Views.MainWindow.#ctor">
             <summary>
             Initializes a new instance of the MainWindow class
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.InitializeDataContext">
+            <summary>
+            Initializes the DataContext with MainWindowViewModel
             </summary>
         </member>
         <member name="F:BallDragDrop.Views.MainWindow._physicsEngine">

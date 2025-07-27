@@ -18,6 +18,11 @@ namespace BallDragDrop.Services
         public event EventHandler<PerformanceMetricsEventArgs> MetricsUpdated;
 
         /// <summary>
+        /// Event raised when FPS values are updated for real-time notifications
+        /// </summary>
+        public event EventHandler<FpsUpdatedEventArgs> FpsUpdated;
+
+        /// <summary>
         /// Gets the average frame time in milliseconds
         /// </summary>
         public double AverageFrameTime => _averageFrameTimeMs;
@@ -26,6 +31,20 @@ namespace BallDragDrop.Services
         /// Gets the average physics update time in milliseconds
         /// </summary>
         public double AveragePhysicsTime => _averagePhysicsTimeMs;
+
+        /// <summary>
+        /// Gets the current frames per second
+        /// </summary>
+        public double CurrentFps
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _currentFps;
+                }
+            }
+        }
 
         #endregion Properties
         
@@ -38,16 +57,29 @@ namespace BallDragDrop.Services
         /// <exception cref="ArgumentOutOfRangeException">Thrown when targetFrameRate is less than or equal to zero</exception>
         public PerformanceMonitor(int targetFrameRate = 60)
         {
+            if (targetFrameRate <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(targetFrameRate), "Target frame rate must be greater than zero");
+            }
+
             _targetFrameRate = targetFrameRate;
             _targetFrameTime = TimeSpan.FromSeconds(1.0 / targetFrameRate);
             
-            // Set up a timer to periodically update and report metrics
-            DispatcherTimer metricsTimer = new DispatcherTimer
+            try
             {
-                Interval = TimeSpan.FromSeconds(1)
-            };
-            metricsTimer.Tick += (s, e) => UpdateMetrics();
-            metricsTimer.Start();
+                // Set up a timer to periodically update and report metrics
+                DispatcherTimer metricsTimer = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromSeconds(1)
+                };
+                metricsTimer.Tick += (s, e) => SafeUpdateMetrics();
+                metricsTimer.Start();
+            }
+            catch (Exception)
+            {
+                // If timer setup fails, continue without metrics updates
+                // The service will still function for manual metric queries
+            }
         }
 
         #endregion Construction
@@ -123,6 +155,26 @@ namespace BallDragDrop.Services
         /// Timestamp of the last frame rendering
         /// </summary>
         private DateTime _lastFrameTime = DateTime.Now;
+
+        /// <summary>
+        /// Current frames per second value
+        /// </summary>
+        private double _currentFps = 0.0;
+
+        /// <summary>
+        /// Lock object for thread-safe access to FPS data
+        /// </summary>
+        private readonly object _lock = new object();
+
+        /// <summary>
+        /// Timestamp of the last FPS update
+        /// </summary>
+        private DateTime _lastFpsUpdate = DateTime.Now;
+
+        /// <summary>
+        /// Interval for FPS update notifications (100ms = 10 Hz)
+        /// </summary>
+        private readonly TimeSpan _fpsUpdateInterval = TimeSpan.FromMilliseconds(100);
 
         #endregion Fields
         
@@ -210,6 +262,22 @@ namespace BallDragDrop.Services
         }
         
         /// <summary>
+        /// Safely updates performance metrics with exception handling
+        /// </summary>
+        private void SafeUpdateMetrics()
+        {
+            try
+            {
+                UpdateMetrics();
+            }
+            catch (Exception)
+            {
+                // Log error if possible, but don't crash the application
+                // Continue with graceful degradation
+            }
+        }
+
+        /// <summary>
         /// Updates performance metrics and raises the MetricsUpdated event
         /// </summary>
         private void UpdateMetrics()
@@ -243,6 +311,28 @@ namespace BallDragDrop.Services
             {
                 fps = _targetFrameRate; // Default to target frame rate if no frames were rendered
             }
+
+            // Update current FPS with thread safety
+            lock (_lock)
+            {
+                _currentFps = fps;
+            }
+
+            // Check if we should raise FPS update event (throttled to 10 Hz)
+            var currentTime = DateTime.Now;
+            if (currentTime - _lastFpsUpdate >= _fpsUpdateInterval)
+            {
+                _lastFpsUpdate = currentTime;
+                try
+                {
+                    FpsUpdated?.Invoke(this, new FpsUpdatedEventArgs { CurrentFps = fps });
+                }
+                catch (Exception)
+                {
+                    // Continue execution even if event handlers fail
+                    // This ensures the performance monitor remains functional
+                }
+            }
             
             // Create metrics event args
             var metrics = new PerformanceMetricsEventArgs
@@ -262,12 +352,32 @@ namespace BallDragDrop.Services
             _frameCount = 0;
             _physicsCount = 0;
             
-            // Raise the event
-            MetricsUpdated?.Invoke(this, metrics);
+            // Raise the event with exception handling
+            try
+            {
+                MetricsUpdated?.Invoke(this, metrics);
+            }
+            catch (Exception)
+            {
+                // Continue execution even if event handlers fail
+            }
             
-            // Log metrics for debugging
-            Debug.WriteLine($"FPS: {fps:F1}, Avg Frame: {_averageFrameTimeMs:F2}ms, Max Frame: {metrics.MaxFrameTimeMs:F2}ms, " +
-                           $"Avg Physics: {_averagePhysicsTimeMs:F2}ms, Max Physics: {metrics.MaxPhysicsTimeMs:F2}ms");
+            // Log metrics for debugging with safe formatting
+            try
+            {
+                var fpsStr = double.IsNaN(fps) || double.IsInfinity(fps) ? "NaN" : fps.ToString("F1");
+                var avgFrameStr = double.IsNaN(_averageFrameTimeMs) || double.IsInfinity(_averageFrameTimeMs) ? "NaN" : _averageFrameTimeMs.ToString("F2");
+                var maxFrameStr = double.IsNaN(metrics.MaxFrameTimeMs) || double.IsInfinity(metrics.MaxFrameTimeMs) ? "NaN" : metrics.MaxFrameTimeMs.ToString("F2");
+                var avgPhysicsStr = double.IsNaN(_averagePhysicsTimeMs) || double.IsInfinity(_averagePhysicsTimeMs) ? "NaN" : _averagePhysicsTimeMs.ToString("F2");
+                var maxPhysicsStr = double.IsNaN(metrics.MaxPhysicsTimeMs) || double.IsInfinity(metrics.MaxPhysicsTimeMs) ? "NaN" : metrics.MaxPhysicsTimeMs.ToString("F2");
+                
+                Debug.WriteLine($"FPS: {fpsStr}, Avg Frame: {avgFrameStr}ms, Max Frame: {maxFrameStr}ms, " +
+                               $"Avg Physics: {avgPhysicsStr}ms, Max Physics: {maxPhysicsStr}ms");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error formatting performance metrics: {ex.Message}");
+            }
         }
         
         /// <summary>
@@ -342,5 +452,16 @@ namespace BallDragDrop.Services
         /// Gets or sets the number of physics updates since the last metrics update
         /// </summary>
         public int PhysicsCount { get; set; }
+    }
+
+    /// <summary>
+    /// Event arguments for FPS updates
+    /// </summary>
+    public class FpsUpdatedEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets or sets the current frames per second
+        /// </summary>
+        public double CurrentFps { get; set; }
     }
 }

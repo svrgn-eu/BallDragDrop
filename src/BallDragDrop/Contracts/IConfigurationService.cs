@@ -46,7 +46,7 @@ namespace BallDragDrop.Contracts
         /// <summary>
         /// Gets or sets the default ball image path
         /// </summary>
-        [Option(DefaultValue = "./Resources/Images/Ball01.png")]
+        [Option(DefaultValue = "../../Resources/Ball/Ball01.png")]
         string DefaultBallImagePath { get; set; }
 
         /// <summary>

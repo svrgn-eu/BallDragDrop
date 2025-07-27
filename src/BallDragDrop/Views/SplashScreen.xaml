@@ -24,7 +24,7 @@
             
             <!-- App Logo/Image -->
             <Image Grid.Row="0" 
-                   Source="/Resources/Ball/Ball01.png" 
+                   Source="/Resources/Images/Ball01.png" 
                    Width="150" 
                    Height="150"
                    RenderOptions.BitmapScalingMode="HighQuality"

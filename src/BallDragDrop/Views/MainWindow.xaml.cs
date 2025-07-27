@@ -43,8 +43,8 @@ public partial class MainWindow : Window
         _lastPhysicsUpdate = DateTime.Now;
         _isPhysicsRunning = false;
         
-        // Initialize performance monitor with target frame rate of 60 FPS
-        _performanceMonitor = new Services.PerformanceMonitor(60);
+        // Get performance monitor from dependency injection
+        _performanceMonitor = ServiceBootstrapper.GetService<Services.PerformanceMonitor>();
         
         // Set up event handlers
         this.SizeChanged += Window_SizeChanged;
@@ -54,7 +54,48 @@ public partial class MainWindow : Window
         // Initialize optimized dual timer system
         InitializeOptimizedTimers();
         
+        // Initialize DataContext immediately in constructor
+        InitializeDataContext();
+        
         Debug.WriteLine("MainWindow initialized");
+    }
+    
+    /// <summary>
+    /// Initializes the DataContext with MainWindowViewModel
+    /// </summary>
+    private void InitializeDataContext()
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("InitializeDataContext started");
+            Console.WriteLine("InitializeDataContext started");
+            
+            // Create a new MainWindowViewModel using dependency injection
+            MainWindowViewModel mainViewModel = ServiceBootstrapper.GetService<MainWindowViewModel>();
+            
+            System.Diagnostics.Debug.WriteLine("MainWindowViewModel created successfully");
+            Console.WriteLine("MainWindowViewModel created successfully");
+            
+            // Set the DataContext for the window
+            this.DataContext = mainViewModel;
+            
+            System.Diagnostics.Debug.WriteLine("DataContext set successfully");
+            Console.WriteLine("DataContext set successfully");
+            
+            // Initialize the ball position (will be updated in Window_Loaded)
+            mainViewModel.BallViewModel.Initialize(400, 300, 25);
+            
+            System.Diagnostics.Debug.WriteLine("InitializeDataContext completed successfully");
+            Console.WriteLine("InitializeDataContext completed successfully");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error in InitializeDataContext: {ex}");
+            Console.WriteLine($"Error in InitializeDataContext: {ex}");
+            
+            // Show error message
+            MessageBox.Show($"Error initializing DataContext: {ex.Message}", "Initialization Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     #endregion Construction
@@ -101,6 +142,8 @@ public partial class MainWindow : Window
     /// </summary>
     private bool _useOptimizedTimers = true;
 
+
+
     #endregion Fields
     
     #region Event Handlers
@@ -123,37 +166,89 @@ public partial class MainWindow : Window
     /// <param name="e">Event data</param>
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        // Initialize canvas dimensions to match the window's client area
-        MainCanvas.Width = this.ActualWidth;
-        MainCanvas.Height = this.ActualHeight;
-        
-        // Initialize the BallViewModel with the center position of the canvas
-        double centerX = MainCanvas.Width / 2;
-        double centerY = MainCanvas.Height / 2;
-        double ballRadius = 25; // Default radius
-        
-        // Create a new BallViewModel using dependency injection
-        BallViewModel viewModel = ServiceBootstrapper.GetService<BallViewModel>();
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("Window_Loaded started");
+            Console.WriteLine("Window_Loaded started");
+            
+            // Initialize canvas dimensions to match the window's client area minus UI chrome
+            MainCanvas.Width = this.ActualWidth;
+            MainCanvas.Height = this.ActualHeight - Constants.UI_CHROME_HEIGHT_OFFSET;
+            
+            System.Diagnostics.Debug.WriteLine($"Canvas dimensions: {MainCanvas.Width} x {MainCanvas.Height}");
+            Console.WriteLine($"Canvas dimensions: {MainCanvas.Width} x {MainCanvas.Height}");
+            
+            // Initialize the BallViewModel with the center position of the canvas
+            double centerX = MainCanvas.Width / 2;
+            double centerY = MainCanvas.Height / 2;
+            double ballRadius = 25; // Default radius
+            
+            System.Diagnostics.Debug.WriteLine("Creating MainWindowViewModel...");
+            Console.WriteLine("Creating MainWindowViewModel...");
+            
+            // Create a new MainWindowViewModel using dependency injection
+            MainWindowViewModel mainViewModel = ServiceBootstrapper.GetService<MainWindowViewModel>();
+            
+            System.Diagnostics.Debug.WriteLine("MainWindowViewModel created successfully");
+            Console.WriteLine("MainWindowViewModel created successfully");
         
         // Initialize the ball position
-        viewModel.Initialize(centerX, centerY, ballRadius);
+        mainViewModel.BallViewModel.Initialize(centerX, centerY, ballRadius);
         
-        // Load the ball image using the new LoadBallVisualAsync method
+        // Load the ball image using the configuration service
         _ = Task.Run(async () =>
         {
             try
             {
-                // Try to load the image from the Resources folder
-                string imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Resources", "Ball", "Ball01.png");
-                string fullPath = Path.GetFullPath(imagePath);
+                var logService = ServiceBootstrapper.GetService<ILogService>();
                 
-                bool success = await viewModel.LoadBallVisualAsync(fullPath);
+                // Debug: Log current working directory and base directory
+                logService?.LogDebug("Current Directory: {CurrentDir}", Environment.CurrentDirectory);
+                logService?.LogDebug("Base Directory: {BaseDir}", AppDomain.CurrentDomain.BaseDirectory);
+                
+                // Use the BallViewModel's LoadDefaultBallImageAsync method which properly uses configuration
+                bool success = await mainViewModel.BallViewModel.LoadDefaultBallImageAsync();
                 
                 if (!success)
                 {
-                    // If loading failed, the ImageService will have already set a fallback image
-                    var logService = ServiceBootstrapper.GetService<ILogService>();
-                    logService?.LogWarning("Failed to load ball visual, fallback image should be displayed");
+                    logService?.LogWarning("Failed to load default ball image from configuration, trying fallback paths");
+                    
+                    // Try multiple fallback paths
+                    string[] fallbackPaths = {
+                        "Resources/Ball/Ball01.png",
+                        "../../Resources/Ball/Ball01.png",
+                        "../../../Resources/Ball/Ball01.png",
+                        "../../../../Resources/Ball/Ball01.png",
+                        "../../../../../Resources/Ball/Ball01.png",
+                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Resources", "Ball", "Ball01.png"),
+                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "..", "Resources", "Ball", "Ball01.png")
+                    };
+                    
+                    foreach (var fallbackPath in fallbackPaths)
+                    {
+                        var fullPath = Path.GetFullPath(fallbackPath);
+                        logService?.LogDebug("Trying fallback path: {FallbackPath} -> {FullPath}, Exists: {Exists}", 
+                            fallbackPath, fullPath, File.Exists(fullPath));
+                        
+                        if (File.Exists(fullPath))
+                        {
+                            success = await mainViewModel.BallViewModel.LoadBallVisualAsync(fullPath);
+                            if (success)
+                            {
+                                logService?.LogInformation("Successfully loaded ball image from fallback path: {Path}", fullPath);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!success)
+                    {
+                        logService?.LogWarning("Failed to load ball visual from all paths, fallback image should be displayed");
+                    }
+                }
+                else
+                {
+                    logService?.LogInformation("Successfully loaded ball image from configuration");
                 }
             }
             catch (Exception ex)
@@ -167,7 +262,13 @@ public partial class MainWindow : Window
         });
         
         // Set the DataContext for the window
-        this.DataContext = viewModel;
+        System.Diagnostics.Debug.WriteLine("Setting DataContext...");
+        Console.WriteLine("Setting DataContext...");
+        
+        this.DataContext = mainViewModel;
+        
+        System.Diagnostics.Debug.WriteLine("DataContext set successfully");
+        Console.WriteLine("DataContext set successfully");
         
         // Enable hardware rendering if supported
         if (RenderCapability.Tier > 0)
@@ -183,6 +284,17 @@ public partial class MainWindow : Window
         }
         
         Debug.WriteLine("Window loaded");
+        System.Diagnostics.Debug.WriteLine("Window_Loaded completed successfully");
+        Console.WriteLine("Window_Loaded completed successfully");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error in Window_Loaded: {ex}");
+            Console.WriteLine($"Error in Window_Loaded: {ex}");
+            
+            // Show error message
+            MessageBox.Show($"Error initializing window: {ex.Message}", "Initialization Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     /// <summary>
@@ -192,17 +304,19 @@ public partial class MainWindow : Window
     /// <param name="e">Event data</param>
     private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        // Update canvas dimensions
+        // Update canvas dimensions minus UI chrome heights
         MainCanvas.Width = e.NewSize.Width;
-        MainCanvas.Height = e.NewSize.Height;
+        MainCanvas.Height = e.NewSize.Height - Constants.UI_CHROME_HEIGHT_OFFSET;
         
-        // Get the BallViewModel from the DataContext
-        if (DataContext is BallViewModel viewModel)
+        // Get the MainWindowViewModel from the DataContext
+        if (DataContext is MainWindowViewModel mainViewModel)
         {
+            var ballViewModel = mainViewModel.BallViewModel;
+            
             // Store the ball's relative position (as a percentage of the window size)
             // before resizing to maintain its relative position
-            double relativeX = viewModel.X / e.PreviousSize.Width;
-            double relativeY = viewModel.Y / e.PreviousSize.Height;
+            double relativeX = ballViewModel.X / e.PreviousSize.Width;
+            double relativeY = ballViewModel.Y / e.PreviousSize.Height;
             
             // Only apply relative positioning if we have valid previous dimensions
             // and the ball was not at the edge of the window
@@ -215,16 +329,16 @@ public partial class MainWindow : Window
                 double newY = relativeY * e.NewSize.Height;
                 
                 // Update the ball position
-                viewModel.X = newX;
-                viewModel.Y = newY;
+                ballViewModel.X = newX;
+                ballViewModel.Y = newY;
             }
             
             // Constrain the ball position to the new window boundaries
             // This ensures the ball stays within the window even after applying relative positioning
-            viewModel.ConstrainPosition(0, 0, MainCanvas.Width, MainCanvas.Height);
+            ballViewModel.ConstrainPosition(0, 0, MainCanvas.Width, MainCanvas.Height);
             
             // Raise the BallPositionChanged event with the new position
-            BallPositionChanged?.Invoke(this, new Point(viewModel.X, viewModel.Y));
+            BallPositionChanged?.Invoke(this, new Point(ballViewModel.X, ballViewModel.Y));
         }
     }
     
@@ -235,27 +349,29 @@ public partial class MainWindow : Window
     /// <param name="e">Event data</param>
     private void BallImage_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (DataContext is BallViewModel viewModel)
+        if (DataContext is MainWindowViewModel mainViewModel)
         {
+            var ballViewModel = mainViewModel.BallViewModel;
+            
             // Get the position of the mouse click
             var position = e.GetPosition(null);
             
             // Check if the click is inside the ball
-            if (viewModel._ballModel.ContainsPoint(position.X, position.Y))
+            if (ballViewModel._ballModel.ContainsPoint(position.X, position.Y))
             {
                 // Stop the physics simulation first
                 _isPhysicsRunning = false;
-                viewModel._ballModel.Stop();
+                ballViewModel._ballModel.Stop();
                 
                 // Execute the mouse down command
-                if (viewModel.MouseDownCommand.CanExecute(e))
+                if (ballViewModel.MouseDownCommand.CanExecute(e))
                 {
-                    viewModel.MouseDownCommand.Execute(e);
+                    ballViewModel.MouseDownCommand.Execute(e);
                 }
                 
                 // Immediately update the ball position to the mouse position
                 // This ensures the ball appears under the cursor right away
-                UpdateBallPositionToMouse(viewModel, position);
+                UpdateBallPositionToMouse(ballViewModel, position);
                 
                 Debug.WriteLine($"Ball grabbed at position ({position.X:F2}, {position.Y:F2})");
             }
@@ -269,15 +385,19 @@ public partial class MainWindow : Window
     /// <param name="e">Event data</param>
     private void BallImage_MouseMove(object sender, MouseEventArgs e)
     {
-        if (DataContext is BallViewModel viewModel && viewModel.MouseMoveCommand.CanExecute(e))
+        if (DataContext is MainWindowViewModel mainViewModel)
         {
-            viewModel.MouseMoveCommand.Execute(e);
-            
-            // If the ball is being dragged, ensure it follows the mouse cursor immediately
-            if (viewModel.IsDragging)
+            var ballViewModel = mainViewModel.BallViewModel;
+            if (ballViewModel.MouseMoveCommand.CanExecute(e))
             {
-                var position = e.GetPosition(null);
-                UpdateBallPositionToMouse(viewModel, position);
+                ballViewModel.MouseMoveCommand.Execute(e);
+                
+                // If the ball is being dragged, ensure it follows the mouse cursor immediately
+                if (ballViewModel.IsDragging)
+                {
+                    var position = e.GetPosition(null);
+                    UpdateBallPositionToMouse(ballViewModel, position);
+                }
             }
         }
     }
@@ -289,16 +409,18 @@ public partial class MainWindow : Window
     /// <param name="e">Event data</param>
     private void BallImage_MouseUp(object sender, MouseButtonEventArgs e)
     {
-        if (DataContext is BallViewModel viewModel)
+        if (DataContext is MainWindowViewModel mainViewModel)
         {
+            var ballViewModel = mainViewModel.BallViewModel;
+            
             // Execute the mouse up command
-            if (viewModel.MouseUpCommand.CanExecute(e))
+            if (ballViewModel.MouseUpCommand.CanExecute(e))
             {
-                viewModel.MouseUpCommand.Execute(e);
+                ballViewModel.MouseUpCommand.Execute(e);
             }
             
             // Check if the ball has velocity after release (was thrown)
-            if (Math.Abs(viewModel._ballModel.VelocityX) > 0.1 || Math.Abs(viewModel._ballModel.VelocityY) > 0.1)
+            if (Math.Abs(ballViewModel._ballModel.VelocityX) > 0.1 || Math.Abs(ballViewModel._ballModel.VelocityY) > 0.1)
             {
                 // Start the physics simulation using optimized timer system
                 _isPhysicsRunning = true;
@@ -313,7 +435,7 @@ public partial class MainWindow : Window
                     _lastPhysicsUpdate = DateTime.Now;
                 }
                 
-                Debug.WriteLine($"Ball thrown with velocity: ({viewModel._ballModel.VelocityX:F2}, {viewModel._ballModel.VelocityY:F2})");
+                Debug.WriteLine($"Ball thrown with velocity: ({ballViewModel._ballModel.VelocityX:F2}, {ballViewModel._ballModel.VelocityY:F2})");
             }
         }
     }
@@ -331,20 +453,22 @@ public partial class MainWindow : Window
         // Get current time for physics calculations
         DateTime currentTime = DateTime.Now;
         
-        // Get the BallViewModel from the DataContext
-        if (DataContext is BallViewModel viewModel)
+        // Get the MainWindowViewModel from the DataContext
+        if (DataContext is MainWindowViewModel mainViewModel)
         {
+            var ballViewModel = mainViewModel.BallViewModel;
+            
             // If the ball is being dragged, ensure it follows the mouse cursor
-            if (viewModel.IsDragging && Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed)
+            if (ballViewModel.IsDragging && Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed)
             {
                 var mousePosition = Mouse.GetPosition(MainCanvas);
-                UpdateBallPositionToMouse(viewModel, mousePosition);
+                UpdateBallPositionToMouse(ballViewModel, mousePosition);
                 
                 // Coordinate animation timing with physics updates during drag
-                viewModel.CoordinateAnimationWithPhysics();
+                ballViewModel.CoordinateAnimationWithPhysics();
             }
             // Otherwise, check if the ball is moving (has velocity) and not being dragged
-            else if (!viewModel.IsDragging && _isPhysicsRunning)
+            else if (!ballViewModel.IsDragging && _isPhysicsRunning)
             {
                 // Calculate time step
                 double timeStep = (currentTime - _lastPhysicsUpdate).TotalSeconds;
@@ -357,12 +481,12 @@ public partial class MainWindow : Window
                 _performanceMonitor.BeginPhysicsTime();
                 
                 // Store the old position for comparison
-                double oldX = viewModel._ballModel.X;
-                double oldY = viewModel._ballModel.Y;
+                double oldX = ballViewModel._ballModel.X;
+                double oldY = ballViewModel._ballModel.Y;
                 
                 // Update the ball's position and velocity using physics
                 var result = _physicsEngine.UpdateBall(
-                    viewModel._ballModel,
+                    ballViewModel._ballModel,
                     timeStep,
                     0, 0,
                     MainCanvas.Width,
@@ -372,18 +496,18 @@ public partial class MainWindow : Window
                 _performanceMonitor.EndPhysicsTime();
                 
                 // Check if the position has changed
-                if (Math.Abs(oldX - viewModel._ballModel.X) > 0.01 || Math.Abs(oldY - viewModel._ballModel.Y) > 0.01)
+                if (Math.Abs(oldX - ballViewModel._ballModel.X) > 0.01 || Math.Abs(oldY - ballViewModel._ballModel.Y) > 0.01)
                 {
                     // Update the view model's position to match the model
                     // This will trigger property change notifications for X and Y
-                    viewModel.X = viewModel._ballModel.X;
-                    viewModel.Y = viewModel._ballModel.Y;
+                    ballViewModel.X = ballViewModel._ballModel.X;
+                    ballViewModel.Y = ballViewModel._ballModel.Y;
                     
                     // Force UI update by updating the Canvas.Left and Canvas.Top properties directly
                     // This ensures the ball's visual position is updated even if the binding doesn't update
                     Dispatcher.InvokeAsync(() => {
-                        Canvas.SetLeft(BallImage, viewModel.Left);
-                        Canvas.SetTop(BallImage, viewModel.Top);
+                        Canvas.SetLeft(BallImage, ballViewModel.Left);
+                        Canvas.SetTop(BallImage, ballViewModel.Top);
                     }, System.Windows.Threading.DispatcherPriority.Render);
                 }
                 
@@ -393,7 +517,20 @@ public partial class MainWindow : Window
                 // Debug output to verify physics is running (limit to every 5 updates to reduce spam)
                 if (_physicsUpdateCounter % 5 == 0)
                 {
-                    Debug.WriteLine($"Physics update #{_physicsUpdateCounter}: Position=({viewModel.X:F2}, {viewModel.Y:F2}), Velocity=({viewModel._ballModel.VelocityX:F2}, {viewModel._ballModel.VelocityY:F2})");
+                    try
+                    {
+                        // Safely format values, handling NaN and Infinity
+                        var xStr = double.IsNaN(ballViewModel.X) || double.IsInfinity(ballViewModel.X) ? "NaN" : ballViewModel.X.ToString("F2");
+                        var yStr = double.IsNaN(ballViewModel.Y) || double.IsInfinity(ballViewModel.Y) ? "NaN" : ballViewModel.Y.ToString("F2");
+                        var vxStr = double.IsNaN(ballViewModel._ballModel.VelocityX) || double.IsInfinity(ballViewModel._ballModel.VelocityX) ? "NaN" : ballViewModel._ballModel.VelocityX.ToString("F2");
+                        var vyStr = double.IsNaN(ballViewModel._ballModel.VelocityY) || double.IsInfinity(ballViewModel._ballModel.VelocityY) ? "NaN" : ballViewModel._ballModel.VelocityY.ToString("F2");
+                        
+                        Debug.WriteLine($"Physics update #{_physicsUpdateCounter}: Position=({xStr}, {yStr}), Velocity=({vxStr}, {vyStr})");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Physics update #{_physicsUpdateCounter}: Error formatting debug output - {ex.Message}");
+                    }
                 }
                 
                 // If the ball has stopped moving, stop physics updates
@@ -402,7 +539,7 @@ public partial class MainWindow : Window
                     _isPhysicsRunning = false;
                     
                     // Ensure the ball is completely stopped
-                    viewModel._ballModel.Stop();
+                    ballViewModel._ballModel.Stop();
                     
                     Debug.WriteLine("Physics stopped: Ball no longer moving");
                 }
@@ -416,16 +553,16 @@ public partial class MainWindow : Window
                 }
                 
                 // Coordinate animation timing with physics updates
-                viewModel.CoordinateAnimationWithPhysics();
+                ballViewModel.CoordinateAnimationWithPhysics();
                 
                 // Update the last physics update time
                 _lastPhysicsUpdate = currentTime;
             }
-            else if (_isPhysicsRunning && viewModel.IsDragging)
+            else if (_isPhysicsRunning && ballViewModel.IsDragging)
             {
                 // Ball is being dragged, stop physics simulation
                 _isPhysicsRunning = false;
-                viewModel._ballModel.Stop();
+                ballViewModel._ballModel.Stop();
                 Debug.WriteLine("Physics stopped: Ball is being dragged");
                 
                 _lastPhysicsUpdate = currentTime;
@@ -526,30 +663,32 @@ public partial class MainWindow : Window
         // Get current time for physics calculations
         DateTime currentTime = DateTime.Now;
         
-        // Get the BallViewModel from the DataContext
-        if (DataContext is BallViewModel viewModel)
+        // Get the MainWindowViewModel from the DataContext
+        if (DataContext is MainWindowViewModel mainViewModel)
         {
+            var ballViewModel = mainViewModel.BallViewModel;
+            
             // Handle drag operations with immediate responsiveness
-            if (viewModel.IsDragging && Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed)
+            if (ballViewModel.IsDragging && Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed)
             {
                 var mousePosition = Mouse.GetPosition(MainCanvas);
-                UpdateBallPositionToMouse(viewModel, mousePosition);
+                UpdateBallPositionToMouse(ballViewModel, mousePosition);
                 
                 // Stop physics simulation during drag but keep timer running for responsiveness
                 if (_isPhysicsRunning)
                 {
                     _isPhysicsRunning = false;
-                    viewModel._ballModel.Stop();
+                    ballViewModel._ballModel.Stop();
                     Debug.WriteLine("Physics paused: Ball is being dragged");
                 }
                 
                 // Animation updates are handled separately by BallViewModel's animation timer
                 // This ensures drag responsiveness is not affected by animation frame rates
                 // Coordinate animation timing to ensure smooth operation during drag
-                viewModel.CoordinateAnimationWithPhysics();
+                ballViewModel.CoordinateAnimationWithPhysics();
             }
             // Handle physics-based movement when not dragging
-            else if (!viewModel.IsDragging && _isPhysicsRunning)
+            else if (!ballViewModel.IsDragging && _isPhysicsRunning)
             {
                 // Calculate time step for consistent 60 FPS physics
                 double timeStep = (currentTime - _lastPhysicsUpdate).TotalSeconds;
@@ -561,12 +700,12 @@ public partial class MainWindow : Window
                 _performanceMonitor.BeginPhysicsTime();
                 
                 // Store the old position for comparison
-                double oldX = viewModel._ballModel.X;
-                double oldY = viewModel._ballModel.Y;
+                double oldX = ballViewModel._ballModel.X;
+                double oldY = ballViewModel._ballModel.Y;
                 
                 // Update the ball's position and velocity using physics
                 var result = _physicsEngine.UpdateBall(
-                    viewModel._ballModel,
+                    ballViewModel._ballModel,
                     timeStep,
                     0, 0,
                     MainCanvas.Width,
@@ -576,16 +715,16 @@ public partial class MainWindow : Window
                 _performanceMonitor.EndPhysicsTime();
                 
                 // Check if the position has changed
-                if (Math.Abs(oldX - viewModel._ballModel.X) > 0.01 || Math.Abs(oldY - viewModel._ballModel.Y) > 0.01)
+                if (Math.Abs(oldX - ballViewModel._ballModel.X) > 0.01 || Math.Abs(oldY - ballViewModel._ballModel.Y) > 0.01)
                 {
                     // Update the view model's position to match the model
-                    viewModel.X = viewModel._ballModel.X;
-                    viewModel.Y = viewModel._ballModel.Y;
+                    ballViewModel.X = ballViewModel._ballModel.X;
+                    ballViewModel.Y = ballViewModel._ballModel.Y;
                     
                     // Force UI update with high priority for smooth physics
                     Dispatcher.InvokeAsync(() => {
-                        Canvas.SetLeft(BallImage, viewModel.Left);
-                        Canvas.SetTop(BallImage, viewModel.Top);
+                        Canvas.SetLeft(BallImage, ballViewModel.Left);
+                        Canvas.SetTop(BallImage, ballViewModel.Top);
                     }, DispatcherPriority.Render);
                 }
                 
@@ -595,7 +734,20 @@ public partial class MainWindow : Window
                 // Debug output (limit to reduce spam)
                 if (_physicsUpdateCounter % 60 == 0) // Every second at 60 FPS
                 {
-                    Debug.WriteLine($"Physics update #{_physicsUpdateCounter}: Position=({viewModel.X:F2}, {viewModel.Y:F2}), Velocity=({viewModel._ballModel.VelocityX:F2}, {viewModel._ballModel.VelocityY:F2})");
+                    try
+                    {
+                        // Safely format values, handling NaN and Infinity
+                        var xStr = double.IsNaN(ballViewModel.X) || double.IsInfinity(ballViewModel.X) ? "NaN" : ballViewModel.X.ToString("F2");
+                        var yStr = double.IsNaN(ballViewModel.Y) || double.IsInfinity(ballViewModel.Y) ? "NaN" : ballViewModel.Y.ToString("F2");
+                        var vxStr = double.IsNaN(ballViewModel._ballModel.VelocityX) || double.IsInfinity(ballViewModel._ballModel.VelocityX) ? "NaN" : ballViewModel._ballModel.VelocityX.ToString("F2");
+                        var vyStr = double.IsNaN(ballViewModel._ballModel.VelocityY) || double.IsInfinity(ballViewModel._ballModel.VelocityY) ? "NaN" : ballViewModel._ballModel.VelocityY.ToString("F2");
+                        
+                        Debug.WriteLine($"Physics update #{_physicsUpdateCounter}: Position=({xStr}, {yStr}), Velocity=({vxStr}, {vyStr})");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Physics update #{_physicsUpdateCounter}: Error formatting debug output - {ex.Message}");
+                    }
                 }
                 
                 // If the ball has stopped moving, stop physics updates
@@ -605,7 +757,7 @@ public partial class MainWindow : Window
                     StopPhysicsTimer();
                     
                     // Ensure the ball is completely stopped
-                    viewModel._ballModel.Stop();
+                    ballViewModel._ballModel.Stop();
                     
                     Debug.WriteLine("Physics stopped: Ball no longer moving");
                 }
@@ -676,16 +828,18 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (_useOptimizedTimers && DataContext is BallViewModel viewModel)
+        if (_useOptimizedTimers && DataContext is MainWindowViewModel mainViewModel)
         {
+            var ballViewModel = mainViewModel.BallViewModel;
+            
             // Enable optimized dual timer system in BallViewModel
-            viewModel.OptimizeDualTimerSystem();
+            ballViewModel.OptimizeDualTimerSystem();
             
             // Optimize animation timing to respect source frame rates
-            viewModel.OptimizeAnimationTiming();
+            ballViewModel.OptimizeAnimationTiming();
             
             // Ensure animation doesn't impact drag responsiveness
-            viewModel.EnsureAnimationDoesNotImpactDragResponsiveness();
+            ballViewModel.EnsureAnimationDoesNotImpactDragResponsiveness();
             
             // Adjust physics timer priority if needed
             if (_physicsTimer != null)
@@ -709,8 +863,8 @@ public partial class MainWindow : Window
     public DualTimerCoordinationMetrics GetDualTimerCoordinationMetrics()
     {
         var physicsMetrics = GetTimerPerformanceMetrics();
-        var animationMetrics = DataContext is BallViewModel viewModel ? 
-            viewModel.GetAnimationTimingMetrics() : 
+        var animationMetrics = DataContext is MainWindowViewModel mainViewModel ? 
+            mainViewModel.BallViewModel.GetAnimationTimingMetrics() : 
             new AnimationTimingMetrics();
 
         return new DualTimerCoordinationMetrics
@@ -813,13 +967,15 @@ public partial class MainWindow : Window
         MainCanvas.Width = newWidth;
         MainCanvas.Height = newHeight;
         
-        // Get the BallViewModel from the DataContext
-        if (DataContext is BallViewModel viewModel)
+        // Get the MainWindowViewModel from the DataContext
+        if (DataContext is MainWindowViewModel mainViewModel)
         {
+            var ballViewModel = mainViewModel.BallViewModel;
+            
             // Store the ball's relative position (as a percentage of the window size)
             // before resizing to maintain its relative position
-            double relativeX = viewModel.X / oldWidth;
-            double relativeY = viewModel.Y / oldHeight;
+            double relativeX = ballViewModel.X / oldWidth;
+            double relativeY = ballViewModel.Y / oldHeight;
             
             // Only apply relative positioning if we have valid previous dimensions
             // and the ball was not at the edge of the window
@@ -832,16 +988,16 @@ public partial class MainWindow : Window
                 double newY = relativeY * newHeight;
                 
                 // Update the ball position
-                viewModel.X = newX;
-                viewModel.Y = newY;
+                ballViewModel.X = newX;
+                ballViewModel.Y = newY;
             }
             
             // Constrain the ball position to the new window boundaries
             // This ensures the ball stays within the window even after applying relative positioning
-            viewModel.ConstrainPosition(0, 0, MainCanvas.Width, MainCanvas.Height);
+            ballViewModel.ConstrainPosition(0, 0, MainCanvas.Width, MainCanvas.Height);
             
             // Raise the BallPositionChanged event with the new position
-            BallPositionChanged?.Invoke(this, new Point(viewModel.X, viewModel.Y));
+            BallPositionChanged?.Invoke(this, new Point(ballViewModel.X, ballViewModel.Y));
         }
     }
 
@@ -871,12 +1027,13 @@ public partial class MainWindow : Window
 
             if (openFileDialog.ShowDialog() == true)
             {
-                if (DataContext is BallViewModel viewModel)
+                if (DataContext is MainWindowViewModel mainViewModel)
                 {
+                    var ballViewModel = mainViewModel.BallViewModel;
                     var logService = ServiceBootstrapper.GetService<ILogService>();
                     logService?.LogInformation("User requested visual content switch to: {FilePath}", openFileDialog.FileName);
 
-                    bool success = await viewModel.SwitchBallVisualAsync(openFileDialog.FileName);
+                    bool success = await ballViewModel.SwitchBallVisualAsync(openFileDialog.FileName);
                     
                     if (success)
                     {
@@ -920,12 +1077,13 @@ public partial class MainWindow : Window
 
             if (openFileDialog.ShowDialog() == true)
             {
-                if (DataContext is BallViewModel viewModel)
+                if (DataContext is MainWindowViewModel mainViewModel)
                 {
+                    var ballViewModel = mainViewModel.BallViewModel;
                     var logService = ServiceBootstrapper.GetService<ILogService>();
                     logService?.LogInformation("User requested static image load: {FilePath}", openFileDialog.FileName);
 
-                    bool success = await viewModel.SwitchVisualContentTypeAsync(openFileDialog.FileName);
+                    bool success = await ballViewModel.SwitchVisualContentTypeAsync(openFileDialog.FileName);
                     
                     if (!success)
                     {
@@ -962,12 +1120,13 @@ public partial class MainWindow : Window
 
             if (openFileDialog.ShowDialog() == true)
             {
-                if (DataContext is BallViewModel viewModel)
+                if (DataContext is MainWindowViewModel mainViewModel)
                 {
+                    var ballViewModel = mainViewModel.BallViewModel;
                     var logService = ServiceBootstrapper.GetService<ILogService>();
                     logService?.LogInformation("User requested GIF animation load: {FilePath}", openFileDialog.FileName);
 
-                    bool success = await viewModel.SwitchVisualContentTypeAsync(openFileDialog.FileName);
+                    bool success = await ballViewModel.SwitchVisualContentTypeAsync(openFileDialog.FileName);
                     
                     if (!success)
                     {
@@ -1004,8 +1163,9 @@ public partial class MainWindow : Window
 
             if (openFileDialog.ShowDialog() == true)
             {
-                if (DataContext is BallViewModel viewModel)
+                if (DataContext is MainWindowViewModel mainViewModel)
                 {
+                    var ballViewModel = mainViewModel.BallViewModel;
                     var logService = ServiceBootstrapper.GetService<ILogService>();
                     logService?.LogInformation("User requested Aseprite animation load: {FilePath}", openFileDialog.FileName);
 
@@ -1031,7 +1191,7 @@ public partial class MainWindow : Window
                         }
                     }
 
-                    bool success = await viewModel.SwitchVisualContentTypeAsync(openFileDialog.FileName);
+                    bool success = await ballViewModel.SwitchVisualContentTypeAsync(openFileDialog.FileName);
                     
                     if (!success)
                     {

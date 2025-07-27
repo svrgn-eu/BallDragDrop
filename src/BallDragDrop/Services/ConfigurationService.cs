@@ -13,7 +13,7 @@ namespace BallDragDrop.Services
     {
         #region Fields
 
-        private const string DefaultBallImagePath = "./Resources/Images/Ball01.png";
+        private const string DefaultBallImagePath = "../../Resources/Ball/Ball01.png";
         private const string ConfigFileName = "appsettings.json";
         
         private readonly string _configFilePath;

@@ -70,7 +70,7 @@ public partial class App : Application
         // Process command line arguments if any
         ProcessCommandLineArguments(e.Args);
         
-        // Show splash screen
+        // Show splash screen and initialize application
         ShowSplashScreenAndInitialize();
     }
     
@@ -145,15 +145,36 @@ public partial class App : Application
         {
             // Create and show the main window
             _mainWindow = new MainWindow();
+            
+            // Add debug output
+            System.Diagnostics.Debug.WriteLine("MainWindow created successfully");
+            Console.WriteLine("MainWindow created successfully");
+            
             _mainWindow.Show();
+            
+            // Add debug output
+            System.Diagnostics.Debug.WriteLine("MainWindow.Show() called successfully");
+            Console.WriteLine("MainWindow.Show() called successfully");
+            
+            // Force the window to be visible and on top
+            _mainWindow.Activate();
+            _mainWindow.Focus();
             
             // Log successful startup
             _logService?.LogInformation("Application started successfully");
+            
+            // Add debug output
+            System.Diagnostics.Debug.WriteLine("Application startup completed");
+            Console.WriteLine("Application startup completed");
         }
         catch (Exception ex)
         {
             // Log any errors during main window creation
             _logService?.LogError(ex, "Failed to create main window");
+            
+            // Add debug output
+            System.Diagnostics.Debug.WriteLine($"Error creating main window: {ex}");
+            Console.WriteLine($"Error creating main window: {ex}");
             
             // Show error message to the user
             MessageBox.Show(
@@ -473,11 +494,12 @@ public partial class App : Application
                 _settingsManager.SetSetting("WindowHeight", _mainWindow.Height);
                 
                 // Save ball position if available
-                if (_mainWindow.DataContext is BallDragDrop.ViewModels.BallViewModel viewModel)
+                if (_mainWindow.DataContext is BallDragDrop.ViewModels.MainWindowViewModel mainViewModel)
                 {
-                    _settingsManager.SetSetting("BallX", viewModel.X);
-                    _settingsManager.SetSetting("BallY", viewModel.Y);
-                    _settingsManager.SetSetting("BallRadius", viewModel.Radius);
+                    var ballViewModel = mainViewModel.BallViewModel;
+                    _settingsManager.SetSetting("BallX", ballViewModel.X);
+                    _settingsManager.SetSetting("BallY", ballViewModel.Y);
+                    _settingsManager.SetSetting("BallRadius", ballViewModel.Radius);
                 }
             }
             

@@ -132,6 +132,22 @@ namespace BallDragDrop.ViewModels
         }
 
         /// <summary>
+        /// Gets the name of the currently loaded asset
+        /// </summary>
+        public string AssetName
+        {
+            get => _assetName;
+            private set
+            {
+                if (_assetName != value)
+                {
+                    _assetName = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets whether the ball is currently being dragged
         /// </summary>
         public bool IsDragging
@@ -222,10 +238,11 @@ namespace BallDragDrop.ViewModels
             _ballImage = null!; // Initialize to null! to satisfy non-nullable field requirement
             _isAnimated = false;
             _contentType = VisualContentType.Unknown;
+            _assetName = "No Asset";
             
             // Initialize mouse history arrays for velocity calculation
-            _mousePositionHistory = new Point[MouseHistorySize];
-            _mouseTimestampHistory = new DateTime[MouseHistorySize];
+            _mousePositionHistory = new Point[Constants.MOUSE_HISTORY_SIZE];
+            _mouseTimestampHistory = new DateTime[Constants.MOUSE_HISTORY_SIZE];
             _mouseHistoryCount = 0;
             
             // Initialize event throttler for mouse move events
@@ -278,10 +295,11 @@ namespace BallDragDrop.ViewModels
             _ballImage = null!; // Initialize to null! to satisfy non-nullable field requirement
             _isAnimated = false;
             _contentType = VisualContentType.Unknown;
+            _assetName = "No Asset";
             
             // Initialize mouse history arrays for velocity calculation
-            _mousePositionHistory = new Point[MouseHistorySize];
-            _mouseTimestampHistory = new DateTime[MouseHistorySize];
+            _mousePositionHistory = new Point[Constants.MOUSE_HISTORY_SIZE];
+            _mouseTimestampHistory = new DateTime[Constants.MOUSE_HISTORY_SIZE];
             _mouseHistoryCount = 0;
             
             // Initialize event throttler for mouse move events
@@ -305,10 +323,7 @@ namespace BallDragDrop.ViewModels
 
         #region Constants
 
-        /// <summary>
-        /// Size of the mouse position history buffer for velocity calculation
-        /// </summary>
-        private const int MouseHistorySize = 10;
+
 
         #endregion Constants
 
@@ -348,6 +363,11 @@ namespace BallDragDrop.ViewModels
         /// Type of visual content currently loaded
         /// </summary>
         private VisualContentType _contentType;
+
+        /// <summary>
+        /// Name of the currently loaded asset
+        /// </summary>
+        private string _assetName;
 
         /// <summary>
         /// Timer for updating animation frames (optimized for source frame rates)
@@ -476,17 +496,22 @@ namespace BallDragDrop.ViewModels
                     IsAnimated = _imageService.IsAnimated;
                     ContentType = _imageService.ContentType;
 
+                    // Extract and set asset name from file path
+                    AssetName = ExtractAssetNameFromPath(filePath);
+
                     // Start animation if content is animated
                     if (IsAnimated)
                     {
                         StartAnimation();
                     }
 
-                    _logService?.LogInformation("Ball visual loaded successfully: {FilePath} (Animated: {IsAnimated})", 
-                        filePath, IsAnimated);
+                    _logService?.LogInformation("Ball visual loaded successfully: {FilePath} (Animated: {IsAnimated}, Asset: {AssetName})", 
+                        filePath, IsAnimated, AssetName);
                 }
                 else
                 {
+                    // Reset to default asset name on failure
+                    AssetName = "No Asset";
                     _logService?.LogWarning("Failed to load ball visual: {FilePath}", filePath);
                 }
 
@@ -1619,17 +1644,17 @@ namespace BallDragDrop.ViewModels
         private void StoreMousePosition(Point position, DateTime timestamp)
         {
             // Shift all elements one position to make room for the new one
-            if (_mouseHistoryCount >= MouseHistorySize)
+            if (_mouseHistoryCount >= Constants.MOUSE_HISTORY_SIZE)
             {
-                for (int i = 0; i < MouseHistorySize - 1; i++)
+                for (int i = 0; i < Constants.MOUSE_HISTORY_SIZE - 1; i++)
                 {
                     _mousePositionHistory[i] = _mousePositionHistory[i + 1];
                     _mouseTimestampHistory[i] = _mouseTimestampHistory[i + 1];
                 }
                 
                 // Add the new position and timestamp at the end
-                _mousePositionHistory[MouseHistorySize - 1] = position;
-                _mouseTimestampHistory[MouseHistorySize - 1] = timestamp;
+                _mousePositionHistory[Constants.MOUSE_HISTORY_SIZE - 1] = position;
+                _mouseTimestampHistory[Constants.MOUSE_HISTORY_SIZE - 1] = timestamp;
             }
             else
             {
@@ -1828,6 +1853,44 @@ namespace BallDragDrop.ViewModels
                     OnPropertyChanged(nameof(Top));
                     OnPropertyChanged(nameof(Height));
                 }
+            }
+        }
+
+        /// <summary>
+        /// Extracts the asset name from a file path
+        /// </summary>
+        /// <param name="filePath">The file path to extract the asset name from</param>
+        /// <returns>The extracted asset name, or "No Asset" if extraction fails</returns>
+        private string ExtractAssetNameFromPath(string filePath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return "No Asset";
+                }
+
+                // Get the file name without extension
+                var fileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                
+                if (string.IsNullOrEmpty(fileName))
+                {
+                    return "No Asset";
+                }
+
+                // Truncate long names with ellipsis to fit the available space
+                const int maxLength = 30; // Reasonable limit for status bar display
+                if (fileName.Length > maxLength)
+                {
+                    return fileName.Substring(0, maxLength - 3) + "...";
+                }
+
+                return fileName;
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error extracting asset name from path: {FilePath}", filePath);
+                return "No Asset";
             }
         }
 
