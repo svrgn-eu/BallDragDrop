@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using log4net;
 using BallDragDrop.Contracts;
 using BallDragDrop.Services.Performance;
@@ -167,7 +168,7 @@ namespace BallDragDrop.Services
             var stopwatch = Stopwatch.StartNew();
             try
             {
-                var message = string.Format(messageTemplate, propertyValues);
+                var message = FormatStructuredMessage(messageTemplate, propertyValues);
                 var properties = CreatePropertiesDictionary(propertyValues);
                 
                 _asyncProcessor.QueueLogItem(level, message, null, _correlationId, properties);
@@ -199,7 +200,7 @@ namespace BallDragDrop.Services
             var stopwatch = Stopwatch.StartNew();
             try
             {
-                var message = string.Format(messageTemplate, propertyValues);
+                var message = FormatStructuredMessage(messageTemplate, propertyValues);
                 var properties = CreatePropertiesDictionary(propertyValues);
                 
                 _asyncProcessor.QueueLogItem(level, message, exception, _correlationId, properties);
@@ -338,7 +339,7 @@ namespace BallDragDrop.Services
             var stopwatch = Stopwatch.StartNew();
             try
             {
-                var formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
+                var formattedMessage = args.Length > 0 ? FormatStructuredMessage(message, args) : message;
                 _asyncProcessor.QueueLogItem(level, formattedMessage, exception, _correlationId);
                 
                 stopwatch.Stop();
@@ -393,6 +394,84 @@ namespace BallDragDrop.Services
                 properties[$"Property_{i}"] = propertyValues[i] ?? "null";
             }
             return properties;
+        }
+
+        /// <summary>
+        /// Formats a structured logging message by converting {PropertyName} syntax to positional parameters
+        /// </summary>
+        /// <param name="message">The message template with structured logging syntax</param>
+        /// <param name="args">The arguments to substitute</param>
+        /// <returns>A formatted message string</returns>
+        private string FormatStructuredMessage(string message, object[] args)
+        {
+            try
+            {
+                // Simple approach: convert structured logging syntax to positional parameters
+                var formattedMessage = message;
+                var argIndex = 0;
+                
+                // Use regex to find all {PropertyName} or {PropertyName:Format} patterns
+                var regex = new System.Text.RegularExpressions.Regex(@"\{[^}]+\}");
+                var matches = regex.Matches(message);
+                
+                // Replace each match with the corresponding argument
+                foreach (System.Text.RegularExpressions.Match match in matches)
+                {
+                    if (argIndex < args.Length)
+                    {
+                        var placeholder = match.Value;
+                        var value = args[argIndex];
+                        
+                        // Handle format specifiers like {PropertyName:F1}
+                        if (placeholder.Contains(':'))
+                        {
+                            var parts = placeholder.Trim('{', '}').Split(':');
+                            if (parts.Length == 2 && value != null)
+                            {
+                                var formatSpec = parts[1];
+                                try
+                                {
+                                    if (value is IFormattable formattable)
+                                    {
+                                        formattedMessage = formattedMessage.Replace(placeholder, 
+                                            formattable.ToString(formatSpec, CultureInfo.InvariantCulture));
+                                    }
+                                    else
+                                    {
+                                        formattedMessage = formattedMessage.Replace(placeholder, value.ToString());
+                                    }
+                                }
+                                catch
+                                {
+                                    formattedMessage = formattedMessage.Replace(placeholder, value.ToString());
+                                }
+                            }
+                            else
+                            {
+                                formattedMessage = formattedMessage.Replace(placeholder, value?.ToString() ?? "null");
+                            }
+                        }
+                        else
+                        {
+                            formattedMessage = formattedMessage.Replace(placeholder, value?.ToString() ?? "null");
+                        }
+                        
+                        argIndex++;
+                    }
+                    else
+                    {
+                        // Not enough arguments, leave placeholder as is
+                        break;
+                    }
+                }
+                
+                return formattedMessage;
+            }
+            catch (Exception)
+            {
+                // Fallback: if structured formatting fails, try simple concatenation
+                return args.Length > 0 ? $"{message} [Args: {string.Join(", ", args)}]" : message;
+            }
         }
 
         #endregion Private Methods

@@ -147,13 +147,13 @@ public partial class App : Application
             _mainWindow = new MainWindow();
             
             // Add debug output
-            System.Diagnostics.Debug.WriteLine("MainWindow created successfully");
+            _logService?.LogDebug("MainWindow created successfully");
             Console.WriteLine("MainWindow created successfully");
             
             _mainWindow.Show();
             
             // Add debug output
-            System.Diagnostics.Debug.WriteLine("MainWindow.Show() called successfully");
+            _logService?.LogDebug("MainWindow.Show() called successfully");
             Console.WriteLine("MainWindow.Show() called successfully");
             
             // Force the window to be visible and on top
@@ -164,7 +164,7 @@ public partial class App : Application
             _logService?.LogInformation("Application started successfully");
             
             // Add debug output
-            System.Diagnostics.Debug.WriteLine("Application startup completed");
+            _logService?.LogDebug("Application startup completed");
             Console.WriteLine("Application startup completed");
         }
         catch (Exception ex)
@@ -173,7 +173,7 @@ public partial class App : Application
             _logService?.LogError(ex, "Failed to create main window");
             
             // Add debug output
-            System.Diagnostics.Debug.WriteLine($"Error creating main window: {ex}");
+            _logService?.LogError(ex, "Error creating main window");
             Console.WriteLine($"Error creating main window: {ex}");
             
             // Show error message to the user
@@ -401,7 +401,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Failed to flush logs: {ex.Message}");
+            _logService?.LogError(ex, "Failed to flush logs");
         }
     }
     

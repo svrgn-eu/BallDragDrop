@@ -212,6 +212,22 @@ namespace BallDragDrop.ViewModels
         /// </summary>
         public double Height => Radius * 2;
 
+        /// <summary>
+        /// Gets or sets whether to show the bounding box for debugging
+        /// </summary>
+        public bool ShowBoundingBox
+        {
+            get => _showBoundingBox;
+            set
+            {
+                if (_showBoundingBox != value)
+                {
+                    _showBoundingBox = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         #endregion Properties
 
         #region Construction
@@ -239,6 +255,7 @@ namespace BallDragDrop.ViewModels
             _isAnimated = false;
             _contentType = VisualContentType.Unknown;
             _assetName = "No Asset";
+            _showBoundingBox = GetShowBoundingBoxFromConfiguration();
             
             // Initialize mouse history arrays for velocity calculation
             _mousePositionHistory = new Point[Constants.MOUSE_HISTORY_SIZE];
@@ -403,6 +420,11 @@ namespace BallDragDrop.ViewModels
         /// Current cursor to display
         /// </summary>
         private Cursor _currentCursor;
+
+        /// <summary>
+        /// Flag indicating whether to show the bounding box for debugging
+        /// </summary>
+        private bool _showBoundingBox;
         
         /// <summary>
         /// Array storing mouse position history for velocity calculation
@@ -611,18 +633,76 @@ namespace BallDragDrop.ViewModels
                 }
                 else
                 {
-                    const double fallbackSize = 25.0;
-                    _logService?.LogDebug("Configuration service not available, using fallback ball size: {FallbackSize}", fallbackSize);
-                    _logService?.LogMethodExit(nameof(GetDefaultBallSizeFromConfiguration), fallbackSize);
-                    return fallbackSize;
+                    _logService?.LogDebug("Configuration service not available, using fallback ball size: {FallbackSize}", Constants.DEFAULT_BALL_SIZE);
+                    _logService?.LogMethodExit(nameof(GetDefaultBallSizeFromConfiguration), Constants.DEFAULT_BALL_SIZE);
+                    return Constants.DEFAULT_BALL_SIZE;
                 }
             }
             catch (Exception ex)
             {
-                const double fallbackSize = 25.0;
-                _logService?.LogError(ex, "Error getting default ball size from configuration, using fallback: {FallbackSize}", fallbackSize);
-                _logService?.LogMethodExit(nameof(GetDefaultBallSizeFromConfiguration), fallbackSize);
-                return fallbackSize;
+                _logService?.LogError(ex, "Error getting default ball size from configuration, using fallback: {FallbackSize}", Constants.DEFAULT_BALL_SIZE);
+                _logService?.LogMethodExit(nameof(GetDefaultBallSizeFromConfiguration), Constants.DEFAULT_BALL_SIZE);
+                return Constants.DEFAULT_BALL_SIZE;
+            }
+        }
+
+        /// <summary>
+        /// Gets the show bounding box setting from configuration
+        /// </summary>
+        /// <returns>The show bounding box setting from configuration, or false as fallback</returns>
+        private bool GetShowBoundingBoxFromConfiguration()
+        {
+            _logService?.LogMethodEntry(nameof(GetShowBoundingBoxFromConfiguration));
+
+            try
+            {
+                if (_configurationService != null)
+                {
+                    var showBoundingBox = _configurationService.GetShowBoundingBox();
+                    _logService?.LogDebug("Using show bounding box setting from configuration: {ShowBoundingBox}", showBoundingBox);
+                    _logService?.LogMethodExit(nameof(GetShowBoundingBoxFromConfiguration), showBoundingBox);
+                    return showBoundingBox;
+                }
+                else
+                {
+                    _logService?.LogDebug("Configuration service not available, using fallback show bounding box: false");
+                    _logService?.LogMethodExit(nameof(GetShowBoundingBoxFromConfiguration), false);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error getting show bounding box setting from configuration, using fallback: false");
+                _logService?.LogMethodExit(nameof(GetShowBoundingBoxFromConfiguration), false);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Toggles the bounding box display and updates the configuration
+        /// </summary>
+        public void ToggleBoundingBox()
+        {
+            _logService?.LogMethodEntry(nameof(ToggleBoundingBox));
+
+            try
+            {
+                bool newValue = !ShowBoundingBox;
+                ShowBoundingBox = newValue;
+                
+                // Update configuration if available
+                if (_configurationService != null)
+                {
+                    _configurationService.SetShowBoundingBox(newValue);
+                    _logService?.LogDebug("Bounding box display toggled to: {ShowBoundingBox}", newValue);
+                }
+                
+                _logService?.LogMethodExit(nameof(ToggleBoundingBox));
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error toggling bounding box display");
+                _logService?.LogMethodExit(nameof(ToggleBoundingBox));
             }
         }
 
@@ -1825,6 +1905,7 @@ namespace BallDragDrop.ViewModels
             }
             catch (Exception ex)
             {
+                // If we can't get the log service, fall back to Debug.WriteLine
                 Debug.WriteLine($"Failed to get log service from app: {ex.Message}");
             }
             
@@ -1879,10 +1960,9 @@ namespace BallDragDrop.ViewModels
                 }
 
                 // Truncate long names with ellipsis to fit the available space
-                const int maxLength = 30; // Reasonable limit for status bar display
-                if (fileName.Length > maxLength)
+                if (fileName.Length > Constants.MAX_ASSET_NAME_LENGTH)
                 {
-                    return fileName.Substring(0, maxLength - 3) + "...";
+                    return fileName.Substring(0, Constants.MAX_ASSET_NAME_LENGTH - 3) + "...";
                 }
 
                 return fileName;

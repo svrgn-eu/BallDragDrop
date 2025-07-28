@@ -14,32 +14,62 @@ namespace BallDragDrop.Models
         /// <summary>
         /// Gets or sets the X position of the ball
         /// </summary>
-        public double X { get; set; }
+        public double X 
+        { 
+            get => _x;
+            set => _x = ValidateDouble(value, _x);
+        }
+        private double _x;
 
         /// <summary>
         /// Gets or sets the Y position of the ball
         /// </summary>
-        public double Y { get; set; }
+        public double Y 
+        { 
+            get => _y;
+            set => _y = ValidateDouble(value, _y);
+        }
+        private double _y;
         
         /// <summary>
         /// Gets or sets the X velocity of the ball
         /// </summary>
-        public double VelocityX { get; set; }
+        public double VelocityX 
+        { 
+            get => _velocityX;
+            set => _velocityX = ValidateDouble(value, _velocityX);
+        }
+        private double _velocityX;
 
         /// <summary>
         /// Gets or sets the Y velocity of the ball
         /// </summary>
-        public double VelocityY { get; set; }
+        public double VelocityY 
+        { 
+            get => _velocityY;
+            set => _velocityY = ValidateDouble(value, _velocityY);
+        }
+        private double _velocityY;
         
         /// <summary>
         /// Gets or sets the radius of the ball
         /// </summary>
-        public double Radius { get; set; }
+        public double Radius 
+        { 
+            get => _radius;
+            set => _radius = ValidateDouble(value, _radius, 1.0); // Minimum radius of 1.0
+        }
+        private double _radius;
 
         /// <summary>
         /// Gets or sets the mass of the ball
         /// </summary>
-        public double Mass { get; set; }
+        public double Mass 
+        { 
+            get => _mass;
+            set => _mass = ValidateDouble(value, _mass, 0.1); // Minimum mass of 0.1
+        }
+        private double _mass;
         
         /// <summary>
         /// Gets a value indicating whether the ball is currently moving
@@ -55,13 +85,13 @@ namespace BallDragDrop.Models
         /// </summary>
         public BallModel()
         {
-            // Default values
-            X = 0;
-            Y = 0;
-            VelocityX = 0;
-            VelocityY = 0;
-            Radius = 25; // Default radius in pixels
-            Mass = 1;    // Default mass (unitless)
+            // Default values - set backing fields directly to avoid validation during construction
+            _x = 0;
+            _y = 0;
+            _velocityX = 0;
+            _velocityY = 0;
+            _radius = 25; // Default radius in pixels
+            _mass = 1;    // Default mass (unitless)
         }
         
         /// <summary>
@@ -225,6 +255,30 @@ namespace BallDragDrop.Models
             }
             
             return wasConstrained;
+        }
+
+        /// <summary>
+        /// Validates a double value to ensure it's not NaN or Infinity
+        /// </summary>
+        /// <param name="value">The value to validate</param>
+        /// <param name="fallback">The fallback value to use if validation fails</param>
+        /// <param name="minimum">Optional minimum value constraint</param>
+        /// <returns>The validated value or fallback if invalid</returns>
+        private static double ValidateDouble(double value, double fallback, double? minimum = null)
+        {
+            // Check for NaN or Infinity
+            if (double.IsNaN(value) || double.IsInfinity(value))
+            {
+                return fallback;
+            }
+            
+            // Check minimum constraint if provided
+            if (minimum.HasValue && value < minimum.Value)
+            {
+                return Math.Max(fallback, minimum.Value);
+            }
+            
+            return value;
         }
 
         #endregion Methods

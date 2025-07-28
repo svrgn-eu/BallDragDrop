@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -195,7 +196,7 @@ namespace BallDragDrop.Services
                         return result;
                     }
                     
-                    var convertedValue = (T)Convert.ChangeType(value, typeof(T));
+                    var convertedValue = (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
                     _logService?.LogTrace("Setting {Key} found with value: {Value}", key, convertedValue);
                     return convertedValue;
                 }
@@ -374,11 +375,11 @@ namespace BallDragDrop.Services
                                             if (prop.PropertyType == typeof(string))
                                                 prop.SetValue(instance, value.ToString());
                                             else if (prop.PropertyType == typeof(int) || prop.PropertyType == typeof(int?))
-                                                prop.SetValue(instance, Convert.ToInt32(value));
+                                                prop.SetValue(instance, Convert.ToInt32(value, CultureInfo.InvariantCulture));
                                             else if (prop.PropertyType == typeof(bool) || prop.PropertyType == typeof(bool?))
-                                                prop.SetValue(instance, Convert.ToBoolean(value));
+                                                prop.SetValue(instance, Convert.ToBoolean(value, CultureInfo.InvariantCulture));
                                             else
-                                                prop.SetValue(instance, Convert.ChangeType(value, prop.PropertyType));
+                                                prop.SetValue(instance, Convert.ChangeType(value, prop.PropertyType, CultureInfo.InvariantCulture));
                                         }
                                     }
                                     catch {

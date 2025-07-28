@@ -1,10 +1,12 @@
-using System.Diagnostics;
+using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Windows.Data;
+using System.Globalization;
 using BallDragDrop.Bootstrapper;
 using BallDragDrop.Services;
 using BallDragDrop.Contracts;
@@ -29,6 +31,15 @@ public partial class MainWindow : Window
 
     #endregion Properties
 
+    #region Fields
+
+    /// <summary>
+    /// Logging service for the MainWindow
+    /// </summary>
+    private readonly ILogService _logService;
+
+    #endregion Fields
+
     #region Construction
 
     /// <summary>
@@ -37,6 +48,9 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        
+        // Get logging service from dependency injection
+        _logService = ServiceBootstrapper.GetService<ILogService>();
         
         // Initialize physics engine
         _physicsEngine = new Models.PhysicsEngine();
@@ -57,7 +71,7 @@ public partial class MainWindow : Window
         // Initialize DataContext immediately in constructor
         InitializeDataContext();
         
-        Debug.WriteLine("MainWindow initialized");
+        _logService.LogDebug("MainWindow initialized");
     }
     
     /// <summary>
@@ -67,31 +81,28 @@ public partial class MainWindow : Window
     {
         try
         {
-            System.Diagnostics.Debug.WriteLine("InitializeDataContext started");
+            _logService.LogDebug("InitializeDataContext started");
             Console.WriteLine("InitializeDataContext started");
             
             // Create a new MainWindowViewModel using dependency injection
             MainWindowViewModel mainViewModel = ServiceBootstrapper.GetService<MainWindowViewModel>();
             
-            System.Diagnostics.Debug.WriteLine("MainWindowViewModel created successfully");
+            _logService.LogDebug("MainWindowViewModel created successfully");
             Console.WriteLine("MainWindowViewModel created successfully");
             
             // Set the DataContext for the window
             this.DataContext = mainViewModel;
             
-            System.Diagnostics.Debug.WriteLine("DataContext set successfully");
-            Console.WriteLine("DataContext set successfully");
+            _logService.LogDebug("DataContext set successfully");
             
             // Initialize the ball position (will be updated in Window_Loaded)
             mainViewModel.BallViewModel.Initialize(400, 300, 25);
             
-            System.Diagnostics.Debug.WriteLine("InitializeDataContext completed successfully");
-            Console.WriteLine("InitializeDataContext completed successfully");
+            _logService.LogDebug("InitializeDataContext completed successfully");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error in InitializeDataContext: {ex}");
-            Console.WriteLine($"Error in InitializeDataContext: {ex}");
+            _logService.LogError(ex, "Error in InitializeDataContext");
             
             // Show error message
             MessageBox.Show($"Error initializing DataContext: {ex.Message}", "Initialization Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -142,7 +153,30 @@ public partial class MainWindow : Window
     /// </summary>
     private bool _useOptimizedTimers = true;
 
+    /// <summary>
+    /// Array storing mouse position history for velocity calculation
+    /// </summary>
+    private Point[] _mousePositionHistory = new Point[10];
 
+    /// <summary>
+    /// Array storing mouse timestamp history for velocity calculation
+    /// </summary>
+    private DateTime[] _mouseTimestampHistory = new DateTime[10];
+
+    /// <summary>
+    /// Number of valid entries in the mouse history arrays
+    /// </summary>
+    private int _mouseHistoryCount = 0;
+
+    /// <summary>
+    /// Last recorded mouse position for drag operations
+    /// </summary>
+    private Point _lastMousePosition;
+
+    /// <summary>
+    /// Timestamp of the last mouse update
+    /// </summary>
+    private DateTime _lastMouseUpdateTime;
 
     #endregion Fields
     
@@ -168,28 +202,25 @@ public partial class MainWindow : Window
     {
         try
         {
-            System.Diagnostics.Debug.WriteLine("Window_Loaded started");
-            Console.WriteLine("Window_Loaded started");
+            _logService.LogDebug("Window_Loaded started");
             
             // Initialize canvas dimensions to match the window's client area minus UI chrome
             MainCanvas.Width = this.ActualWidth;
             MainCanvas.Height = this.ActualHeight - Constants.UI_CHROME_HEIGHT_OFFSET;
             
-            System.Diagnostics.Debug.WriteLine($"Canvas dimensions: {MainCanvas.Width} x {MainCanvas.Height}");
-            Console.WriteLine($"Canvas dimensions: {MainCanvas.Width} x {MainCanvas.Height}");
+            _logService.LogDebug("Canvas dimensions: {Width} x {Height}", MainCanvas.Width, MainCanvas.Height);
             
             // Initialize the BallViewModel with the center position of the canvas
             double centerX = MainCanvas.Width / 2;
             double centerY = MainCanvas.Height / 2;
             double ballRadius = 25; // Default radius
             
-            System.Diagnostics.Debug.WriteLine("Creating MainWindowViewModel...");
-            Console.WriteLine("Creating MainWindowViewModel...");
+            _logService.LogDebug("Creating MainWindowViewModel...");
             
             // Create a new MainWindowViewModel using dependency injection
             MainWindowViewModel mainViewModel = ServiceBootstrapper.GetService<MainWindowViewModel>();
             
-            System.Diagnostics.Debug.WriteLine("MainWindowViewModel created successfully");
+            _logService.LogDebug("MainWindowViewModel created successfully");
             Console.WriteLine("MainWindowViewModel created successfully");
         
         // Initialize the ball position
@@ -262,13 +293,11 @@ public partial class MainWindow : Window
         });
         
         // Set the DataContext for the window
-        System.Diagnostics.Debug.WriteLine("Setting DataContext...");
-        Console.WriteLine("Setting DataContext...");
+        _logService.LogDebug("Setting DataContext...");
         
         this.DataContext = mainViewModel;
         
-        System.Diagnostics.Debug.WriteLine("DataContext set successfully");
-        Console.WriteLine("DataContext set successfully");
+        _logService.LogDebug("DataContext set successfully");
         
         // Enable hardware rendering if supported
         if (RenderCapability.Tier > 0)
@@ -277,20 +306,18 @@ public partial class MainWindow : Window
             
             // Check if hardware acceleration is available
             bool isHardwareAccelerated = RenderCapability.IsPixelShaderVersionSupported(2, 0);
-            Debug.WriteLine($"Hardware acceleration available: {isHardwareAccelerated}");
+            _logService.LogDebug("Hardware acceleration available: {IsHardwareAccelerated}", isHardwareAccelerated);
             
             // Set rendering tier information for debugging
-            Debug.WriteLine($"Rendering Tier: {RenderCapability.Tier}");
+            _logService.LogDebug("Rendering Tier: {RenderingTier}", RenderCapability.Tier);
         }
         
-        Debug.WriteLine("Window loaded");
-        System.Diagnostics.Debug.WriteLine("Window_Loaded completed successfully");
-        Console.WriteLine("Window_Loaded completed successfully");
+        _logService.LogDebug("Window loaded");
+        _logService.LogDebug("Window_Loaded completed successfully");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error in Window_Loaded: {ex}");
-            Console.WriteLine($"Error in Window_Loaded: {ex}");
+            _logService.LogError(ex, "Error in Window_Loaded");
             
             // Show error message
             MessageBox.Show($"Error initializing window: {ex.Message}", "Initialization Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -353,8 +380,8 @@ public partial class MainWindow : Window
         {
             var ballViewModel = mainViewModel.BallViewModel;
             
-            // Get the position of the mouse click
-            var position = e.GetPosition(null);
+            // Get the position of the mouse click relative to the canvas (not the window)
+            var position = e.GetPosition(MainCanvas);
             
             // Check if the click is inside the ball
             if (ballViewModel._ballModel.ContainsPoint(position.X, position.Y))
@@ -363,17 +390,28 @@ public partial class MainWindow : Window
                 _isPhysicsRunning = false;
                 ballViewModel._ballModel.Stop();
                 
-                // Execute the mouse down command
-                if (ballViewModel.MouseDownCommand.CanExecute(e))
-                {
-                    ballViewModel.MouseDownCommand.Execute(e);
-                }
+                // Start dragging
+                ballViewModel.IsDragging = true;
+                
+                // Initialize mouse tracking
+                _lastMousePosition = position;
+                _lastMouseUpdateTime = DateTime.Now;
+                _mouseHistoryCount = 0;
+                
+                // Store initial position in history
+                StoreMousePosition(position, _lastMouseUpdateTime);
+                
+                // Capture the mouse
+                Mouse.Capture((IInputElement)sender);
                 
                 // Immediately update the ball position to the mouse position
                 // This ensures the ball appears under the cursor right away
                 UpdateBallPositionToMouse(ballViewModel, position);
                 
-                Debug.WriteLine($"Ball grabbed at position ({position.X:F2}, {position.Y:F2})");
+                // Update cursor
+                UpdateCursorForPosition(ballViewModel, position);
+                
+                _logService.LogDebug("Ball grabbed at position ({X:F2}, {Y:F2})", position.X, position.Y);
             }
         }
     }
@@ -388,16 +426,26 @@ public partial class MainWindow : Window
         if (DataContext is MainWindowViewModel mainViewModel)
         {
             var ballViewModel = mainViewModel.BallViewModel;
-            if (ballViewModel.MouseMoveCommand.CanExecute(e))
+            
+            // Get canvas-relative position
+            var canvasPosition = e.GetPosition(MainCanvas);
+            var currentTime = DateTime.Now;
+            
+            // Update cursor based on canvas-relative position
+            UpdateCursorForPosition(ballViewModel, canvasPosition);
+            
+            // If the ball is being dragged, ensure it follows the mouse cursor immediately
+            if (ballViewModel.IsDragging)
             {
-                ballViewModel.MouseMoveCommand.Execute(e);
+                // Store mouse position in history for velocity calculation
+                StoreMousePosition(canvasPosition, currentTime);
                 
-                // If the ball is being dragged, ensure it follows the mouse cursor immediately
-                if (ballViewModel.IsDragging)
-                {
-                    var position = e.GetPosition(null);
-                    UpdateBallPositionToMouse(ballViewModel, position);
-                }
+                // Update ball position
+                UpdateBallPositionToMouse(ballViewModel, canvasPosition);
+                
+                // Update tracking variables
+                _lastMousePosition = canvasPosition;
+                _lastMouseUpdateTime = currentTime;
             }
         }
     }
@@ -413,29 +461,57 @@ public partial class MainWindow : Window
         {
             var ballViewModel = mainViewModel.BallViewModel;
             
-            // Execute the mouse up command
-            if (ballViewModel.MouseUpCommand.CanExecute(e))
+            if (ballViewModel.IsDragging)
             {
-                ballViewModel.MouseUpCommand.Execute(e);
-            }
-            
-            // Check if the ball has velocity after release (was thrown)
-            if (Math.Abs(ballViewModel._ballModel.VelocityX) > 0.1 || Math.Abs(ballViewModel._ballModel.VelocityY) > 0.1)
-            {
-                // Start the physics simulation using optimized timer system
-                _isPhysicsRunning = true;
-                _physicsUpdateCounter = 0;
+                // Stop dragging
+                ballViewModel.IsDragging = false;
                 
-                if (_useOptimizedTimers)
+                // Release mouse capture
+                Mouse.Capture(null);
+                
+                // Get canvas-relative position
+                var position = e.GetPosition(MainCanvas);
+                var currentTime = DateTime.Now;
+                
+                // Store final position in history
+                StoreMousePosition(position, currentTime);
+                
+                // Calculate velocity based on movement history
+                var (velocityX, velocityY) = CalculateVelocityFromHistory();
+                
+                // Check if the movement is fast enough to be considered a throw
+                double throwThreshold = 100.0;
+                if (Math.Abs(velocityX) > throwThreshold || Math.Abs(velocityY) > throwThreshold)
                 {
-                    StartPhysicsTimer();
+                    // Apply the velocity to the ball model
+                    ballViewModel._ballModel.SetVelocity(velocityX, velocityY);
+                    
+                    // Start the physics simulation
+                    _isPhysicsRunning = true;
+                    _physicsUpdateCounter = 0;
+                    
+                    if (_useOptimizedTimers)
+                    {
+                        StartPhysicsTimer();
+                    }
+                    else
+                    {
+                        _lastPhysicsUpdate = DateTime.Now;
+                    }
+                    
+                    _logService.LogDebug("Ball thrown with velocity: ({VelocityX:F2}, {VelocityY:F2})", velocityX, velocityY);
                 }
                 else
                 {
-                    _lastPhysicsUpdate = DateTime.Now;
+                    // Not a throw, stop the ball
+                    ballViewModel._ballModel.Stop();
+                    _logService.LogDebug("Ball dropped (velocity too low for throw): ({VelocityX:F2}, {VelocityY:F2})", velocityX, velocityY);
                 }
                 
-                Debug.WriteLine($"Ball thrown with velocity: ({ballViewModel._ballModel.VelocityX:F2}, {ballViewModel._ballModel.VelocityY:F2})");
+                // Update cursor
+                UpdateCursorForPosition(ballViewModel, position);
+                
+                _logService.LogDebug("Ball released at position ({X:F2}, {Y:F2})", position.X, position.Y);
             }
         }
     }
@@ -514,23 +590,16 @@ public partial class MainWindow : Window
                 // Increment the physics update counter
                 _physicsUpdateCounter++;
                 
-                // Debug output to verify physics is running (limit to every 5 updates to reduce spam)
-                if (_physicsUpdateCounter % 5 == 0)
+                // Debug output to verify physics is running (limit to every 60 updates to reduce spam)
+                if (_physicsUpdateCounter % 60 == 0)
                 {
-                    try
-                    {
-                        // Safely format values, handling NaN and Infinity
-                        var xStr = double.IsNaN(ballViewModel.X) || double.IsInfinity(ballViewModel.X) ? "NaN" : ballViewModel.X.ToString("F2");
-                        var yStr = double.IsNaN(ballViewModel.Y) || double.IsInfinity(ballViewModel.Y) ? "NaN" : ballViewModel.Y.ToString("F2");
-                        var vxStr = double.IsNaN(ballViewModel._ballModel.VelocityX) || double.IsInfinity(ballViewModel._ballModel.VelocityX) ? "NaN" : ballViewModel._ballModel.VelocityX.ToString("F2");
-                        var vyStr = double.IsNaN(ballViewModel._ballModel.VelocityY) || double.IsInfinity(ballViewModel._ballModel.VelocityY) ? "NaN" : ballViewModel._ballModel.VelocityY.ToString("F2");
-                        
-                        Debug.WriteLine($"Physics update #{_physicsUpdateCounter}: Position=({xStr}, {yStr}), Velocity=({vxStr}, {vyStr})");
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Physics update #{_physicsUpdateCounter}: Error formatting debug output - {ex.Message}");
-                    }
+                    // Safely format values without using culture-specific formatting
+                    var xStr = FormatDoubleForDebug(ballViewModel.X);
+                    var yStr = FormatDoubleForDebug(ballViewModel.Y);
+                    var vxStr = FormatDoubleForDebug(ballViewModel._ballModel.VelocityX);
+                    var vyStr = FormatDoubleForDebug(ballViewModel._ballModel.VelocityY);
+                    
+                    _logService.LogDebug("Physics update #{PhysicsUpdateCounter}: Position=({XStr}, {YStr}), Velocity=({VxStr}, {VyStr})", _physicsUpdateCounter, xStr, yStr, vxStr, vyStr);
                 }
                 
                 // If the ball has stopped moving, stop physics updates
@@ -541,7 +610,7 @@ public partial class MainWindow : Window
                     // Ensure the ball is completely stopped
                     ballViewModel._ballModel.Stop();
                     
-                    Debug.WriteLine("Physics stopped: Ball no longer moving");
+                    _logService.LogDebug("Physics stopped: Ball no longer moving");
                 }
                 
                 // If the ball hit any boundaries, we could add visual or audio feedback here
@@ -549,7 +618,7 @@ public partial class MainWindow : Window
                 {
                     // Optional: Add bounce effect or sound here
                     // For example, you could trigger an animation or play a sound
-                    Debug.WriteLine("Ball hit boundary");
+                    _logService.LogDebug("Ball hit boundary");
                 }
                 
                 // Coordinate animation timing with physics updates
@@ -563,7 +632,7 @@ public partial class MainWindow : Window
                 // Ball is being dragged, stop physics simulation
                 _isPhysicsRunning = false;
                 ballViewModel._ballModel.Stop();
-                Debug.WriteLine("Physics stopped: Ball is being dragged");
+                _logService.LogDebug("Physics stopped: Ball is being dragged");
                 
                 _lastPhysicsUpdate = currentTime;
             }
@@ -574,6 +643,28 @@ public partial class MainWindow : Window
     }
 
     #endregion Event Handlers
+
+    #region Helper Methods
+
+    /// <summary>
+    /// Safely formats a double value for debug output, handling NaN, Infinity, and culture issues
+    /// </summary>
+    /// <param name="value">The double value to format</param>
+    /// <returns>A safe string representation of the value</returns>
+    private static string FormatDoubleForDebug(double value)
+    {
+        if (double.IsNaN(value))
+            return "NaN";
+        if (double.IsPositiveInfinity(value))
+            return "+Inf";
+        if (double.IsNegativeInfinity(value))
+            return "-Inf";
+        
+        // Use invariant culture to avoid locale-specific formatting issues
+        return value.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    #endregion Helper Methods
 
     #region Optimized Timer System
 
@@ -592,13 +683,13 @@ public partial class MainWindow : Window
             };
             _physicsTimer.Tick += PhysicsTimer_Tick;
             
-            Debug.WriteLine($"Optimized dual timer system initialized - Physics: {_physicsUpdateInterval.TotalMilliseconds:F2}ms");
+            _logService.LogDebug("Optimized dual timer system initialized - Physics: {PhysicsInterval:F2}ms", _physicsUpdateInterval.TotalMilliseconds);
         }
         else
         {
             // Fallback to original CompositionTarget.Rendering approach
             CompositionTarget.Rendering += CompositionTarget_Rendering;
-            Debug.WriteLine("Using legacy CompositionTarget.Rendering for physics updates");
+            _logService.LogDebug("Using legacy CompositionTarget.Rendering for physics updates");
         }
     }
 
@@ -621,7 +712,7 @@ public partial class MainWindow : Window
             CompositionTarget.Rendering -= CompositionTarget_Rendering;
         }
         
-        Debug.WriteLine("Timer system cleaned up");
+        _logService.LogDebug("Timer system cleaned up");
     }
 
     /// <summary>
@@ -633,7 +724,7 @@ public partial class MainWindow : Window
         {
             _lastPhysicsUpdate = DateTime.Now;
             _physicsTimer.Start();
-            Debug.WriteLine("Physics timer started");
+            _logService.LogDebug("Physics timer started");
         }
     }
 
@@ -645,7 +736,7 @@ public partial class MainWindow : Window
         if (_useOptimizedTimers && _physicsTimer != null && _physicsTimer.IsEnabled)
         {
             _physicsTimer.Stop();
-            Debug.WriteLine("Physics timer stopped");
+            _logService.LogDebug("Physics timer stopped");
         }
     }
 
@@ -679,7 +770,7 @@ public partial class MainWindow : Window
                 {
                     _isPhysicsRunning = false;
                     ballViewModel._ballModel.Stop();
-                    Debug.WriteLine("Physics paused: Ball is being dragged");
+                    _logService.LogDebug("Physics paused: Ball is being dragged");
                 }
                 
                 // Animation updates are handled separately by BallViewModel's animation timer
@@ -734,20 +825,13 @@ public partial class MainWindow : Window
                 // Debug output (limit to reduce spam)
                 if (_physicsUpdateCounter % 60 == 0) // Every second at 60 FPS
                 {
-                    try
-                    {
-                        // Safely format values, handling NaN and Infinity
-                        var xStr = double.IsNaN(ballViewModel.X) || double.IsInfinity(ballViewModel.X) ? "NaN" : ballViewModel.X.ToString("F2");
-                        var yStr = double.IsNaN(ballViewModel.Y) || double.IsInfinity(ballViewModel.Y) ? "NaN" : ballViewModel.Y.ToString("F2");
-                        var vxStr = double.IsNaN(ballViewModel._ballModel.VelocityX) || double.IsInfinity(ballViewModel._ballModel.VelocityX) ? "NaN" : ballViewModel._ballModel.VelocityX.ToString("F2");
-                        var vyStr = double.IsNaN(ballViewModel._ballModel.VelocityY) || double.IsInfinity(ballViewModel._ballModel.VelocityY) ? "NaN" : ballViewModel._ballModel.VelocityY.ToString("F2");
-                        
-                        Debug.WriteLine($"Physics update #{_physicsUpdateCounter}: Position=({xStr}, {yStr}), Velocity=({vxStr}, {vyStr})");
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Physics update #{_physicsUpdateCounter}: Error formatting debug output - {ex.Message}");
-                    }
+                    // Safely format values without using culture-specific formatting
+                    var xStr = FormatDoubleForDebug(ballViewModel.X);
+                    var yStr = FormatDoubleForDebug(ballViewModel.Y);
+                    var vxStr = FormatDoubleForDebug(ballViewModel._ballModel.VelocityX);
+                    var vyStr = FormatDoubleForDebug(ballViewModel._ballModel.VelocityY);
+                    
+                    _logService.LogDebug("Physics update #{PhysicsUpdateCounter}: Position=({XStr}, {YStr}), Velocity=({VxStr}, {VyStr})", _physicsUpdateCounter, xStr, yStr, vxStr, vyStr);
                 }
                 
                 // If the ball has stopped moving, stop physics updates
@@ -759,7 +843,7 @@ public partial class MainWindow : Window
                     // Ensure the ball is completely stopped
                     ballViewModel._ballModel.Stop();
                     
-                    Debug.WriteLine("Physics stopped: Ball no longer moving");
+                    _logService.LogDebug("Physics stopped: Ball no longer moving");
                 }
                 
                 // Update the last physics update time
@@ -793,7 +877,7 @@ public partial class MainWindow : Window
             // Initialize new system
             InitializeOptimizedTimers();
             
-            Debug.WriteLine($"Timer system switched to: {(useOptimized ? "Optimized" : "Legacy")}");
+            _logService.LogDebug("Timer system switched to: {TimerSystem}", useOptimized ? "Optimized" : "Legacy");
         }
     }
 
@@ -852,7 +936,7 @@ public partial class MainWindow : Window
                 }
             }
             
-            Debug.WriteLine("Dual timer system coordination optimized");
+            _logService.LogDebug("Dual timer system coordination optimized");
         }
     }
 
@@ -930,6 +1014,93 @@ public partial class MainWindow : Window
         // Force UI update by updating the Canvas.Left and Canvas.Top properties directly
         Canvas.SetLeft(BallImage, viewModel.Left);
         Canvas.SetTop(BallImage, viewModel.Top);
+    }
+
+    /// <summary>
+    /// Updates the cursor based on the mouse position relative to the ball
+    /// </summary>
+    /// <param name="viewModel">The ball view model</param>
+    /// <param name="canvasPosition">The mouse position relative to the canvas</param>
+    private void UpdateCursorForPosition(BallViewModel viewModel, Point canvasPosition)
+    {
+        if (viewModel.IsDragging)
+        {
+            // When dragging the ball, show the "SizeAll" cursor to indicate movement
+            viewModel.CurrentCursor = Cursors.SizeAll;
+        }
+        else if (viewModel._ballModel.ContainsPoint(canvasPosition.X, canvasPosition.Y))
+        {
+            // When hovering over the ball, show the "Hand" cursor to indicate it can be grabbed
+            viewModel.CurrentCursor = Cursors.Hand;
+        }
+        else
+        {
+            // Default cursor when not interacting with the ball
+            viewModel.CurrentCursor = Cursors.Arrow;
+        }
+    }
+
+    /// <summary>
+    /// Stores the current mouse position and timestamp in the history arrays
+    /// </summary>
+    /// <param name="position">Current mouse position</param>
+    /// <param name="timestamp">Current timestamp</param>
+    private void StoreMousePosition(Point position, DateTime timestamp)
+    {
+        // Shift all elements one position to make room for the new one
+        if (_mouseHistoryCount >= _mousePositionHistory.Length)
+        {
+            for (int i = 0; i < _mousePositionHistory.Length - 1; i++)
+            {
+                _mousePositionHistory[i] = _mousePositionHistory[i + 1];
+                _mouseTimestampHistory[i] = _mouseTimestampHistory[i + 1];
+            }
+            
+            // Add the new position and timestamp at the end
+            _mousePositionHistory[_mousePositionHistory.Length - 1] = position;
+            _mouseTimestampHistory[_mouseTimestampHistory.Length - 1] = timestamp;
+        }
+        else
+        {
+            // Add the new position and timestamp at the current count
+            _mousePositionHistory[_mouseHistoryCount] = position;
+            _mouseTimestampHistory[_mouseHistoryCount] = timestamp;
+            _mouseHistoryCount++;
+        }
+    }
+
+    /// <summary>
+    /// Calculates velocity from the mouse movement history
+    /// </summary>
+    /// <returns>Velocity in X and Y directions</returns>
+    private (double velocityX, double velocityY) CalculateVelocityFromHistory()
+    {
+        if (_mouseHistoryCount < 2)
+        {
+            return (0, 0);
+        }
+
+        // Use the last few positions to calculate velocity
+        int samplesToUse = Math.Min(5, _mouseHistoryCount);
+        Point startPos = _mousePositionHistory[_mouseHistoryCount - samplesToUse];
+        Point endPos = _mousePositionHistory[_mouseHistoryCount - 1];
+        DateTime startTime = _mouseTimestampHistory[_mouseHistoryCount - samplesToUse];
+        DateTime endTime = _mouseTimestampHistory[_mouseHistoryCount - 1];
+
+        double timeElapsed = (endTime - startTime).TotalSeconds;
+        
+        if (timeElapsed <= 0.001) // Avoid division by very small numbers
+        {
+            return (0, 0);
+        }
+
+        double deltaX = endPos.X - startPos.X;
+        double deltaY = endPos.Y - startPos.Y;
+
+        double velocityX = deltaX / timeElapsed;
+        double velocityY = deltaY / timeElapsed;
+
+        return (velocityX, velocityY);
     }
 
     /// <summary>
@@ -1210,5 +1381,84 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Event handler for toggling bounding box display
+    /// </summary>
+    /// <param name="sender">The source of the event</param>
+    /// <param name="e">Event data</param>
+    private void ToggleBoundingBox_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (DataContext is MainWindowViewModel mainViewModel)
+            {
+                var configService = ServiceBootstrapper.GetService<IConfigurationService>();
+                if (configService != null)
+                {
+                    // Toggle the setting
+                    bool newValue = !configService.GetShowBoundingBox();
+                    configService.SetShowBoundingBox(newValue);
+                    
+                    // Update the view model
+                    mainViewModel.BallViewModel.ShowBoundingBox = newValue;
+                    
+                    _logService.LogDebug("Bounding box display toggled to: {ShowBoundingBox}", newValue);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logService.LogError(ex, "Error toggling bounding box display");
+            MessageBox.Show($"An error occurred while toggling bounding box display: {ex.Message}", 
+                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     #endregion Visual Content Switching Event Handlers
+}
+
+/// <summary>
+/// Simple converter to offset a value by a specified amount
+/// </summary>
+public class OffsetConverter : IValueConverter
+{
+    /// <summary>
+    /// Singleton instance of the OffsetConverter
+    /// </summary>
+    public static readonly OffsetConverter Instance = new OffsetConverter();
+
+    /// <summary>
+    /// Converts a value by adding the specified offset
+    /// </summary>
+    /// <param name="value">The value to convert</param>
+    /// <param name="targetType">The target type</param>
+    /// <param name="parameter">The offset amount as a string</param>
+    /// <param name="culture">The culture info</param>
+    /// <returns>The value plus the offset, or the original value if conversion fails</returns>
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is double doubleValue && parameter is string parameterString)
+        {
+            // Use invariant culture to avoid locale-specific parsing issues
+            if (double.TryParse(parameterString, NumberStyles.Float, CultureInfo.InvariantCulture, out double offset))
+            {
+                return doubleValue + offset;
+            }
+        }
+        return value;
+    }
+
+    /// <summary>
+    /// Converts back (not implemented)
+    /// </summary>
+    /// <param name="value">The value to convert back</param>
+    /// <param name="targetType">The target type</param>
+    /// <param name="parameter">The parameter</param>
+    /// <param name="culture">The culture info</param>
+    /// <returns>Not implemented</returns>
+    /// <exception cref="NotImplementedException">This method is not implemented</exception>
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
 }

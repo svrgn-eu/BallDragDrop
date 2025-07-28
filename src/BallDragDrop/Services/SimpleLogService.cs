@@ -188,7 +188,7 @@ namespace BallDragDrop.Services
         public void LogMethodExit(string methodName, object returnValue = null, TimeSpan? duration = null)
         {
             var returnStr = returnValue != null ? $" returning: {returnValue}" : "";
-            var durationStr = duration.HasValue ? $" (took {duration.Value.TotalMilliseconds:F2}ms)" : "";
+            var durationStr = duration.HasValue ? $" (took {duration.Value.TotalMilliseconds.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}ms)" : "";
             LogDebug($"Exiting method: {methodName}{returnStr}{durationStr}");
         }
 
@@ -201,7 +201,8 @@ namespace BallDragDrop.Services
         public void LogPerformance(string operationName, TimeSpan duration, params object[] additionalData)
         {
             var dataStr = additionalData?.Length > 0 ? $" - {string.Join(", ", additionalData)}" : "";
-            LogInformation($"Performance: {operationName} took {duration.TotalMilliseconds:F2}ms{dataStr}");
+            var durationMs = duration.TotalMilliseconds.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+            LogInformation($"Performance: {operationName} took {durationMs}ms{dataStr}");
         }
 
         #endregion Method and Performance Tracking
@@ -234,7 +235,18 @@ namespace BallDragDrop.Services
         {
             try
             {
-                var formattedMessage = args?.Length > 0 ? string.Format(message, args) : message;
+                string formattedMessage;
+                try
+                {
+                    // Use invariant culture to avoid locale-specific formatting issues
+                    formattedMessage = args?.Length > 0 ? string.Format(System.Globalization.CultureInfo.InvariantCulture, message, args) : message;
+                }
+                catch (FormatException)
+                {
+                    // If formatting fails, fall back to simple concatenation
+                    formattedMessage = args?.Length > 0 ? $"{message} [Args: {string.Join(", ", args)}]" : message;
+                }
+                
                 var logMessage = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level.ToString().ToUpper()}] [{_correlationId}] {formattedMessage}";
                 
                 if (exception != null)
@@ -290,7 +302,8 @@ namespace BallDragDrop.Services
             public void Dispose()
             {
                 var duration = DateTime.Now - _startTime;
-                _logger.LogDebug($"Ending scope: {_scopeName} (duration: {duration.TotalMilliseconds:F2}ms)");
+                var durationMs = duration.TotalMilliseconds.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+                _logger.LogDebug($"Ending scope: {_scopeName} (duration: {durationMs}ms)");
             }
             #endregion Dispose
         }

@@ -13,8 +13,7 @@ namespace BallDragDrop.Services
     {
         #region Fields
 
-        private const string DefaultBallImagePath = "../../Resources/Ball/Ball01.png";
-        private const string ConfigFileName = "appsettings.json";
+
         
         private readonly string _configFilePath;
         private readonly ILogService _logService;
@@ -37,7 +36,7 @@ namespace BallDragDrop.Services
             // Set up the configuration file path in the application directory
             var appDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) 
                               ?? Environment.CurrentDirectory;
-            _configFilePath = Path.Combine(appDirectory, ConfigFileName);
+            _configFilePath = Path.Combine(appDirectory, Constants.CONFIG_FILE_NAME);
             
             _logService?.LogDebug("ConfigurationService initialized with config file path: {ConfigFilePath}", _configFilePath);
         }
@@ -118,7 +117,7 @@ namespace BallDragDrop.Services
         /// <returns>The default ball image path</returns>
         public string GetDefaultBallImagePath()
         {
-            var path = _configuration?.DefaultBallImagePath ?? DefaultBallImagePath;
+            var path = _configuration?.DefaultBallImagePath ?? Constants.DEFAULT_BALL_IMAGE_PATH;
             _logService?.LogTrace("Getting default ball image path: {Path}", path);
             return path;
         }
@@ -188,6 +187,35 @@ namespace BallDragDrop.Services
                 _logService?.LogError(ex, "Error validating image path: {Path}", path);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Gets whether to show the ball's bounding box for debugging
+        /// </summary>
+        /// <returns>True if bounding box should be shown, false otherwise</returns>
+        public bool GetShowBoundingBox()
+        {
+            var show = _configuration?.ShowBoundingBox ?? false;
+            _logService?.LogTrace("Getting show bounding box setting: {Show}", show);
+            return show;
+        }
+
+        /// <summary>
+        /// Sets whether to show the ball's bounding box for debugging
+        /// </summary>
+        /// <param name="show">True to show bounding box, false to hide</param>
+        public void SetShowBoundingBox(bool show)
+        {
+            if (_configuration == null)
+            {
+                _logService?.LogWarning("Configuration not initialized, cannot set show bounding box setting");
+                return;
+            }
+            
+            var oldValue = _configuration.ShowBoundingBox;
+            _configuration.ShowBoundingBox = show;
+            
+            _logService?.LogDebug("Show bounding box setting changed from {OldValue} to {NewValue}", oldValue, show);
         }
 
         #endregion Public Methods

@@ -356,6 +356,18 @@
             <param name="path">The image path to validate</param>
             <returns>True if the path is valid, false otherwise</returns>
         </member>
+        <member name="M:BallDragDrop.Contracts.IConfigurationService.GetShowBoundingBox">
+            <summary>
+            Gets whether to show the ball's bounding box for debugging
+            </summary>
+            <returns>True if bounding box should be shown, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IConfigurationService.SetShowBoundingBox(System.Boolean)">
+            <summary>
+            Sets whether to show the ball's bounding box for debugging
+            </summary>
+            <param name="show">True to show bounding box, false to hide</param>
+        </member>
         <member name="T:BallDragDrop.Contracts.IAppConfiguration">
             <summary>
             Application configuration interface using Config.Net
@@ -374,6 +386,11 @@
         <member name="P:BallDragDrop.Contracts.IAppConfiguration.DefaultBallSize">
             <summary>
             Gets or sets the default ball size
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Contracts.IAppConfiguration.ShowBoundingBox">
+            <summary>
+            Gets or sets whether to show the ball's bounding box for debugging
             </summary>
         </member>
         <member name="T:BallDragDrop.Contracts.IExceptionHandlingService">
@@ -1182,6 +1199,15 @@
             <param name="maxY">Maximum Y coordinate</param>
             <returns>True if the position was constrained, false otherwise</returns>
         </member>
+        <member name="M:BallDragDrop.Models.BallModel.ValidateDouble(System.Double,System.Double,System.Nullable{System.Double})">
+            <summary>
+            Validates a double value to ensure it's not NaN or Infinity
+            </summary>
+            <param name="value">The value to validate</param>
+            <param name="fallback">The fallback value to use if validation fails</param>
+            <param name="minimum">Optional minimum value constraint</param>
+            <returns>The validated value or fallback if invalid</returns>
+        </member>
         <member name="T:BallDragDrop.Models.DualTimerCoordinationMetrics">
             <summary>
             Comprehensive metrics for dual timer system coordination
@@ -1295,26 +1321,6 @@
             <param name="bounceFactor">Bounce elasticity factor (0-1 where 1 is perfect bounce)</param>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown when friction coefficient or bounce factor is not between 0 and 1</exception>
         </member>
-        <member name="F:BallDragDrop.Models.PhysicsEngine.DefaultFrictionCoefficient">
-            <summary>
-            Default friction coefficient for ball movement
-            </summary>
-        </member>
-        <member name="F:BallDragDrop.Models.PhysicsEngine.DefaultGravity">
-            <summary>
-            Default gravity acceleration
-            </summary>
-        </member>
-        <member name="F:BallDragDrop.Models.PhysicsEngine.DefaultBounceFactor">
-            <summary>
-            Default bounce factor for collisions
-            </summary>
-        </member>
-        <member name="F:BallDragDrop.Models.PhysicsEngine.VelocityThreshold">
-            <summary>
-            Velocity threshold below which the ball is considered stopped
-            </summary>
-        </member>
         <member name="M:BallDragDrop.Models.PhysicsEngine.UpdateBall(BallDragDrop.Models.BallModel,System.Double,System.Double,System.Double,System.Double,System.Double)">
             <summary>
             Updates the ball's position and velocity based on physics calculations.
@@ -1412,6 +1418,21 @@
             <param name="ball1">The first ball</param>
             <param name="ball2">The second ball</param>
             <returns>True if the balls are colliding, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.ValidateDouble(System.Double,System.Double)">
+            <summary>
+            Validates a double value to ensure it's not NaN or Infinity
+            </summary>
+            <param name="value">The value to validate</param>
+            <param name="fallback">The fallback value to use if validation fails</param>
+            <returns>The validated value or fallback if invalid</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.IsValidDouble(System.Double)">
+            <summary>
+            Checks if a double value is valid (not NaN or Infinity)
+            </summary>
+            <param name="value">The value to check</param>
+            <returns>True if the value is valid, false otherwise</returns>
         </member>
         <member name="T:BallDragDrop.Models.TimerPerformanceMetrics">
             <summary>
@@ -1526,6 +1547,18 @@
             </summary>
             <param name="path">The image path to validate</param>
             <returns>True if the path is valid, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ConfigurationService.GetShowBoundingBox">
+            <summary>
+            Gets whether to show the ball's bounding box for debugging
+            </summary>
+            <returns>True if bounding box should be shown, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ConfigurationService.SetShowBoundingBox(System.Boolean)">
+            <summary>
+            Sets whether to show the ball's bounding box for debugging
+            </summary>
+            <param name="show">True to show bounding box, false to hide</param>
         </member>
         <member name="T:BallDragDrop.Services.EventThrottler">
             <summary>
@@ -2078,6 +2111,14 @@
             </summary>
             <param name="propertyValues">The property values to convert</param>
             <returns>A dictionary of properties</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.Log4NetService.FormatStructuredMessage(System.String,System.Object[])">
+            <summary>
+            Formats a structured logging message by converting {PropertyName} syntax to positional parameters
+            </summary>
+            <param name="message">The message template with structured logging syntax</param>
+            <param name="args">The arguments to substitute</param>
+            <returns>A formatted message string</returns>
         </member>
         <member name="M:BallDragDrop.Services.Log4NetService.Dispose">
             <summary>
@@ -3053,6 +3094,11 @@
             Gets the height for binding (Diameter)
             </summary>
         </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.ShowBoundingBox">
+            <summary>
+            Gets or sets whether to show the bounding box for debugging
+            </summary>
+        </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(BallDragDrop.Contracts.ILogService,BallDragDrop.Services.ImageService,BallDragDrop.Contracts.IConfigurationService)">
             <summary>
             Initializes a new instance of the BallViewModel class
@@ -3145,6 +3191,11 @@
             Current cursor to display
             </summary>
         </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._showBoundingBox">
+            <summary>
+            Flag indicating whether to show the bounding box for debugging
+            </summary>
+        </member>
         <member name="F:BallDragDrop.ViewModels.BallViewModel._mousePositionHistory">
             <summary>
             Array storing mouse position history for velocity calculation
@@ -3206,6 +3257,17 @@
             Gets the default ball size from configuration
             </summary>
             <returns>The default ball size from configuration, or 25.0 as fallback</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.GetShowBoundingBoxFromConfiguration">
+            <summary>
+            Gets the show bounding box setting from configuration
+            </summary>
+            <returns>The show bounding box setting from configuration, or false as fallback</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.ToggleBoundingBox">
+            <summary>
+            Toggles the bounding box display and updates the configuration
+            </summary>
         </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.ValidateAndUpdateConfiguration">
             <summary>
@@ -3660,6 +3722,11 @@
             Event that will be raised when the ball position changes due to window resize
             </summary>
         </member>
+        <member name="F:BallDragDrop.Views.MainWindow._logService">
+            <summary>
+            Logging service for the MainWindow
+            </summary>
+        </member>
         <member name="M:BallDragDrop.Views.MainWindow.#ctor">
             <summary>
             Initializes a new instance of the MainWindow class
@@ -3710,6 +3777,31 @@
             Flag to track if we're using optimized dual timer system
             </summary>
         </member>
+        <member name="F:BallDragDrop.Views.MainWindow._mousePositionHistory">
+            <summary>
+            Array storing mouse position history for velocity calculation
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.MainWindow._mouseTimestampHistory">
+            <summary>
+            Array storing mouse timestamp history for velocity calculation
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.MainWindow._mouseHistoryCount">
+            <summary>
+            Number of valid entries in the mouse history arrays
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.MainWindow._lastMousePosition">
+            <summary>
+            Last recorded mouse position for drag operations
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.MainWindow._lastMouseUpdateTime">
+            <summary>
+            Timestamp of the last mouse update
+            </summary>
+        </member>
         <member name="M:BallDragDrop.Views.MainWindow.MainWindow_Closed(System.Object,System.EventArgs)">
             <summary>
             Event handler for window closed event
@@ -3758,6 +3850,13 @@
             </summary>
             <param name="sender">The source of the event</param>
             <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.FormatDoubleForDebug(System.Double)">
+            <summary>
+            Safely formats a double value for debug output, handling NaN, Infinity, and culture issues
+            </summary>
+            <param name="value">The double value to format</param>
+            <returns>A safe string representation of the value</returns>
         </member>
         <member name="M:BallDragDrop.Views.MainWindow.InitializeOptimizedTimers">
             <summary>
@@ -3835,6 +3934,26 @@
             <param name="viewModel">The ball view model</param>
             <param name="mousePosition">The current mouse position</param>
         </member>
+        <member name="M:BallDragDrop.Views.MainWindow.UpdateCursorForPosition(BallDragDrop.ViewModels.BallViewModel,System.Windows.Point)">
+            <summary>
+            Updates the cursor based on the mouse position relative to the ball
+            </summary>
+            <param name="viewModel">The ball view model</param>
+            <param name="canvasPosition">The mouse position relative to the canvas</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.StoreMousePosition(System.Windows.Point,System.DateTime)">
+            <summary>
+            Stores the current mouse position and timestamp in the history arrays
+            </summary>
+            <param name="position">Current mouse position</param>
+            <param name="timestamp">Current timestamp</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.CalculateVelocityFromHistory">
+            <summary>
+            Calculates velocity from the mouse movement history
+            </summary>
+            <returns>Velocity in X and Y directions</returns>
+        </member>
         <member name="M:BallDragDrop.Views.MainWindow.ConstrainToWindowBoundaries(System.Double,System.Double,System.Double)">
             <summary>
             Ensures the ball stays within the window boundaries
@@ -3879,6 +3998,13 @@
             <param name="sender">The source of the event</param>
             <param name="e">Event data</param>
         </member>
+        <member name="M:BallDragDrop.Views.MainWindow.ToggleBoundingBox_Click(System.Object,System.Windows.RoutedEventArgs)">
+            <summary>
+            Event handler for toggling bounding box display
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
         <member name="F:BallDragDrop.Views.MainWindow.MainCanvas">
             <summary>
             MainCanvas Name Field
@@ -3888,6 +4014,37 @@
             <summary>
             InitializeComponent
             </summary>
+        </member>
+        <member name="T:BallDragDrop.Views.OffsetConverter">
+            <summary>
+            Simple converter to offset a value by a specified amount
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.OffsetConverter.Instance">
+            <summary>
+            Singleton instance of the OffsetConverter
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.OffsetConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts a value by adding the specified offset
+            </summary>
+            <param name="value">The value to convert</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The offset amount as a string</param>
+            <param name="culture">The culture info</param>
+            <returns>The value plus the offset, or the original value if conversion fails</returns>
+        </member>
+        <member name="M:BallDragDrop.Views.OffsetConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts back (not implemented)
+            </summary>
+            <param name="value">The value to convert back</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The parameter</param>
+            <param name="culture">The culture info</param>
+            <returns>Not implemented</returns>
+            <exception cref="T:System.NotImplementedException">This method is not implemented</exception>
         </member>
         <member name="T:BallDragDrop.Views.SplashScreen">
             <summary>

@@ -34,9 +34,9 @@ namespace BallDragDrop.Models
         /// </summary>
         public PhysicsEngine()
         {
-            FrictionCoefficient = DefaultFrictionCoefficient;
-            Gravity = DefaultGravity;
-            BounceFactor = DefaultBounceFactor;
+            FrictionCoefficient = Constants.DEFAULT_FRICTION_COEFFICIENT;
+            Gravity = Constants.DEFAULT_GRAVITY;
+            BounceFactor = Constants.DEFAULT_BOUNCE_FACTOR;
         }
         
         /// <summary>
@@ -57,25 +57,7 @@ namespace BallDragDrop.Models
 
         #region Constants
 
-        /// <summary>
-        /// Default friction coefficient for ball movement
-        /// </summary>
-        private const double DefaultFrictionCoefficient = 0.98;
 
-        /// <summary>
-        /// Default gravity acceleration
-        /// </summary>
-        private const double DefaultGravity = 0.0;
-
-        /// <summary>
-        /// Default bounce factor for collisions
-        /// </summary>
-        private const double DefaultBounceFactor = 0.8;
-
-        /// <summary>
-        /// Velocity threshold below which the ball is considered stopped
-        /// </summary>
-        private const double VelocityThreshold = 0.1;
 
         #endregion Constants
 
@@ -96,15 +78,29 @@ namespace BallDragDrop.Models
             if (ball == null)
                 throw new ArgumentNullException(nameof(ball));
                 
+            // Validate and sanitize timeStep
+            timeStep = ValidateDouble(timeStep, 1.0/60.0);
+            if (timeStep <= 0 || timeStep > 1.0) // Clamp to reasonable range
+                timeStep = 1.0/60.0;
+                
             // Apply gravity
-            ball.VelocityY += Gravity * timeStep;
+            double gravityForce = ValidateDouble(Gravity * timeStep, 0);
+            ball.VelocityY += gravityForce;
             
             // Apply friction
-            ball.VelocityX *= Math.Pow(FrictionCoefficient, timeStep * 60); // Scale friction by frame rate
-            ball.VelocityY *= Math.Pow(FrictionCoefficient, timeStep * 60);
+            double frictionFactor = Math.Pow(ValidateDouble(FrictionCoefficient, Constants.DEFAULT_FRICTION_COEFFICIENT), timeStep * 60);
+            ball.VelocityX *= frictionFactor;
+            ball.VelocityY *= frictionFactor;
+            
+            // Validate velocities after physics calculations
+            if (!IsValidDouble(ball.VelocityX) || !IsValidDouble(ball.VelocityY))
+            {
+                ball.Stop(); // Reset to safe state
+                return (false, false, false, false, false);
+            }
             
             // Stop the ball if it's moving very slowly
-            if (Math.Abs(ball.VelocityX) < VelocityThreshold && Math.Abs(ball.VelocityY) < VelocityThreshold)
+            if (Math.Abs(ball.VelocityX) < Constants.VELOCITY_THRESHOLD && Math.Abs(ball.VelocityY) < Constants.VELOCITY_THRESHOLD)
             {
                 ball.Stop();
                 return (false, false, false, false, false);
@@ -114,8 +110,19 @@ namespace BallDragDrop.Models
             double newX = ball.X + ball.VelocityX * timeStep;
             double newY = ball.Y + ball.VelocityY * timeStep;
             
+            // Validate new positions
+            if (!IsValidDouble(newX) || !IsValidDouble(newY))
+            {
+                ball.Stop(); // Reset to safe state
+                return (false, false, false, false, false);
+            }
+            
             // Handle collisions with boundaries
             var collisionResult = HandleCollisions(ball, ref newX, ref newY, minX, minY, maxX, maxY);
+            
+            // Final validation before setting position
+            newX = ValidateDouble(newX, ball.X);
+            newY = ValidateDouble(newY, ball.Y);
             
             // Update ball position
             ball.SetPosition(newX, newY);
@@ -404,6 +411,27 @@ namespace BallDragDrop.Models
             
             // If distance is less than sum of radii, collision occurred
             return distance < minDistance;
+        }
+
+        /// <summary>
+        /// Validates a double value to ensure it's not NaN or Infinity
+        /// </summary>
+        /// <param name="value">The value to validate</param>
+        /// <param name="fallback">The fallback value to use if validation fails</param>
+        /// <returns>The validated value or fallback if invalid</returns>
+        private static double ValidateDouble(double value, double fallback)
+        {
+            return IsValidDouble(value) ? value : fallback;
+        }
+
+        /// <summary>
+        /// Checks if a double value is valid (not NaN or Infinity)
+        /// </summary>
+        /// <param name="value">The value to check</param>
+        /// <returns>True if the value is valid, false otherwise</returns>
+        private static bool IsValidDouble(double value)
+        {
+            return !double.IsNaN(value) && !double.IsInfinity(value);
         }
 
         #endregion Methods

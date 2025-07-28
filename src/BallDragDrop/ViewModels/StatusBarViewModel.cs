@@ -112,7 +112,14 @@ namespace BallDragDrop.ViewModels
                 {
                     return "FPS: --";
                 }
-                return $"FPS: {_currentFps:F1}";
+                try
+                {
+                    return $"FPS: {_currentFps:F1}";
+                }
+                catch (FormatException)
+                {
+                    return "FPS: --";
+                }
             }
         }
 
@@ -127,7 +134,14 @@ namespace BallDragDrop.ViewModels
                 {
                     return "Avg: --";
                 }
-                return $"Avg: {_averageFps:F1}";
+                try
+                {
+                    return $"Avg: {_averageFps:F1}";
+                }
+                catch (FormatException)
+                {
+                    return "Avg: --";
+                }
             }
         }
 

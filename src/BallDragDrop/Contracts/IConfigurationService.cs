@@ -36,6 +36,18 @@ namespace BallDragDrop.Contracts
         /// <param name="path">The image path to validate</param>
         /// <returns>True if the path is valid, false otherwise</returns>
         bool ValidateImagePath(string path);
+
+        /// <summary>
+        /// Gets whether to show the ball's bounding box for debugging
+        /// </summary>
+        /// <returns>True if bounding box should be shown, false otherwise</returns>
+        bool GetShowBoundingBox();
+
+        /// <summary>
+        /// Sets whether to show the ball's bounding box for debugging
+        /// </summary>
+        /// <param name="show">True to show bounding box, false to hide</param>
+        void SetShowBoundingBox(bool show);
     }
 
     /// <summary>
@@ -60,5 +72,11 @@ namespace BallDragDrop.Contracts
         /// </summary>
         [Option(DefaultValue = 50.0)]
         double DefaultBallSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to show the ball's bounding box for debugging
+        /// </summary>
+        [Option(DefaultValue = false)]
+        bool ShowBoundingBox { get; set; }
     }
 }

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Threading;
+using BallDragDrop.Bootstrapper;
+using BallDragDrop.Contracts;
 
 namespace BallDragDrop.Services
 {
@@ -371,12 +373,15 @@ namespace BallDragDrop.Services
                 var avgPhysicsStr = double.IsNaN(_averagePhysicsTimeMs) || double.IsInfinity(_averagePhysicsTimeMs) ? "NaN" : _averagePhysicsTimeMs.ToString("F2");
                 var maxPhysicsStr = double.IsNaN(metrics.MaxPhysicsTimeMs) || double.IsInfinity(metrics.MaxPhysicsTimeMs) ? "NaN" : metrics.MaxPhysicsTimeMs.ToString("F2");
                 
-                Debug.WriteLine($"FPS: {fpsStr}, Avg Frame: {avgFrameStr}ms, Max Frame: {maxFrameStr}ms, " +
-                               $"Avg Physics: {avgPhysicsStr}ms, Max Physics: {maxPhysicsStr}ms");
+                var logService = ServiceBootstrapper.GetService<ILogService>();
+                logService?.LogDebug("FPS: {FPS}, Avg Frame: {AvgFrame}ms, Max Frame: {MaxFrame}ms, " +
+                                   "Avg Physics: {AvgPhysics}ms, Max Physics: {MaxPhysics}ms", 
+                                   fpsStr, avgFrameStr, maxFrameStr, avgPhysicsStr, maxPhysicsStr);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error formatting performance metrics: {ex.Message}");
+                var logService = ServiceBootstrapper.GetService<ILogService>();
+                logService?.LogError(ex, "Error formatting performance metrics");
             }
         }
         

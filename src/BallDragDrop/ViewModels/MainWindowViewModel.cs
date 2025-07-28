@@ -62,6 +62,7 @@ namespace BallDragDrop.ViewModels
         public System.Windows.Input.ICommand MouseDownCommand => _ballViewModel.MouseDownCommand;
         public System.Windows.Input.ICommand MouseMoveCommand => _ballViewModel.MouseMoveCommand;
         public System.Windows.Input.ICommand MouseUpCommand => _ballViewModel.MouseUpCommand;
+        public bool ShowBoundingBox => _ballViewModel.ShowBoundingBox;
 
         #endregion Properties
 

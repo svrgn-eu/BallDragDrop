@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.IO;
 using BallDragDrop.ViewModels;
 using BallDragDrop.Services;
 using BallDragDrop.Contracts;
@@ -129,8 +130,33 @@ namespace BallDragDrop.Bootstrapper
         /// </summary>
         private static void InitializeLog4NetConfiguration()
         {
-            // Basic Log4NET configuration - will be enhanced in task 3
-            log4net.Config.BasicConfigurator.Configure();
+            try
+            {
+                // Load configuration from log4net.config file
+                var configFile = new System.IO.FileInfo("log4net.config");
+                if (configFile.Exists)
+                {
+                    log4net.Config.XmlConfigurator.ConfigureAndWatch(configFile);
+                }
+                else
+                {
+                    // Fallback to basic configuration if config file doesn't exist
+                    log4net.Config.BasicConfigurator.Configure();
+                    
+                    // Log a warning about missing config file
+                    var logger = log4net.LogManager.GetLogger(typeof(ServiceBootstrapper));
+                    logger.Warn("log4net.config file not found, using basic configuration");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Fallback to basic configuration on any error
+                log4net.Config.BasicConfigurator.Configure();
+                
+                // Log the error
+                var logger = log4net.LogManager.GetLogger(typeof(ServiceBootstrapper));
+                logger.Error("Failed to initialize Log4NET configuration", ex);
+            }
         }
 
         /// <summary>

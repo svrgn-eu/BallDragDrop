@@ -47,6 +47,8 @@
                 <MenuItem Header="_Load Static Image..." Click="LoadStaticImage_Click" />
                 <MenuItem Header="_Load GIF Animation..." Click="LoadGifAnimation_Click" />
                 <MenuItem Header="_Load Aseprite Animation..." Click="LoadAsepriteAnimation_Click" />
+                <Separator />
+                <MenuItem Header="Show _Bounding Box" IsCheckable="True" IsChecked="{Binding ShowBoundingBox, Mode=OneWay}" Click="ToggleBoundingBox_Click" />
             </MenuItem>
         </Menu>
 
@@ -124,6 +126,49 @@
                     </Style>
                 </Image.Style>
             </Image>
+
+            <!-- Bounding box for debugging (shows the actual clickable area) -->
+            <Rectangle x:Name="BoundingBoxRectangle"
+                       Width="{Binding Width}"
+                       Height="{Binding Height}"
+                       Canvas.Left="{Binding Left}"
+                       Canvas.Top="{Binding Top}"
+                       Stroke="Red"
+                       StrokeThickness="2"
+                       StrokeDashArray="5,3"
+                       Fill="Transparent"
+                       IsHitTestVisible="False">
+                <Rectangle.Style>
+                    <Style TargetType="Rectangle">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ShowBoundingBox}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Rectangle.Style>
+            </Rectangle>
+
+            <!-- Center point indicator for debugging -->
+            <Ellipse x:Name="CenterPointIndicator"
+                     Width="4"
+                     Height="4"
+                     Canvas.Left="{Binding X, Converter={x:Static local:OffsetConverter.Instance}, ConverterParameter=-2}"
+                     Canvas.Top="{Binding Y, Converter={x:Static local:OffsetConverter.Instance}, ConverterParameter=-2}"
+                     Fill="Blue"
+                     IsHitTestVisible="False">
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ShowBoundingBox}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
         </Canvas>
     </Grid>
 </Window>

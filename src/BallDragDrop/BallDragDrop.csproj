@@ -43,6 +43,9 @@
     <None Update="Resources\Images\Ball01.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="log4net.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <!-- Import custom MSBuild targets for coding standards validation -->
