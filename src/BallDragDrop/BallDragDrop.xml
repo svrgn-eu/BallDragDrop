@@ -4005,6 +4005,20 @@
             <param name="sender">The source of the event</param>
             <param name="e">Event data</param>
         </member>
+        <member name="M:BallDragDrop.Views.MainWindow.Reset_Click(System.Object,System.Windows.RoutedEventArgs)">
+            <summary>
+            Event handler for the Reset menu item
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.Quit_Click(System.Object,System.Windows.RoutedEventArgs)">
+            <summary>
+            Event handler for the Quit menu item
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
         <member name="F:BallDragDrop.Views.MainWindow.MainCanvas">
             <summary>
             MainCanvas Name Field

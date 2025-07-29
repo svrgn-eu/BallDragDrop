@@ -54,9 +54,10 @@ namespace BallDragDrop.Tests
 
             // Assert
             Assert.IsNotNull(service.Configuration);
-            Assert.AreEqual("./Resources/Images/Ball01.png", service.Configuration.DefaultBallImagePath);
+            Assert.AreEqual("../../Resources/Ball/Ball01.png", service.Configuration.DefaultBallImagePath);
             Assert.IsTrue(service.Configuration.EnableAnimations);
             Assert.AreEqual(50.0, service.Configuration.DefaultBallSize);
+            Assert.IsFalse(service.Configuration.ShowBoundingBox);
         }
 
         [TestMethod]
@@ -68,7 +69,8 @@ namespace BallDragDrop.Tests
 
             // Assert
             Assert.IsNotNull(service.Configuration);
-            Assert.AreEqual("./Resources/Images/Ball01.png", service.Configuration.DefaultBallImagePath);
+            Assert.AreEqual("../../Resources/Ball/Ball01.png", service.Configuration.DefaultBallImagePath);
+            Assert.IsFalse(service.Configuration.ShowBoundingBox);
         }
 
         [TestMethod]
@@ -102,9 +104,10 @@ namespace BallDragDrop.Tests
 
             // Assert
             Assert.IsNotNull(service.Configuration);
-            Assert.AreEqual("./Resources/Images/Ball01.png", service.Configuration.DefaultBallImagePath);
+            Assert.AreEqual("../../Resources/Ball/Ball01.png", service.Configuration.DefaultBallImagePath);
             Assert.IsTrue(service.Configuration.EnableAnimations);
             Assert.AreEqual(50.0, service.Configuration.DefaultBallSize);
+            Assert.IsFalse(service.Configuration.ShowBoundingBox);
         }
 
         [TestMethod]
@@ -142,7 +145,7 @@ namespace BallDragDrop.Tests
             // Assert
             Assert.IsNotNull(service.Configuration);
             // Should use default values from the interface attributes
-            Assert.AreEqual("./Resources/Images/Ball01.png", service.Configuration.DefaultBallImagePath);
+            Assert.AreEqual("../../Resources/Ball/Ball01.png", service.Configuration.DefaultBallImagePath);
         }
 
         #endregion InitializeAsync Tests
@@ -175,7 +178,7 @@ namespace BallDragDrop.Tests
             var result = service.GetDefaultBallImagePath();
 
             // Assert
-            Assert.AreEqual("./Resources/Images/Ball01.png", result);
+            Assert.AreEqual("../../Resources/Ball/Ball01.png", result);
         }
 
         #endregion GetDefaultBallImagePath Tests
@@ -328,6 +331,80 @@ namespace BallDragDrop.Tests
 
         #endregion ValidateImagePath Tests
 
+        #region ShowBoundingBox Tests
+
+        [TestMethod]
+        public async Task GetShowBoundingBox_WithDefaultConfiguration_ShouldReturnFalse()
+        {
+            // Arrange
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+            service.Initialize();
+
+            // Act
+            var result = service.GetShowBoundingBox();
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task SetShowBoundingBox_WithValidValue_ShouldUpdateConfiguration()
+        {
+            // Arrange
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+            service.Initialize();
+
+            // Act
+            service.SetShowBoundingBox(true);
+
+            // Assert
+            Assert.IsTrue(service.Configuration.ShowBoundingBox);
+            Assert.IsTrue(service.GetShowBoundingBox());
+        }
+
+        [TestMethod]
+        public async Task ShowBoundingBox_ToggleValue_ShouldWorkCorrectly()
+        {
+            // Arrange
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+            service.Initialize();
+
+            // Act & Assert - Initial state should be false
+            Assert.IsFalse(service.GetShowBoundingBox());
+
+            // Act & Assert - Toggle to true
+            service.SetShowBoundingBox(true);
+            Assert.IsTrue(service.GetShowBoundingBox());
+
+            // Act & Assert - Toggle back to false
+            service.SetShowBoundingBox(false);
+            Assert.IsFalse(service.GetShowBoundingBox());
+        }
+
+        [TestMethod]
+        public async Task ShowBoundingBox_WithConfigurationFile_ShouldPersist()
+        {
+            // Arrange
+            var json = @"{
+                ""DefaultBallImagePath"": ""./test/path.png"",
+                ""EnableAnimations"": true,
+                ""DefaultBallSize"": 50.0,
+                ""ShowBoundingBox"": true
+            }";
+            await File.WriteAllTextAsync(_testConfigFilePath, json);
+
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+
+            // Act
+            service.Initialize();
+
+            // Assert
+            Assert.IsTrue(service.GetShowBoundingBox());
+            Assert.IsTrue(service.Configuration.ShowBoundingBox);
+        }
+
+        #endregion ShowBoundingBox Tests
+
         #region Integration Tests
 
         [TestMethod]
@@ -338,12 +415,13 @@ namespace BallDragDrop.Tests
             service.Initialize();
 
             // Act & Assert - Load default configuration
-            Assert.AreEqual("./Resources/Images/Ball01.png", service.GetDefaultBallImagePath());
+            Assert.AreEqual("../../Resources/Ball/Ball01.png", service.GetDefaultBallImagePath());
 
             // Act & Assert - Modify configuration
             service.SetDefaultBallImagePath("./custom/ball.png");
             service.Configuration.EnableAnimations = false;
             service.Configuration.DefaultBallSize = 80.0;
+            service.SetShowBoundingBox(true);
 
             // Act & Assert - Save configuration
             Assert.IsTrue(File.Exists(_testConfigFilePath));
@@ -355,6 +433,7 @@ namespace BallDragDrop.Tests
             Assert.AreEqual("./custom/ball.png", newService.GetDefaultBallImagePath());
             Assert.IsFalse(newService.Configuration.EnableAnimations);
             Assert.AreEqual(80.0, newService.Configuration.DefaultBallSize);
+            Assert.IsTrue(newService.GetShowBoundingBox());
         }
 
         #endregion Integration Tests

@@ -1414,6 +1414,73 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Event handler for the Reset menu item
+    /// </summary>
+    /// <param name="sender">The source of the event</param>
+    /// <param name="e">Event data</param>
+    private void Reset_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (DataContext is MainWindowViewModel mainViewModel)
+            {
+                var ballViewModel = mainViewModel.BallViewModel;
+                
+                // Stop any physics simulation
+                _isPhysicsRunning = false;
+                ballViewModel._ballModel.Stop();
+                
+                // Stop dragging if in progress
+                if (ballViewModel.IsDragging)
+                {
+                    ballViewModel.IsDragging = false;
+                    Mouse.Capture(null);
+                }
+                
+                // Reset ball position to center of canvas
+                double centerX = MainCanvas.Width / 2;
+                double centerY = MainCanvas.Height / 2;
+                double ballRadius = 25; // Default radius
+                
+                ballViewModel.Initialize(centerX, centerY, ballRadius);
+                
+                // Reset mouse history
+                _mouseHistoryCount = 0;
+                
+                _logService.LogDebug("Application reset - ball position reset to center ({X:F2}, {Y:F2})", centerX, centerY);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logService.LogError(ex, "Error during application reset");
+            MessageBox.Show($"An error occurred while resetting the application: {ex.Message}", 
+                "Reset Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Event handler for the Quit menu item
+    /// </summary>
+    /// <param name="sender">The source of the event</param>
+    /// <param name="e">Event data</param>
+    private void Quit_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _logService.LogDebug("Application quit requested via menu");
+            
+            // Close the application
+            this.Close();
+        }
+        catch (Exception ex)
+        {
+            _logService.LogError(ex, "Error during application quit");
+            MessageBox.Show($"An error occurred while quitting the application: {ex.Message}", 
+                "Quit Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     #endregion Visual Content Switching Event Handlers
 }
 

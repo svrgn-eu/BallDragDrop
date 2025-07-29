@@ -37,9 +37,9 @@
         <!-- Menu at top -->
         <Menu Grid.Row="0" Background="#F0F0F0">
             <MenuItem Header="_File">
-                <MenuItem Header="Reset" />
+                <MenuItem Header="_Reset" Click="Reset_Click" />
                 <Separator />
-                <MenuItem Header="Quit" />
+                <MenuItem Header="_Quit" Click="Quit_Click" />
             </MenuItem>
             <MenuItem Header="_Visual">
                 <MenuItem Header="_Switch Ball Visual..." Click="SwitchVisual_Click" />
