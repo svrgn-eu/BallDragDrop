@@ -62,7 +62,8 @@ graph TB
 - MethodRegionAnalyzer: Enforces #region/#endregion around methods
 - XmlDocumentationAnalyzer: Validates comprehensive XML documentation
 - ProjectStructureAnalyzer: Validates overall project organization
-- ThisQualifierAnalyzer: Enforces use of "this." qualifier for instance members
+- ThisQualifierAnalyzer: Enforces mandatory use of "this." qualifier for instance members
+- ClassFileOrganizationAnalyzer: Enforces one class per file with matching filename
 
 ### 3. Integration Components
 
@@ -105,11 +106,21 @@ public class MethodRegionRules
 
 public class ThisQualifierRules
 {
-    public bool EnforceThisQualifier { get; set; }
-    public bool ApplyToProperties { get; set; }
-    public bool ApplyToMethods { get; set; }
-    public bool ApplyToFields { get; set; }
+    public bool EnforceThisQualifier { get; set; } = true;
+    public bool ApplyToProperties { get; set; } = true;
+    public bool ApplyToMethods { get; set; } = true;
+    public bool ApplyToFields { get; set; } = true;
+    public DiagnosticSeverity ViolationSeverity { get; set; } = DiagnosticSeverity.Error;
     public string[] ExemptMemberTypes { get; set; }
+}
+
+public class ClassFileOrganizationRules
+{
+    public bool EnforceOneClassPerFile { get; set; } = true;
+    public bool EnforceFilenameMatchesClassName { get; set; } = true;
+    public bool AllowNestedClasses { get; set; } = true;
+    public bool AllowPartialClasses { get; set; } = true;
+    public DiagnosticSeverity ViolationSeverity { get; set; } = DiagnosticSeverity.Error;
 }
 ```
 
@@ -171,7 +182,8 @@ public class CodingStandardDiagnostic
 - Develop FolderStructureAnalyzer for Contracts/Bootstrapper validation
 - Implement MethodRegionAnalyzer for region enforcement
 - Create XmlDocumentationAnalyzer for comprehensive documentation
-- Implement ThisQualifierAnalyzer for enforcing "this." qualifier usage
+- Implement ThisQualifierAnalyzer for mandatory "this." qualifier usage with error-level enforcement
+- Implement ClassFileOrganizationAnalyzer for one class per file enforcement
 
 ### Phase 3: Advanced Integration
 - Implement custom MSBuild targets for pre-build validation

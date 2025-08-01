@@ -64,6 +64,14 @@ namespace BallDragDrop.ViewModels
         public System.Windows.Input.ICommand MouseUpCommand => _ballViewModel.MouseUpCommand;
         public bool ShowBoundingBox => _ballViewModel.ShowBoundingBox;
 
+        // Expose BallViewModel visual state properties for state-dependent visual feedback
+        public double StateOpacity => _ballViewModel.StateOpacity;
+        public double StateScale => _ballViewModel.StateScale;
+        public double StateGlowRadius => _ballViewModel.StateGlowRadius;
+        public System.Windows.Media.Color StateGlowColor => _ballViewModel.StateGlowColor;
+        public double StateBorderThickness => _ballViewModel.StateBorderThickness;
+        public System.Windows.Media.Color StateBorderColor => _ballViewModel.StateBorderColor;
+
         #endregion Properties
 
         #region Construction

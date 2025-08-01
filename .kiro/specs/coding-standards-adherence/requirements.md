@@ -122,13 +122,28 @@ The BallDragDrop solution consists of:
 
 ### Requirement 10
 
-**User Story:** As a developer, I want the "this" qualifier to be used for class members, so that code is more readable and the source of properties and methods is explicit.
+**User Story:** As a developer, I want the "this" qualifier to be mandatory for all local properties and methods, so that code is more readable and the source of properties and methods is always explicit.
 
 #### Acceptance Criteria
 
-1. WHEN accessing instance properties within a class THEN the system SHALL enforce the use of "this." qualifier
-2. WHEN calling instance methods within a class THEN the system SHALL enforce the use of "this." qualifier
-3. WHEN accessing instance fields within a class THEN the system SHALL enforce the use of "this." qualifier
-4. WHEN "this" qualifier is missing THEN the system SHALL flag violations with suggestions to add the qualifier
+1. WHEN accessing instance properties within a class THEN the system SHALL enforce the mandatory use of "this." qualifier
+2. WHEN calling instance methods within a class THEN the system SHALL enforce the mandatory use of "this." qualifier
+3. WHEN accessing instance fields within a class THEN the system SHALL enforce the mandatory use of "this." qualifier
+4. WHEN "this" qualifier is missing THEN the system SHALL flag violations as errors and prevent compilation
 5. WHEN static members are accessed THEN the system SHALL NOT require the "this" qualifier
 6. WHEN "this" qualifier violations are detected THEN the system SHALL provide automatic code fixes to add the missing qualifiers
+7. WHEN code is built THEN the system SHALL fail the build if any "this" qualifier violations exist
+
+### Requirement 11
+
+**User Story:** As a developer, I want every class to be in a dedicated file, so that code organization is clear and maintainable with one class per file.
+
+#### Acceptance Criteria
+
+1. WHEN a C# file is created THEN the system SHALL enforce that it contains exactly one class definition
+2. WHEN multiple classes are detected in a single file THEN the system SHALL flag violations as errors and prevent compilation
+3. WHEN a class is created THEN the system SHALL enforce that the filename matches the class name exactly
+4. WHEN filename does not match class name THEN the system SHALL flag violations with suggestions for correct naming
+5. WHEN nested classes are used THEN the system SHALL allow them within the same file as their parent class
+6. WHEN partial classes are used THEN the system SHALL allow multiple partial class definitions across separate files with matching names
+7. WHEN file organization violations are detected THEN the system SHALL provide automatic code fixes to separate classes into dedicated files

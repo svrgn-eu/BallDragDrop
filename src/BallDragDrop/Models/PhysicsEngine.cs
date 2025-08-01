@@ -72,38 +72,74 @@ namespace BallDragDrop.Models
         /// <param name="minY">Minimum Y boundary</param>
         /// <param name="maxX">Maximum X boundary</param>
         /// <param name="maxY">Maximum Y boundary</param>
-        /// <returns>A tuple containing whether the ball is still moving and which boundaries were hit</returns>
-        public (bool IsMoving, bool HitLeft, bool HitRight, bool HitTop, bool HitBottom) UpdateBall(BallModel ball, double timeStep, double minX, double minY, double maxX, double maxY)
+        /// <param name="currentState">Current state of the ball for state-dependent physics behavior</param>
+        /// <param name="stateConfiguration">Configuration for state machine behavior including velocity threshold</param>
+        /// <returns>A tuple containing whether the ball is still moving, which boundaries were hit, and whether velocity dropped below threshold</returns>
+        public (bool IsMoving, bool HitLeft, bool HitRight, bool HitTop, bool HitBottom, bool VelocityBelowThreshold) UpdateBall(BallModel ball, double timeStep, double minX, double minY, double maxX, double maxY, BallState currentState, BallStateConfiguration stateConfiguration = null)
         {
             if (ball == null)
                 throw new ArgumentNullException(nameof(ball));
+                
+            // Skip physics calculations when ball is in Held state
+            if (currentState == BallState.Held)
+            {
+                return (false, false, false, false, false, false);
+            }
                 
             // Validate and sanitize timeStep
             timeStep = ValidateDouble(timeStep, 1.0/60.0);
             if (timeStep <= 0 || timeStep > 1.0) // Clamp to reasonable range
                 timeStep = 1.0/60.0;
                 
-            // Apply gravity
-            double gravityForce = ValidateDouble(Gravity * timeStep, 0);
-            ball.VelocityY += gravityForce;
-            
-            // Apply friction
-            double frictionFactor = Math.Pow(ValidateDouble(FrictionCoefficient, Constants.DEFAULT_FRICTION_COEFFICIENT), timeStep * 60);
-            ball.VelocityX *= frictionFactor;
-            ball.VelocityY *= frictionFactor;
+            // Apply physics calculations based on state
+            if (ShouldApplyPhysics(currentState))
+            {
+                // Apply gravity (full gravity for Thrown state, reduced for Idle)
+                double gravityMultiplier = currentState == BallState.Thrown ? 1.0 : 0.1;
+                double gravityForce = ValidateDouble(Gravity * timeStep * gravityMultiplier, 0);
+                ball.VelocityY += gravityForce;
+                
+                // Apply friction
+                double frictionFactor = Math.Pow(ValidateDouble(FrictionCoefficient, Constants.DEFAULT_FRICTION_COEFFICIENT), timeStep * 60);
+                ball.VelocityX *= frictionFactor;
+                ball.VelocityY *= frictionFactor;
+            }
             
             // Validate velocities after physics calculations
             if (!IsValidDouble(ball.VelocityX) || !IsValidDouble(ball.VelocityY))
             {
                 ball.Stop(); // Reset to safe state
-                return (false, false, false, false, false);
+                return (false, false, false, false, false, false);
             }
             
-            // Stop the ball if it's moving very slowly
-            if (Math.Abs(ball.VelocityX) < Constants.VELOCITY_THRESHOLD && Math.Abs(ball.VelocityY) < Constants.VELOCITY_THRESHOLD)
+            // Check velocity threshold for state transitions
+            bool velocityBelowThreshold = false;
+            
+            // Stop the ball if it's moving very slowly (state-dependent threshold checking)
+            if (ShouldCheckVelocityThreshold(currentState))
             {
-                ball.Stop();
-                return (false, false, false, false, false);
+                // For Thrown state, check configured velocity threshold for state transition
+                if (stateConfiguration != null && IsVelocityBelowThreshold(ball, stateConfiguration))
+                {
+                    velocityBelowThreshold = true;
+                    // Don't return early - continue to update position one final time
+                }
+                // Fallback to legacy threshold if no configuration provided
+                else if (Math.Abs(ball.VelocityX) < Constants.VELOCITY_THRESHOLD && Math.Abs(ball.VelocityY) < Constants.VELOCITY_THRESHOLD)
+                {
+                    ball.Stop();
+                    return (false, false, false, false, false, false);
+                }
+            }
+            else if (currentState == BallState.Idle)
+            {
+                // For Idle state, use a lower threshold to keep the ball more stable
+                double idleThreshold = Constants.VELOCITY_THRESHOLD * 0.5;
+                if (Math.Abs(ball.VelocityX) < idleThreshold && Math.Abs(ball.VelocityY) < idleThreshold)
+                {
+                    ball.Stop();
+                    return (false, false, false, false, false, false);
+                }
             }
             
             // Update position
@@ -114,7 +150,7 @@ namespace BallDragDrop.Models
             if (!IsValidDouble(newX) || !IsValidDouble(newY))
             {
                 ball.Stop(); // Reset to safe state
-                return (false, false, false, false, false);
+                return (false, false, false, false, false, false);
             }
             
             // Handle collisions with boundaries
@@ -127,7 +163,19 @@ namespace BallDragDrop.Models
             // Update ball position
             ball.SetPosition(newX, newY);
             
-            return (ball.IsMoving, collisionResult.HitLeft, collisionResult.HitRight, collisionResult.HitTop, collisionResult.HitBottom);
+            // Final check for velocity threshold after position update
+            if (ShouldCheckVelocityThreshold(currentState) && stateConfiguration != null)
+            {
+                velocityBelowThreshold = IsVelocityBelowThreshold(ball, stateConfiguration);
+            }
+            
+            // Stop the ball if velocity is below threshold (after position update)
+            if (velocityBelowThreshold)
+            {
+                ball.Stop();
+            }
+            
+            return (ball.IsMoving, collisionResult.HitLeft, collisionResult.HitRight, collisionResult.HitTop, collisionResult.HitBottom, velocityBelowThreshold);
         }
         
         /// <summary>
@@ -432,6 +480,57 @@ namespace BallDragDrop.Models
         private static bool IsValidDouble(double value)
         {
             return !double.IsNaN(value) && !double.IsInfinity(value);
+        }
+
+        /// <summary>
+        /// Determines if physics calculations should be applied based on the ball state
+        /// </summary>
+        /// <param name="state">Current ball state</param>
+        /// <returns>True if physics should be applied, false otherwise</returns>
+        private static bool ShouldApplyPhysics(BallState state)
+        {
+            return state switch
+            {
+                BallState.Idle => true,     // Apply minimal physics in idle state
+                BallState.Held => false,    // No physics when held
+                BallState.Thrown => true,   // Full physics when thrown
+                _ => true                   // Default to applying physics
+            };
+        }
+
+        /// <summary>
+        /// Determines if velocity threshold checking should be performed based on the ball state
+        /// </summary>
+        /// <param name="state">Current ball state</param>
+        /// <returns>True if velocity threshold should be checked, false otherwise</returns>
+        private static bool ShouldCheckVelocityThreshold(BallState state)
+        {
+            return state == BallState.Thrown;
+        }
+
+        /// <summary>
+        /// Calculates the velocity magnitude of the ball
+        /// </summary>
+        /// <param name="ball">The ball model</param>
+        /// <returns>The velocity magnitude</returns>
+        private static double CalculateVelocityMagnitude(BallModel ball)
+        {
+            return Math.Sqrt(ball.VelocityX * ball.VelocityX + ball.VelocityY * ball.VelocityY);
+        }
+
+        /// <summary>
+        /// Checks if the ball's velocity is below the configured threshold
+        /// </summary>
+        /// <param name="ball">The ball model</param>
+        /// <param name="stateConfiguration">State configuration containing velocity threshold</param>
+        /// <returns>True if velocity is below threshold, false otherwise</returns>
+        private static bool IsVelocityBelowThreshold(BallModel ball, BallStateConfiguration stateConfiguration)
+        {
+            if (stateConfiguration == null)
+                return false;
+
+            double velocityMagnitude = CalculateVelocityMagnitude(ball);
+            return velocityMagnitude < stateConfiguration.VelocityThreshold;
         }
 
         #endregion Methods

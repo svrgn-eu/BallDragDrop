@@ -3,14 +3,16 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
 using BallDragDrop.Contracts;
+using BallDragDrop.Models;
 using BallDragDrop.Services;
 
 namespace BallDragDrop.ViewModels
 {
     /// <summary>
     /// View model for the status bar, implementing INotifyPropertyChanged for UI binding
+    /// and IBallStateObserver for ball state change notifications
     /// </summary>
-    public class StatusBarViewModel : INotifyPropertyChanged, IDisposable
+    public class StatusBarViewModel : INotifyPropertyChanged, IBallStateObserver, IDisposable
     {
         #region Fields
 
@@ -23,6 +25,11 @@ namespace BallDragDrop.ViewModels
         /// Performance monitor service for FPS data
         /// </summary>
         private readonly PerformanceMonitor _performanceMonitor;
+
+        /// <summary>
+        /// Ball state machine for tracking ball state changes
+        /// </summary>
+        private readonly IBallStateMachine _stateMachine;
 
         /// <summary>
         /// Ball view model for asset information
@@ -53,6 +60,11 @@ namespace BallDragDrop.ViewModels
         /// Status text field
         /// </summary>
         private string _statusText;
+
+        /// <summary>
+        /// Status field for displaying ball state information
+        /// </summary>
+        private string _status;
 
         /// <summary>
         /// Flag to track if the object has been disposed
@@ -177,6 +189,22 @@ namespace BallDragDrop.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets or sets the status field that displays ball state information
+        /// </summary>
+        public string Status
+        {
+            get => _status;
+            private set
+            {
+                if (_status != value)
+                {
+                    _status = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         #endregion Properties
 
         #region Construction
@@ -185,10 +213,12 @@ namespace BallDragDrop.ViewModels
         /// Initializes a new instance of the StatusBarViewModel class
         /// </summary>
         /// <param name="logService">Logging service for tracking status bar operations</param>
+        /// <param name="stateMachine">Ball state machine for tracking ball state changes</param>
         /// <param name="performanceMonitor">Performance monitor service for FPS data</param>
-        public StatusBarViewModel(ILogService logService, PerformanceMonitor performanceMonitor = null)
+        public StatusBarViewModel(ILogService logService, IBallStateMachine stateMachine, PerformanceMonitor performanceMonitor = null)
         {
             _logService = logService ?? throw new ArgumentNullException(nameof(logService));
+            _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
             _performanceMonitor = performanceMonitor;
             _fpsCalculator = new FpsCalculator();
             
@@ -197,6 +227,7 @@ namespace BallDragDrop.ViewModels
             _averageFps = 0.0;
             _assetName = "No Asset";
             _statusText = "Status";
+            _status = FormatBallStateForDisplay(_stateMachine.CurrentState);
 
             // Subscribe to PerformanceMonitor events if available
             if (_performanceMonitor != null)
@@ -208,6 +239,10 @@ namespace BallDragDrop.ViewModels
             {
                 _logService.LogWarning("PerformanceMonitor not provided, FPS updates will not be available");
             }
+
+            // Subscribe to state machine notifications
+            _stateMachine.Subscribe(this);
+            _logService.LogDebug("StatusBarViewModel subscribed to ball state machine notifications");
             
             _logService.LogDebug("StatusBarViewModel created with dependency injection");
         }
@@ -362,6 +397,54 @@ namespace BallDragDrop.ViewModels
         }
 
         /// <summary>
+        /// Formats the ball state for display in the status bar
+        /// </summary>
+        /// <param name="state">The ball state to format</param>
+        /// <returns>A formatted string representation of the ball state</returns>
+        private string FormatBallStateForDisplay(BallState state)
+        {
+            return state switch
+            {
+                BallState.Idle => "Ball: Idle",
+                BallState.Held => "Ball: Held",
+                BallState.Thrown => "Ball: Thrown",
+                _ => "Ball: Unknown"
+            };
+        }
+
+        /// <summary>
+        /// Handles ball state changes from the state machine
+        /// </summary>
+        /// <param name="previousState">The previous ball state</param>
+        /// <param name="newState">The new ball state</param>
+        /// <param name="trigger">The trigger that caused the state change</param>
+        public void OnStateChanged(BallState previousState, BallState newState, BallTrigger trigger)
+        {
+            // Ensure UI thread marshaling for property change notifications
+            if (System.Windows.Application.Current?.Dispatcher.CheckAccess() == false)
+            {
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                    DispatcherPriority.Normal,
+                    new Action(() => OnStateChanged(previousState, newState, trigger)));
+                return;
+            }
+
+            try
+            {
+                // Update the status display with the new ball state
+                Status = FormatBallStateForDisplay(newState);
+                
+                _logService?.LogDebug("Ball state changed from {PreviousState} to {NewState} via {Trigger}, status updated to: {Status}", 
+                    previousState, newState, trigger, Status);
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error processing ball state change from {PreviousState} to {NewState}", 
+                    previousState, newState);
+            }
+        }
+
+        /// <summary>
         /// Raises the PropertyChanged event
         /// </summary>
         /// <param name="propertyName">Name of the property that changed</param>
@@ -397,6 +480,12 @@ namespace BallDragDrop.ViewModels
                 if (_ballViewModel != null)
                 {
                     _ballViewModel.PropertyChanged -= OnBallViewModelPropertyChanged;
+                }
+
+                // Unsubscribe from state machine notifications
+                if (_stateMachine != null)
+                {
+                    _stateMachine.Unsubscribe(this);
                 }
 
                 // Clear FPS calculator

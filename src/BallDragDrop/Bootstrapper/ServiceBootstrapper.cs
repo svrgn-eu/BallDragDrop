@@ -4,6 +4,7 @@ using System.IO;
 using BallDragDrop.ViewModels;
 using BallDragDrop.Services;
 using BallDragDrop.Contracts;
+using BallDragDrop.Models;
 
 namespace BallDragDrop.Bootstrapper
 {
@@ -77,6 +78,9 @@ namespace BallDragDrop.Bootstrapper
             
             // Register logging services (will be implemented in subtask 7.2)
             RegisterLoggingServices(services);
+            
+            // Register state machine services
+            RegisterStateMachineServices(services);
             
             // Register ViewModels
             RegisterViewModels(services);
@@ -167,12 +171,14 @@ namespace BallDragDrop.Bootstrapper
             services.AddTransient<BallViewModel>(provider => 
                 new BallViewModel(
                     provider.GetRequiredService<ILogService>(),
+                    provider.GetRequiredService<IBallStateMachine>(),
                     null, // ImageService will be created internally
                     provider.GetRequiredService<IConfigurationService>()));
 
             services.AddTransient<StatusBarViewModel>(provider =>
                 new StatusBarViewModel(
                     provider.GetRequiredService<ILogService>(),
+                    provider.GetRequiredService<IBallStateMachine>(),
                     provider.GetRequiredService<PerformanceMonitor>()));
 
             services.AddTransient<MainWindowViewModel>(provider =>
@@ -180,6 +186,34 @@ namespace BallDragDrop.Bootstrapper
                     provider.GetRequiredService<BallViewModel>(),
                     provider.GetRequiredService<StatusBarViewModel>(),
                     provider.GetRequiredService<ILogService>()));
+        }
+
+        /// <summary>
+        /// Registers state machine services for dependency injection
+        /// </summary>
+        private static void RegisterStateMachineServices(IServiceCollection services)
+        {
+            // Register BallStateConfiguration as singleton with default settings
+            services.AddSingleton<BallStateConfiguration>(provider =>
+            {
+                var config = BallStateConfiguration.CreateDefault();
+                
+                // Configure default state machine settings
+                config.VelocityThreshold = 50.0;
+                config.StateTransitionDelay = TimeSpan.FromMilliseconds(100);
+                config.EnableStateLogging = true;
+                config.EnableVisualFeedback = true;
+                config.EnableTransitionValidation = true;
+                config.EnableAsyncNotifications = false;
+                
+                return config;
+            });
+            
+            // Register IBallStateMachine as singleton
+            services.AddSingleton<IBallStateMachine, BallStateMachine>(provider =>
+                new BallStateMachine(
+                    provider.GetRequiredService<ILogService>(),
+                    provider.GetRequiredService<BallStateConfiguration>()));
         }
 
         /// <summary>

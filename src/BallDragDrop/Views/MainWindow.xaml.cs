@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -20,7 +21,7 @@ namespace BallDragDrop.Views;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window
+public partial class MainWindow : Window, IBallStateObserver
 {
     #region Properties
 
@@ -38,6 +39,11 @@ public partial class MainWindow : Window
     /// </summary>
     private readonly ILogService _logService;
 
+    /// <summary>
+    /// Ball state configuration for physics engine
+    /// </summary>
+    private readonly BallStateConfiguration _ballStateConfiguration;
+
     #endregion Fields
 
     #region Construction
@@ -52,6 +58,9 @@ public partial class MainWindow : Window
         // Get logging service from dependency injection
         _logService = ServiceBootstrapper.GetService<ILogService>();
         
+        // Get ball state configuration from dependency injection
+        _ballStateConfiguration = ServiceBootstrapper.GetService<BallStateConfiguration>();
+        
         // Initialize physics engine
         _physicsEngine = new Models.PhysicsEngine();
         _lastPhysicsUpdate = DateTime.Now;
@@ -65,8 +74,8 @@ public partial class MainWindow : Window
         this.Loaded += Window_Loaded;
         this.Closed += MainWindow_Closed;
         
-        // Initialize optimized dual timer system
-        InitializeOptimizedTimers();
+        // Subscribe to CompositionTarget.Rendering for physics updates
+        CompositionTarget.Rendering += CompositionTarget_Rendering;
         
         // Initialize DataContext immediately in constructor
         InitializeDataContext();
@@ -98,6 +107,18 @@ public partial class MainWindow : Window
             // Initialize the ball position (will be updated in Window_Loaded)
             mainViewModel.BallViewModel.Initialize(400, 300, 25);
             
+            // Subscribe to state machine changes to manage physics simulation
+            var stateMachine = ServiceBootstrapper.GetService<IBallStateMachine>();
+            if (stateMachine != null)
+            {
+                stateMachine.Subscribe(this);
+                _logService.LogDebug("MainWindow subscribed to state machine notifications");
+            }
+            else
+            {
+                _logService.LogWarning("State machine not available for subscription");
+            }
+            
             _logService.LogDebug("InitializeDataContext completed successfully");
         }
         catch (Exception ex)
@@ -110,6 +131,79 @@ public partial class MainWindow : Window
     }
 
     #endregion Construction
+
+    #region IBallStateObserver Implementation
+
+    /// <summary>
+    /// Handles state change notifications from the ball state machine
+    /// </summary>
+    /// <param name="previousState">The previous state</param>
+    /// <param name="newState">The new state</param>
+    /// <param name="trigger">The trigger that caused the state change</param>
+    public void OnStateChanged(BallState previousState, BallState newState, BallTrigger trigger)
+    {
+        _logService?.LogDebug("MainWindow received state change: {PreviousState} -> {NewState} via {Trigger}", 
+            previousState, newState, trigger);
+
+        // Handle physics simulation based on state changes
+        switch (newState)
+        {
+            case BallState.Thrown:
+                // Start physics simulation when ball is thrown
+                _isPhysicsRunning = true;
+                _physicsUpdateCounter = 0;
+                
+                if (_useOptimizedTimers)
+                {
+                    StartPhysicsTimer();
+                }
+                else
+                {
+                    _lastPhysicsUpdate = DateTime.Now;
+                }
+                
+                // Get the ball's current velocity for debugging
+                if (DataContext is MainWindowViewModel mainViewModel)
+                {
+                    var ballViewModel = mainViewModel.BallViewModel;
+                    _logService?.LogInformation($"PHYSICS STARTED - Ball thrown with velocity: ({ballViewModel._ballModel.VelocityX:F2}, {ballViewModel._ballModel.VelocityY:F2}), Position: ({ballViewModel._ballModel.X:F2}, {ballViewModel._ballModel.Y:F2})");
+                }
+                else
+                {
+                    _logService?.LogInformation("PHYSICS STARTED - Ball thrown");
+                }
+                break;
+
+            case BallState.Idle:
+                // Stop physics simulation when ball comes to rest
+                if (previousState == BallState.Thrown)
+                {
+                    _isPhysicsRunning = false;
+                    
+                    if (_useOptimizedTimers)
+                    {
+                        StopPhysicsTimer();
+                    }
+                    
+                    _logService?.LogDebug("Physics simulation stopped - ball idle");
+                }
+                break;
+
+            case BallState.Held:
+                // Stop physics simulation when ball is held
+                _isPhysicsRunning = false;
+                
+                if (_useOptimizedTimers)
+                {
+                    StopPhysicsTimer();
+                }
+                
+                _logService?.LogDebug("Physics simulation stopped - ball held");
+                break;
+        }
+    }
+
+    #endregion IBallStateObserver Implementation
 
     #region Fields
 
@@ -189,8 +283,8 @@ public partial class MainWindow : Window
     /// <param name="e">Event data</param>
     private void MainWindow_Closed(object sender, EventArgs e)
     {
-        // Clean up timers and event handlers
-        CleanupOptimizedTimers();
+        // Unsubscribe from CompositionTarget.Rendering
+        CompositionTarget.Rendering -= CompositionTarget_Rendering;
     }
     
     /// <summary>
@@ -390,8 +484,8 @@ public partial class MainWindow : Window
                 _isPhysicsRunning = false;
                 ballViewModel._ballModel.Stop();
                 
-                // Start dragging
-                ballViewModel.IsDragging = true;
+                // Use the BallViewModel's mouse command to properly trigger state machine
+                ballViewModel.MouseDownCommand.Execute(e);
                 
                 // Initialize mouse tracking
                 _lastMousePosition = position;
@@ -434,6 +528,9 @@ public partial class MainWindow : Window
             // Update cursor based on canvas-relative position
             UpdateCursorForPosition(ballViewModel, canvasPosition);
             
+            // Use the BallViewModel's mouse command to properly handle mouse move
+            ballViewModel.MouseMoveCommand.Execute(e);
+            
             // If the ball is being dragged, ensure it follows the mouse cursor immediately
             if (ballViewModel.IsDragging)
             {
@@ -463,55 +560,31 @@ public partial class MainWindow : Window
             
             if (ballViewModel.IsDragging)
             {
-                // Stop dragging
-                ballViewModel.IsDragging = false;
-                
-                // Release mouse capture
-                Mouse.Capture(null);
-                
                 // Get canvas-relative position
                 var position = e.GetPosition(MainCanvas);
                 var currentTime = DateTime.Now;
                 
-                // Store final position in history
+                // Store final position in history for MainWindow's velocity calculation
                 StoreMousePosition(position, currentTime);
                 
-                // Calculate velocity based on movement history
+                // Calculate velocity using MainWindow's mouse history (canvas coordinates)
                 var (velocityX, velocityY) = CalculateVelocityFromHistory();
                 
-                // Check if the movement is fast enough to be considered a throw
-                double throwThreshold = 100.0;
-                if (Math.Abs(velocityX) > throwThreshold || Math.Abs(velocityY) > throwThreshold)
-                {
-                    // Apply the velocity to the ball model
-                    ballViewModel._ballModel.SetVelocity(velocityX, velocityY);
-                    
-                    // Start the physics simulation
-                    _isPhysicsRunning = true;
-                    _physicsUpdateCounter = 0;
-                    
-                    if (_useOptimizedTimers)
-                    {
-                        StartPhysicsTimer();
-                    }
-                    else
-                    {
-                        _lastPhysicsUpdate = DateTime.Now;
-                    }
-                    
-                    _logService.LogDebug("Ball thrown with velocity: ({VelocityX:F2}, {VelocityY:F2})", velocityX, velocityY);
-                }
-                else
-                {
-                    // Not a throw, stop the ball
-                    ballViewModel._ballModel.Stop();
-                    _logService.LogDebug("Ball dropped (velocity too low for throw): ({VelocityX:F2}, {VelocityY:F2})", velocityX, velocityY);
-                }
+                // Set the velocity on the ball model before triggering state transition
+                ballViewModel._ballModel.SetVelocity(velocityX, velocityY);
+                
+                // Debug: Log velocity calculation
+                _logService.LogInformation($"MOUSE UP - Ball released at position ({position.X:F2}, {position.Y:F2}) with velocity ({velocityX:F2}, {velocityY:F2})");
+                
+                // Use the BallViewModel's mouse command to trigger state machine transition
+                // The BallViewModel will handle state transitions, MainWindow handles physics
+                ballViewModel.MouseUpCommand.Execute(e);
+                
+                // Release mouse capture
+                Mouse.Capture(null);
                 
                 // Update cursor
                 UpdateCursorForPosition(ballViewModel, position);
-                
-                _logService.LogDebug("Ball released at position ({X:F2}, {Y:F2})", position.X, position.Y);
             }
         }
     }
@@ -560,31 +633,37 @@ public partial class MainWindow : Window
                 double oldX = ballViewModel._ballModel.X;
                 double oldY = ballViewModel._ballModel.Y;
                 
+                // Debug: Log physics update attempt
+                if (_physicsUpdateCounter % 30 == 0)
+                {
+                    _logService.LogInformation($"PHYSICS UPDATE #{_physicsUpdateCounter}: State={ballViewModel.CurrentState}, Velocity=({ballViewModel._ballModel.VelocityX:F2}, {ballViewModel._ballModel.VelocityY:F2}), Position=({ballViewModel._ballModel.X:F2}, {ballViewModel._ballModel.Y:F2})");
+                }
+                
                 // Update the ball's position and velocity using physics
                 var result = _physicsEngine.UpdateBall(
                     ballViewModel._ballModel,
                     timeStep,
                     0, 0,
                     MainCanvas.Width,
-                    MainCanvas.Height);
+                    MainCanvas.Height,
+                    ballViewModel.CurrentState,
+                    _ballStateConfiguration);
                 
                 // End measuring physics update time
                 _performanceMonitor.EndPhysicsTime();
                 
-                // Check if the position has changed
-                if (Math.Abs(oldX - ballViewModel._ballModel.X) > 0.01 || Math.Abs(oldY - ballViewModel._ballModel.Y) > 0.01)
+                // Store old ViewModel position for comparison
+                double oldViewModelX = ballViewModel.X;
+                double oldViewModelY = ballViewModel.Y;
+                
+                // Force PropertyChanged events for position properties
+                // Since the getter returns _ballModel.X, setting it to the same value won't trigger PropertyChanged
+                ballViewModel.ForcePositionUpdate();
+                
+                // Debug: Compare physics model vs ViewModel positions
+                if (_physicsUpdateCounter % 30 == 0)
                 {
-                    // Update the view model's position to match the model
-                    // This will trigger property change notifications for X and Y
-                    ballViewModel.X = ballViewModel._ballModel.X;
-                    ballViewModel.Y = ballViewModel._ballModel.Y;
-                    
-                    // Force UI update by updating the Canvas.Left and Canvas.Top properties directly
-                    // This ensures the ball's visual position is updated even if the binding doesn't update
-                    Dispatcher.InvokeAsync(() => {
-                        Canvas.SetLeft(BallImage, ballViewModel.Left);
-                        Canvas.SetTop(BallImage, ballViewModel.Top);
-                    }, System.Windows.Threading.DispatcherPriority.Render);
+                    _logService.LogInformation($"PHYSICS vs VISUAL: Model=({ballViewModel._ballModel.X:F2}, {ballViewModel._ballModel.Y:F2}), ViewModel=({ballViewModel.X:F2}, {ballViewModel.Y:F2}), Left={ballViewModel.Left:F2}, Top={ballViewModel.Top:F2}, Changed=({Math.Abs(oldViewModelX - ballViewModel.X) > 0.01}, {Math.Abs(oldViewModelY - ballViewModel.Y) > 0.01})");
                 }
                 
                 // Increment the physics update counter
@@ -600,6 +679,25 @@ public partial class MainWindow : Window
                     var vyStr = FormatDoubleForDebug(ballViewModel._ballModel.VelocityY);
                     
                     _logService.LogDebug("Physics update #{PhysicsUpdateCounter}: Position=({XStr}, {YStr}), Velocity=({VxStr}, {VyStr})", _physicsUpdateCounter, xStr, yStr, vxStr, vyStr);
+                }
+                
+                // Check if velocity dropped below threshold for state transition
+                if (result.VelocityBelowThreshold && ballViewModel.CurrentState == BallState.Thrown)
+                {
+                    // Trigger state machine transition from Thrown to Idle
+                    try
+                    {
+                        var stateMachine = ServiceBootstrapper.GetService<IBallStateMachine>();
+                        if (stateMachine != null && stateMachine.CanFire(BallTrigger.VelocityBelowThreshold))
+                        {
+                            stateMachine.Fire(BallTrigger.VelocityBelowThreshold);
+                            _logService.LogDebug("State transition triggered: Thrown -> Idle (velocity below threshold)");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logService.LogError(ex, "Error triggering velocity threshold state transition");
+                    }
                 }
                 
                 // If the ball has stopped moving, stop physics updates
@@ -724,7 +822,12 @@ public partial class MainWindow : Window
         {
             _lastPhysicsUpdate = DateTime.Now;
             _physicsTimer.Start();
-            _logService.LogDebug("Physics timer started");
+            _logService.LogDebug("Physics timer started - timer enabled: {TimerEnabled}", _physicsTimer.IsEnabled);
+        }
+        else
+        {
+            _logService.LogDebug("Physics timer start skipped - useOptimized: {UseOptimized}, timer null: {TimerNull}, already enabled: {AlreadyEnabled}", 
+                _useOptimizedTimers, _physicsTimer == null, _physicsTimer?.IsEnabled ?? false);
         }
     }
 
@@ -800,24 +903,16 @@ public partial class MainWindow : Window
                     timeStep,
                     0, 0,
                     MainCanvas.Width,
-                    MainCanvas.Height);
+                    MainCanvas.Height,
+                    ballViewModel.CurrentState,
+                    _ballStateConfiguration);
                 
                 // End measuring physics update time
                 _performanceMonitor.EndPhysicsTime();
                 
-                // Check if the position has changed
-                if (Math.Abs(oldX - ballViewModel._ballModel.X) > 0.01 || Math.Abs(oldY - ballViewModel._ballModel.Y) > 0.01)
-                {
-                    // Update the view model's position to match the model
-                    ballViewModel.X = ballViewModel._ballModel.X;
-                    ballViewModel.Y = ballViewModel._ballModel.Y;
-                    
-                    // Force UI update with high priority for smooth physics
-                    Dispatcher.InvokeAsync(() => {
-                        Canvas.SetLeft(BallImage, ballViewModel.Left);
-                        Canvas.SetTop(BallImage, ballViewModel.Top);
-                    }, DispatcherPriority.Render);
-                }
+                // Force PropertyChanged events for position properties
+                // Since the getter returns _ballModel.X, setting it to the same value won't trigger PropertyChanged
+                ballViewModel.ForcePositionUpdate();
                 
                 // Increment the physics update counter
                 _physicsUpdateCounter++;
@@ -832,6 +927,25 @@ public partial class MainWindow : Window
                     var vyStr = FormatDoubleForDebug(ballViewModel._ballModel.VelocityY);
                     
                     _logService.LogDebug("Physics update #{PhysicsUpdateCounter}: Position=({XStr}, {YStr}), Velocity=({VxStr}, {VyStr})", _physicsUpdateCounter, xStr, yStr, vxStr, vyStr);
+                }
+                
+                // Check if velocity dropped below threshold for state transition
+                if (result.VelocityBelowThreshold && ballViewModel.CurrentState == BallState.Thrown)
+                {
+                    // Trigger state machine transition from Thrown to Idle
+                    try
+                    {
+                        var stateMachine = ServiceBootstrapper.GetService<IBallStateMachine>();
+                        if (stateMachine != null && stateMachine.CanFire(BallTrigger.VelocityBelowThreshold))
+                        {
+                            stateMachine.Fire(BallTrigger.VelocityBelowThreshold);
+                            _logService.LogDebug("State transition triggered: Thrown -> Idle (velocity below threshold)");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logService.LogError(ex, "Error triggering velocity threshold state transition");
+                    }
                 }
                 
                 // If the ball has stopped moving, stop physics updates
@@ -997,111 +1111,7 @@ public partial class MainWindow : Window
 
     #region Methods
 
-    /// <summary>
-    /// Updates the ball position to follow the mouse cursor
-    /// </summary>
-    /// <param name="viewModel">The ball view model</param>
-    /// <param name="mousePosition">The current mouse position</param>
-    private void UpdateBallPositionToMouse(BallViewModel viewModel, Point mousePosition)
-    {
-        // Update the ball position to the mouse position
-        viewModel.X = mousePosition.X;
-        viewModel.Y = mousePosition.Y;
-        
-        // Constrain the ball position to stay within the window boundaries
-        viewModel.ConstrainPosition(0, 0, MainCanvas.Width, MainCanvas.Height);
-        
-        // Force UI update by updating the Canvas.Left and Canvas.Top properties directly
-        Canvas.SetLeft(BallImage, viewModel.Left);
-        Canvas.SetTop(BallImage, viewModel.Top);
-    }
 
-    /// <summary>
-    /// Updates the cursor based on the mouse position relative to the ball
-    /// </summary>
-    /// <param name="viewModel">The ball view model</param>
-    /// <param name="canvasPosition">The mouse position relative to the canvas</param>
-    private void UpdateCursorForPosition(BallViewModel viewModel, Point canvasPosition)
-    {
-        if (viewModel.IsDragging)
-        {
-            // When dragging the ball, show the "SizeAll" cursor to indicate movement
-            viewModel.CurrentCursor = Cursors.SizeAll;
-        }
-        else if (viewModel._ballModel.ContainsPoint(canvasPosition.X, canvasPosition.Y))
-        {
-            // When hovering over the ball, show the "Hand" cursor to indicate it can be grabbed
-            viewModel.CurrentCursor = Cursors.Hand;
-        }
-        else
-        {
-            // Default cursor when not interacting with the ball
-            viewModel.CurrentCursor = Cursors.Arrow;
-        }
-    }
-
-    /// <summary>
-    /// Stores the current mouse position and timestamp in the history arrays
-    /// </summary>
-    /// <param name="position">Current mouse position</param>
-    /// <param name="timestamp">Current timestamp</param>
-    private void StoreMousePosition(Point position, DateTime timestamp)
-    {
-        // Shift all elements one position to make room for the new one
-        if (_mouseHistoryCount >= _mousePositionHistory.Length)
-        {
-            for (int i = 0; i < _mousePositionHistory.Length - 1; i++)
-            {
-                _mousePositionHistory[i] = _mousePositionHistory[i + 1];
-                _mouseTimestampHistory[i] = _mouseTimestampHistory[i + 1];
-            }
-            
-            // Add the new position and timestamp at the end
-            _mousePositionHistory[_mousePositionHistory.Length - 1] = position;
-            _mouseTimestampHistory[_mouseTimestampHistory.Length - 1] = timestamp;
-        }
-        else
-        {
-            // Add the new position and timestamp at the current count
-            _mousePositionHistory[_mouseHistoryCount] = position;
-            _mouseTimestampHistory[_mouseHistoryCount] = timestamp;
-            _mouseHistoryCount++;
-        }
-    }
-
-    /// <summary>
-    /// Calculates velocity from the mouse movement history
-    /// </summary>
-    /// <returns>Velocity in X and Y directions</returns>
-    private (double velocityX, double velocityY) CalculateVelocityFromHistory()
-    {
-        if (_mouseHistoryCount < 2)
-        {
-            return (0, 0);
-        }
-
-        // Use the last few positions to calculate velocity
-        int samplesToUse = Math.Min(5, _mouseHistoryCount);
-        Point startPos = _mousePositionHistory[_mouseHistoryCount - samplesToUse];
-        Point endPos = _mousePositionHistory[_mouseHistoryCount - 1];
-        DateTime startTime = _mouseTimestampHistory[_mouseHistoryCount - samplesToUse];
-        DateTime endTime = _mouseTimestampHistory[_mouseHistoryCount - 1];
-
-        double timeElapsed = (endTime - startTime).TotalSeconds;
-        
-        if (timeElapsed <= 0.001) // Avoid division by very small numbers
-        {
-            return (0, 0);
-        }
-
-        double deltaX = endPos.X - startPos.X;
-        double deltaY = endPos.Y - startPos.Y;
-
-        double velocityX = deltaX / timeElapsed;
-        double velocityY = deltaY / timeElapsed;
-
-        return (velocityX, velocityY);
-    }
 
     /// <summary>
     /// Ensures the ball stays within the window boundaries
@@ -1429,26 +1439,25 @@ public partial class MainWindow : Window
                 
                 // Stop any physics simulation
                 _isPhysicsRunning = false;
-                ballViewModel._ballModel.Stop();
                 
-                // Stop dragging if in progress
+                // Stop dragging if in progress and release mouse capture
                 if (ballViewModel.IsDragging)
                 {
-                    ballViewModel.IsDragging = false;
                     Mouse.Capture(null);
                 }
                 
-                // Reset ball position to center of canvas
+                // Calculate center position of canvas
                 double centerX = MainCanvas.Width / 2;
                 double centerY = MainCanvas.Height / 2;
-                double ballRadius = 25; // Default radius
                 
-                ballViewModel.Initialize(centerX, centerY, ballRadius);
+                // Use BallViewModel's ResetBall method which properly handles state machine reset
+                ballViewModel.ResetBall(centerX, centerY);
                 
                 // Reset mouse history
                 _mouseHistoryCount = 0;
                 
-                _logService.LogDebug("Application reset - ball position reset to center ({X:F2}, {Y:F2})", centerX, centerY);
+                _logService.LogDebug("Application reset - ball reset to center ({X:F2}, {Y:F2}), state: {State}", 
+                    centerX, centerY, ballViewModel.CurrentState);
             }
         }
         catch (Exception ex)
@@ -1482,6 +1491,93 @@ public partial class MainWindow : Window
     }
 
     #endregion Visual Content Switching Event Handlers
+
+    #region Mouse Position Tracking
+
+    /// <summary>
+    /// Stores the current mouse position and timestamp in the history arrays
+    /// </summary>
+    /// <param name="position">Current mouse position</param>
+    /// <param name="timestamp">Current timestamp</param>
+    private void StoreMousePosition(Point position, DateTime timestamp)
+    {
+        // Shift all elements one position to make room for the new one
+        if (_mouseHistoryCount >= _mousePositionHistory.Length)
+        {
+            for (int i = 0; i < _mousePositionHistory.Length - 1; i++)
+            {
+                _mousePositionHistory[i] = _mousePositionHistory[i + 1];
+                _mouseTimestampHistory[i] = _mouseTimestampHistory[i + 1];
+            }
+            
+            // Add the new position and timestamp at the end
+            _mousePositionHistory[_mousePositionHistory.Length - 1] = position;
+            _mouseTimestampHistory[_mouseTimestampHistory.Length - 1] = timestamp;
+        }
+        else
+        {
+            // Add the new position and timestamp at the current count
+            _mousePositionHistory[_mouseHistoryCount] = position;
+            _mouseTimestampHistory[_mouseHistoryCount] = timestamp;
+            _mouseHistoryCount++;
+        }
+    }
+
+    /// <summary>
+    /// Calculates velocity from the mouse position history
+    /// </summary>
+    /// <returns>Velocity as (X, Y) tuple</returns>
+    private (double velocityX, double velocityY) CalculateVelocityFromHistory()
+    {
+        if (_mouseHistoryCount < 2)
+        {
+            return (0, 0);
+        }
+
+        // Use the physics engine to calculate velocity from history
+        var physicsEngine = new Models.PhysicsEngine();
+        return physicsEngine.CalculateVelocityFromHistory(
+            _mousePositionHistory, 
+            _mouseTimestampHistory, 
+            _mouseHistoryCount);
+    }
+
+    /// <summary>
+    /// Updates the ball position to match the mouse position
+    /// </summary>
+    /// <param name="ballViewModel">The ball view model</param>
+    /// <param name="mousePosition">The mouse position</param>
+    private void UpdateBallPositionToMouse(BallViewModel ballViewModel, Point mousePosition)
+    {
+        ballViewModel.X = mousePosition.X;
+        ballViewModel.Y = mousePosition.Y;
+        
+        // Constrain the ball position to stay within the canvas boundaries
+        ballViewModel.ConstrainPosition(0, 0, MainCanvas.Width, MainCanvas.Height);
+    }
+
+    /// <summary>
+    /// Updates the cursor based on the ball position and state
+    /// </summary>
+    /// <param name="ballViewModel">The ball view model</param>
+    /// <param name="position">The current position</param>
+    private void UpdateCursorForPosition(BallViewModel ballViewModel, Point position)
+    {
+        if (ballViewModel.IsDragging)
+        {
+            this.Cursor = Cursors.Hand;
+        }
+        else if (ballViewModel._ballModel.ContainsPoint(position.X, position.Y))
+        {
+            this.Cursor = Cursors.Hand;
+        }
+        else
+        {
+            this.Cursor = Cursors.Arrow;
+        }
+    }
+
+    #endregion Mouse Position Tracking
 }
 
 /// <summary>
@@ -1513,6 +1609,90 @@ public class OffsetConverter : IValueConverter
             }
         }
         return value;
+    }
+
+    /// <summary>
+    /// Converts back (not implemented)
+    /// </summary>
+    /// <param name="value">The value to convert back</param>
+    /// <param name="targetType">The target type</param>
+    /// <param name="parameter">The parameter</param>
+    /// <param name="culture">The culture info</param>
+    /// <returns>Not implemented</returns>
+    /// <exception cref="NotImplementedException">This method is not implemented</exception>
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converter to convert Color to SolidColorBrush for XAML binding
+/// </summary>
+public class ColorToBrushConverter : IValueConverter
+{
+    /// <summary>
+    /// Singleton instance of the ColorToBrushConverter
+    /// </summary>
+    public static readonly ColorToBrushConverter Instance = new ColorToBrushConverter();
+
+    /// <summary>
+    /// Converts a Color to a SolidColorBrush
+    /// </summary>
+    /// <param name="value">The Color value to convert</param>
+    /// <param name="targetType">The target type</param>
+    /// <param name="parameter">The parameter (not used)</param>
+    /// <param name="culture">The culture info</param>
+    /// <returns>A SolidColorBrush with the specified color</returns>
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is Color color)
+        {
+            return new SolidColorBrush(color);
+        }
+        return new SolidColorBrush(Colors.Transparent);
+    }
+
+    /// <summary>
+    /// Converts back (not implemented)
+    /// </summary>
+    /// <param name="value">The value to convert back</param>
+    /// <param name="targetType">The target type</param>
+    /// <param name="parameter">The parameter</param>
+    /// <param name="culture">The culture info</param>
+    /// <returns>Not implemented</returns>
+    /// <exception cref="NotImplementedException">This method is not implemented</exception>
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converter to convert Color to Color for XAML binding (identity converter)
+/// </summary>
+public class ColorToColorConverter : IValueConverter
+{
+    /// <summary>
+    /// Singleton instance of the ColorToColorConverter
+    /// </summary>
+    public static readonly ColorToColorConverter Instance = new ColorToColorConverter();
+
+    /// <summary>
+    /// Converts a Color to a Color (identity conversion)
+    /// </summary>
+    /// <param name="value">The Color value to convert</param>
+    /// <param name="targetType">The target type</param>
+    /// <param name="parameter">The parameter (not used)</param>
+    /// <param name="culture">The culture info</param>
+    /// <returns>The same Color value</returns>
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is Color color)
+        {
+            return color;
+        }
+        return Colors.Transparent;
     }
 
     /// <summary>

@@ -221,6 +221,11 @@
             Registers ViewModels for dependency injection
             </summary>
         </member>
+        <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.RegisterStateMachineServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers state machine services for dependency injection
+            </summary>
+        </member>
         <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.RegisterApplicationServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             Registers other application-specific services
@@ -244,6 +249,67 @@
             <summary>
             Disposes the service provider and cleans up resources
             </summary>
+        </member>
+        <member name="T:BallDragDrop.Commands.RelayCommand`1">
+            <summary>
+            A command whose sole purpose is to relay its functionality to other objects by invoking delegates.
+            </summary>
+            <typeparam name="T">The type of the command parameter.</typeparam>
+        </member>
+        <member name="M:BallDragDrop.Commands.RelayCommand`1.#ctor(System.Action{`0},System.Predicate{`0})">
+            <summary>
+            Initializes a new instance of the RelayCommand class.
+            </summary>
+            <param name="execute">The execution logic.</param>
+            <param name="canExecute">The execution status logic.</param>
+        </member>
+        <member name="E:BallDragDrop.Commands.RelayCommand`1.CanExecuteChanged">
+            <summary>
+            Occurs when changes occur that affect whether or not the command should execute.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Commands.RelayCommand`1.CanExecute(System.Object)">
+            <summary>
+            Defines the method that determines whether the command can execute in its current state.
+            </summary>
+            <param name="parameter">Data used by the command.</param>
+            <returns>true if this command can be executed; otherwise, false.</returns>
+        </member>
+        <member name="M:BallDragDrop.Commands.RelayCommand`1.Execute(System.Object)">
+            <summary>
+            Defines the method to be called when the command is invoked.
+            </summary>
+            <param name="parameter">Data used by the command.</param>
+        </member>
+        <member name="T:BallDragDrop.Commands.RelayCommand">
+            <summary>
+            A command whose sole purpose is to relay its functionality to other objects by invoking delegates.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Commands.RelayCommand.#ctor(System.Action,System.Func{System.Boolean})">
+            <summary>
+            Initializes a new instance of the RelayCommand class.
+            </summary>
+            <param name="execute">The execution logic.</param>
+            <param name="canExecute">The execution status logic.</param>
+        </member>
+        <member name="E:BallDragDrop.Commands.RelayCommand.CanExecuteChanged">
+            <summary>
+            Occurs when changes occur that affect whether or not the command should execute.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Commands.RelayCommand.CanExecute(System.Object)">
+            <summary>
+            Defines the method that determines whether the command can execute in its current state.
+            </summary>
+            <param name="parameter">Data used by the command.</param>
+            <returns>true if this command can be executed; otherwise, false.</returns>
+        </member>
+        <member name="M:BallDragDrop.Commands.RelayCommand.Execute(System.Object)">
+            <summary>
+            Defines the method to be called when the command is invoked.
+            </summary>
+            <param name="parameter">Data used by the command.</param>
         </member>
         <member name="T:BallDragDrop.Constants">
             <summary>
@@ -321,6 +387,108 @@
             <summary>
             Maximum acceptable memory overhead in megabytes
             </summary>
+        </member>
+        <member name="T:BallDragDrop.Contracts.IBallStateMachine">
+            <summary>
+            Defines the contract for a ball state machine that manages state transitions
+            and provides notifications to observers about state changes.
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Contracts.IBallStateMachine.CurrentState">
+            <summary>
+            Gets the current state of the ball.
+            </summary>
+            <value>The current ball state.</value>
+        </member>
+        <member name="E:BallDragDrop.Contracts.IBallStateMachine.StateChanged">
+            <summary>
+            Occurs when the ball state changes.
+            This event is raised whenever a state transition occurs, providing
+            information about the previous state, new state, and trigger.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IBallStateMachine.Fire(BallDragDrop.Models.BallTrigger)">
+            <summary>
+            Fires the specified trigger to attempt a state transition.
+            If the trigger is valid for the current state, the state machine
+            will transition to the appropriate new state and notify observers.
+            </summary>
+            <param name="trigger">The trigger to fire.</param>
+            <exception cref="T:System.InvalidOperationException">
+            Thrown when the trigger is not valid for the current state.
+            </exception>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IBallStateMachine.CanFire(BallDragDrop.Models.BallTrigger)">
+            <summary>
+            Determines whether the specified trigger can be fired in the current state.
+            This method allows checking if a state transition is valid before attempting it.
+            </summary>
+            <param name="trigger">The trigger to check.</param>
+            <returns>
+            <c>true</c> if the trigger can be fired in the current state; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IBallStateMachine.Subscribe(BallDragDrop.Contracts.IBallStateObserver)">
+            <summary>
+            Subscribes an observer to receive state change notifications.
+            The observer will be notified whenever the ball state changes.
+            </summary>
+            <param name="observer">The observer to subscribe.</param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when <paramref name="observer"/> is null.
+            </exception>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IBallStateMachine.Unsubscribe(BallDragDrop.Contracts.IBallStateObserver)">
+            <summary>
+            Unsubscribes an observer from state change notifications.
+            The observer will no longer receive state change notifications.
+            </summary>
+            <param name="observer">The observer to unsubscribe.</param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when <paramref name="observer"/> is null.
+            </exception>
+        </member>
+        <member name="T:BallDragDrop.Contracts.IBallStateObserver">
+            <summary>
+            Defines the contract for observers that need to be notified of ball state changes.
+            This interface implements the Observer pattern, allowing components to react
+            to state transitions in the ball state machine.
+            </summary>
+            <remarks>
+            Components that implement this interface can register with the ball state machine
+            to receive notifications whenever the ball transitions between states.
+            This enables loose coupling between the state machine and components that need
+            to react to state changes, such as the UI, physics engine, or other services.
+            
+            The observer pattern is particularly useful in this context because:
+            - Multiple components can react to the same state change
+            - Components can be added or removed without modifying the state machine
+            - State-dependent behavior is centralized in the observing components
+            - The state machine remains focused on state management logic
+            </remarks>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IBallStateObserver.OnStateChanged(BallDragDrop.Models.BallState,BallDragDrop.Models.BallState,BallDragDrop.Models.BallTrigger)">
+            <summary>
+            Called when the ball state changes.
+            This method is invoked by the state machine whenever a state transition occurs,
+            providing the observer with information about the transition.
+            </summary>
+            <param name="previousState">The state the ball was in before the transition.</param>
+            <param name="newState">The state the ball transitioned to.</param>
+            <param name="trigger">The trigger that caused the state transition.</param>
+            <remarks>
+            Implementations of this method should:
+            - Execute quickly to avoid blocking other observers
+            - Handle exceptions gracefully to prevent disrupting the state machine
+            - Update their internal state or UI based on the new ball state
+            - Avoid triggering additional state transitions from within this method
+            
+            Common use cases for state change handling include:
+            - Updating visual representations of the ball
+            - Enabling or disabling physics calculations
+            - Updating status displays or logging
+            - Triggering animations or sound effects
+            </remarks>
         </member>
         <member name="T:BallDragDrop.Contracts.IConfigurationService">
             <summary>
@@ -1208,6 +1376,186 @@
             <param name="minimum">Optional minimum value constraint</param>
             <returns>The validated value or fallback if invalid</returns>
         </member>
+        <member name="T:BallDragDrop.Models.BallState">
+            <summary>
+            Represents the various states that a ball can be in during its lifecycle.
+            The state machine manages transitions between these states to ensure predictable ball behavior.
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.BallState.Idle">
+            <summary>
+            The ball is at rest and not being interacted with.
+            In this state, the ball is stationary and waiting for user input.
+            Physics calculations are minimal, and the ball displays its default visual appearance.
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.BallState.Held">
+            <summary>
+            The ball is being held by the user (clicked and dragged).
+            In this state, the ball follows the mouse cursor and physics calculations are paused.
+            Visual feedback indicates the ball is being actively manipulated.
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.BallState.Thrown">
+            <summary>
+            The ball has been released and is in motion under physics control.
+            In this state, physics calculations are active, controlling the ball's movement.
+            The ball will remain in this state until its velocity drops below the threshold.
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Models.BallStateChangedEventArgs">
+            <summary>
+            Event arguments for ball state change notifications.
+            Provides information about the state transition including the previous state,
+            new state, trigger that caused the change, and timestamp of the transition.
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.BallStateChangedEventArgs.PreviousState">
+            <summary>
+            Gets the state the ball was in before the transition.
+            </summary>
+            <value>The previous ball state.</value>
+        </member>
+        <member name="P:BallDragDrop.Models.BallStateChangedEventArgs.NewState">
+            <summary>
+            Gets the state the ball transitioned to.
+            </summary>
+            <value>The new ball state.</value>
+        </member>
+        <member name="P:BallDragDrop.Models.BallStateChangedEventArgs.Trigger">
+            <summary>
+            Gets the trigger that caused the state transition.
+            </summary>
+            <value>The trigger that initiated the state change.</value>
+        </member>
+        <member name="P:BallDragDrop.Models.BallStateChangedEventArgs.Timestamp">
+            <summary>
+            Gets the timestamp when the state transition occurred.
+            </summary>
+            <value>The date and time of the state transition.</value>
+        </member>
+        <member name="M:BallDragDrop.Models.BallStateChangedEventArgs.#ctor(BallDragDrop.Models.BallState,BallDragDrop.Models.BallState,BallDragDrop.Models.BallTrigger)">
+            <summary>
+            Initializes a new instance of the <see cref="T:BallDragDrop.Models.BallStateChangedEventArgs"/> class.
+            </summary>
+            <param name="previousState">The state the ball was in before the transition.</param>
+            <param name="newState">The state the ball transitioned to.</param>
+            <param name="trigger">The trigger that caused the state transition.</param>
+        </member>
+        <member name="T:BallDragDrop.Models.BallStateConfiguration">
+            <summary>
+            Configuration settings for the ball state machine behavior.
+            This class provides configurable parameters that control how the state machine
+            operates, including thresholds, timing, and feature toggles.
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.BallStateConfiguration.VelocityThreshold">
+            <summary>
+            Gets or sets the velocity threshold below which the ball transitions from Thrown to Idle state.
+            When the ball's velocity magnitude drops below this value, it will automatically
+            transition back to the Idle state.
+            </summary>
+            <value>The velocity threshold in pixels per second. Default is 50.0.</value>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            Thrown when the value is negative or zero.
+            </exception>
+        </member>
+        <member name="P:BallDragDrop.Models.BallStateConfiguration.StateTransitionDelay">
+            <summary>
+            Gets or sets the minimum delay between state transitions.
+            This prevents rapid state transitions that could cause instability
+            or poor user experience.
+            </summary>
+            <value>The state transition delay. Default is 100 milliseconds.</value>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            Thrown when the value is negative.
+            </exception>
+        </member>
+        <member name="P:BallDragDrop.Models.BallStateConfiguration.EnableStateLogging">
+            <summary>
+            Gets or sets a value indicating whether state transitions should be logged.
+            When enabled, all state transitions will be logged for debugging and monitoring purposes.
+            </summary>
+            <value><c>true</c> if state logging is enabled; otherwise, <c>false</c>. Default is <c>true</c>.</value>
+        </member>
+        <member name="P:BallDragDrop.Models.BallStateConfiguration.EnableVisualFeedback">
+            <summary>
+            Gets or sets a value indicating whether visual feedback should be provided for state changes.
+            When enabled, the ball will display visual indicators that reflect its current state.
+            </summary>
+            <value><c>true</c> if visual feedback is enabled; otherwise, <c>false</c>. Default is <c>true</c>.</value>
+        </member>
+        <member name="P:BallDragDrop.Models.BallStateConfiguration.EnableTransitionValidation">
+            <summary>
+            Gets or sets a value indicating whether state transition validation should be performed.
+            When enabled, the state machine will validate transitions and reject invalid ones.
+            Disabling this can improve performance but may allow invalid state transitions.
+            </summary>
+            <value><c>true</c> if transition validation is enabled; otherwise, <c>false</c>. Default is <c>true</c>.</value>
+        </member>
+        <member name="P:BallDragDrop.Models.BallStateConfiguration.EnableAsyncNotifications">
+            <summary>
+            Gets or sets a value indicating whether observer notifications should be sent asynchronously.
+            When enabled, state change notifications to observers will be sent on a background thread
+            to prevent blocking the state machine operations.
+            </summary>
+            <value><c>true</c> if async notifications are enabled; otherwise, <c>false</c>. Default is <c>false</c>.</value>
+        </member>
+        <member name="M:BallDragDrop.Models.BallStateConfiguration.IsValid">
+            <summary>
+            Validates the current configuration settings.
+            This method checks that all configuration values are within acceptable ranges
+            and that the configuration is internally consistent.
+            </summary>
+            <returns><c>true</c> if the configuration is valid; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.BallStateConfiguration.CreateDefault">
+            <summary>
+            Creates a copy of the current configuration with default values restored.
+            This method is useful for resetting configuration to known good defaults.
+            </summary>
+            <returns>A new <see cref="T:BallDragDrop.Models.BallStateConfiguration"/> instance with default values.</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.BallStateConfiguration.ToString">
+            <summary>
+            Returns a string representation of the configuration for debugging purposes.
+            </summary>
+            <returns>A string containing the current configuration values.</returns>
+        </member>
+        <member name="T:BallDragDrop.Models.BallTrigger">
+            <summary>
+            Represents the triggers that can cause state transitions in the ball state machine.
+            These triggers correspond to user actions and system events that change the ball's state.
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.BallTrigger.MouseDown">
+            <summary>
+            Triggered when the user presses the mouse button down on the ball.
+            This trigger causes the transition from Idle state to Held state,
+            indicating that the user has started interacting with the ball.
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.BallTrigger.Release">
+            <summary>
+            Triggered when the user releases the mouse button after holding the ball.
+            This trigger causes the transition from Held state to Thrown state,
+            indicating that the ball has been released and should be subject to physics.
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.BallTrigger.VelocityBelowThreshold">
+            <summary>
+            Triggered automatically when the ball's velocity drops below the configured threshold.
+            This trigger causes the transition from Thrown state back to Idle state,
+            indicating that the ball has come to rest and is no longer in motion.
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.BallTrigger.Reset">
+            <summary>
+            Triggered when the user activates the reset function (e.g., through menu or keyboard shortcut).
+            This trigger causes the transition from any state back to Idle state,
+            resetting the ball to its initial position and clearing all velocity.
+            </summary>
+        </member>
         <member name="T:BallDragDrop.Models.DualTimerCoordinationMetrics">
             <summary>
             Comprehensive metrics for dual timer system coordination
@@ -1321,7 +1669,7 @@
             <param name="bounceFactor">Bounce elasticity factor (0-1 where 1 is perfect bounce)</param>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown when friction coefficient or bounce factor is not between 0 and 1</exception>
         </member>
-        <member name="M:BallDragDrop.Models.PhysicsEngine.UpdateBall(BallDragDrop.Models.BallModel,System.Double,System.Double,System.Double,System.Double,System.Double)">
+        <member name="M:BallDragDrop.Models.PhysicsEngine.UpdateBall(BallDragDrop.Models.BallModel,System.Double,System.Double,System.Double,System.Double,System.Double,BallDragDrop.Models.BallState,BallDragDrop.Models.BallStateConfiguration)">
             <summary>
             Updates the ball's position and velocity based on physics calculations.
             </summary>
@@ -1331,7 +1679,9 @@
             <param name="minY">Minimum Y boundary</param>
             <param name="maxX">Maximum X boundary</param>
             <param name="maxY">Maximum Y boundary</param>
-            <returns>A tuple containing whether the ball is still moving and which boundaries were hit</returns>
+            <param name="currentState">Current state of the ball for state-dependent physics behavior</param>
+            <param name="stateConfiguration">Configuration for state machine behavior including velocity threshold</param>
+            <returns>A tuple containing whether the ball is still moving, which boundaries were hit, and whether velocity dropped below threshold</returns>
         </member>
         <member name="M:BallDragDrop.Models.PhysicsEngine.HandleCollisions(BallDragDrop.Models.BallModel,System.Double@,System.Double@,System.Double,System.Double,System.Double,System.Double)">
             <summary>
@@ -1434,6 +1784,35 @@
             <param name="value">The value to check</param>
             <returns>True if the value is valid, false otherwise</returns>
         </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.ShouldApplyPhysics(BallDragDrop.Models.BallState)">
+            <summary>
+            Determines if physics calculations should be applied based on the ball state
+            </summary>
+            <param name="state">Current ball state</param>
+            <returns>True if physics should be applied, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.ShouldCheckVelocityThreshold(BallDragDrop.Models.BallState)">
+            <summary>
+            Determines if velocity threshold checking should be performed based on the ball state
+            </summary>
+            <param name="state">Current ball state</param>
+            <returns>True if velocity threshold should be checked, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.CalculateVelocityMagnitude(BallDragDrop.Models.BallModel)">
+            <summary>
+            Calculates the velocity magnitude of the ball
+            </summary>
+            <param name="ball">The ball model</param>
+            <returns>The velocity magnitude</returns>
+        </member>
+        <member name="M:BallDragDrop.Models.PhysicsEngine.IsVelocityBelowThreshold(BallDragDrop.Models.BallModel,BallDragDrop.Models.BallStateConfiguration)">
+            <summary>
+            Checks if the ball's velocity is below the configured threshold
+            </summary>
+            <param name="ball">The ball model</param>
+            <param name="stateConfiguration">State configuration containing velocity threshold</param>
+            <returns>True if velocity is below threshold, false otherwise</returns>
+        </member>
         <member name="T:BallDragDrop.Models.TimerPerformanceMetrics">
             <summary>
             Performance metrics for the dual timer system
@@ -1500,6 +1879,113 @@
             Returns a string representation of the performance metrics
             </summary>
             <returns>Formatted performance metrics string</returns>
+        </member>
+        <member name="T:BallDragDrop.Services.BallStateMachine">
+            <summary>
+            Implementation of the ball state machine using the Stateless library.
+            Manages state transitions for the ball and provides observer notifications.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.BallStateMachine.#ctor(BallDragDrop.Contracts.ILogService,BallDragDrop.Models.BallStateConfiguration)">
+            <summary>
+            Initializes a new instance of the <see cref="T:BallDragDrop.Services.BallStateMachine"/> class.
+            </summary>
+            <param name="logService">The logging service for state transition logging.</param>
+            <param name="configuration">The configuration settings for the state machine.</param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when <paramref name="logService"/> or <paramref name="configuration"/> is null.
+            </exception>
+        </member>
+        <member name="P:BallDragDrop.Services.BallStateMachine.CurrentState">
+            <summary>
+            Gets the current state of the ball.
+            </summary>
+        </member>
+        <member name="E:BallDragDrop.Services.BallStateMachine.StateChanged">
+            <summary>
+            Occurs when the ball state changes.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.BallStateMachine.Fire(BallDragDrop.Models.BallTrigger)">
+            <summary>
+            Fires the specified trigger to attempt a state transition.
+            </summary>
+            <param name="trigger">The trigger to fire.</param>
+            <exception cref="T:System.InvalidOperationException">
+            Thrown when the trigger is not valid for the current state.
+            </exception>
+        </member>
+        <member name="M:BallDragDrop.Services.BallStateMachine.CanFire(BallDragDrop.Models.BallTrigger)">
+            <summary>
+            Determines whether the specified trigger can be fired in the current state.
+            </summary>
+            <param name="trigger">The trigger to check.</param>
+            <returns>
+            <c>true</c> if the trigger can be fired in the current state; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:BallDragDrop.Services.BallStateMachine.Subscribe(BallDragDrop.Contracts.IBallStateObserver)">
+            <summary>
+            Subscribes an observer to receive state change notifications.
+            </summary>
+            <param name="observer">The observer to subscribe.</param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when <paramref name="observer"/> is null.
+            </exception>
+        </member>
+        <member name="M:BallDragDrop.Services.BallStateMachine.Unsubscribe(BallDragDrop.Contracts.IBallStateObserver)">
+            <summary>
+            Unsubscribes an observer from state change notifications.
+            </summary>
+            <param name="observer">The observer to unsubscribe.</param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when <paramref name="observer"/> is null.
+            </exception>
+        </member>
+        <member name="M:BallDragDrop.Services.BallStateMachine.ConfigureStateMachine">
+            <summary>
+            Configures the state machine with valid state transitions.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.BallStateMachine.NotifyObservers(BallDragDrop.Models.BallState,BallDragDrop.Models.BallState,BallDragDrop.Models.BallTrigger)">
+            <summary>
+            Notifies all registered observers of a state change.
+            </summary>
+            <param name="previousState">The previous state.</param>
+            <param name="newState">The new state.</param>
+            <param name="trigger">The trigger that caused the change.</param>
+        </member>
+        <member name="M:BallDragDrop.Services.BallStateMachine.NotifyObserversSync(System.Collections.Generic.List{BallDragDrop.Contracts.IBallStateObserver},BallDragDrop.Models.BallState,BallDragDrop.Models.BallState,BallDragDrop.Models.BallTrigger)">
+            <summary>
+            Synchronously notifies observers of a state change.
+            </summary>
+            <param name="observers">The list of observers to notify.</param>
+            <param name="previousState">The previous state.</param>
+            <param name="newState">The new state.</param>
+            <param name="trigger">The trigger that caused the change.</param>
+        </member>
+        <member name="M:BallDragDrop.Services.BallStateMachine.ValidateStateConsistency">
+            <summary>
+            Validates the current state consistency of the state machine.
+            This method checks that the state machine is in a valid state and can perform expected operations.
+            </summary>
+            <returns><c>true</c> if the state machine is consistent; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.BallStateMachine.RecoverToSafeState">
+            <summary>
+            Attempts to recover the state machine to a safe state when errors are detected.
+            This method should be called when state inconsistencies are detected or when
+            the state machine encounters unrecoverable errors.
+            </summary>
+            <returns><c>true</c> if recovery was successful; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.BallStateMachine.HandleStateTransitionError(System.Exception,BallDragDrop.Models.BallTrigger,BallDragDrop.Models.BallState)">
+            <summary>
+            Handles state transition errors by logging them and attempting recovery if necessary.
+            </summary>
+            <param name="ex">The exception that occurred during state transition.</param>
+            <param name="trigger">The trigger that caused the error.</param>
+            <param name="currentState">The current state when the error occurred.</param>
         </member>
         <member name="T:BallDragDrop.Services.ConfigurationService">
             <summary>
@@ -3011,7 +3497,7 @@
         </member>
         <member name="T:BallDragDrop.ViewModels.BallViewModel">
             <summary>
-            View model for the ball, implementing INotifyPropertyChanged for UI binding
+            View model for the ball, implementing INotifyPropertyChanged for UI binding and IBallStateObserver for state machine integration
             </summary>
         </member>
         <member name="P:BallDragDrop.ViewModels.BallViewModel.MouseDownCommand">
@@ -3067,6 +3553,7 @@
         <member name="P:BallDragDrop.ViewModels.BallViewModel.IsDragging">
             <summary>
             Gets or sets whether the ball is currently being dragged
+            This property reflects the Held state from the state machine
             </summary>
         </member>
         <member name="P:BallDragDrop.ViewModels.BallViewModel.CurrentCursor">
@@ -3099,21 +3586,73 @@
             Gets or sets whether to show the bounding box for debugging
             </summary>
         </member>
-        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(BallDragDrop.Contracts.ILogService,BallDragDrop.Services.ImageService,BallDragDrop.Contracts.IConfigurationService)">
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.CurrentState">
+            <summary>
+            Gets the current state of the ball from the state machine
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.IsInIdleState">
+            <summary>
+            Gets a value indicating whether the ball is in the Idle state
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.IsInHeldState">
+            <summary>
+            Gets a value indicating whether the ball is in the Held state
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.IsInThrownState">
+            <summary>
+            Gets a value indicating whether the ball is in the Thrown state
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.StateOpacity">
+            <summary>
+            Gets the visual opacity for the ball based on its current state
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.StateScale">
+            <summary>
+            Gets the visual scale factor for the ball based on its current state
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.StateGlowRadius">
+            <summary>
+            Gets the visual glow effect intensity for the ball based on its current state
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.StateGlowColor">
+            <summary>
+            Gets the visual glow color for the ball based on its current state
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.StateBorderThickness">
+            <summary>
+            Gets the visual border thickness for the ball based on its current state
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.StateBorderColor">
+            <summary>
+            Gets the visual border color for the ball based on its current state
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(BallDragDrop.Contracts.ILogService,BallDragDrop.Contracts.IBallStateMachine,BallDragDrop.Services.ImageService,BallDragDrop.Contracts.IConfigurationService)">
             <summary>
             Initializes a new instance of the BallViewModel class
             </summary>
             <param name="logService">Logging service for tracking user interactions</param>
+            <param name="stateMachine">State machine for managing ball state transitions</param>
             <param name="imageService">Image service for loading and managing visual content</param>
             <param name="configurationService">Configuration service for accessing application settings</param>
         </member>
-        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(System.Double,System.Double,System.Double,BallDragDrop.Services.ImageService)">
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(System.Double,System.Double,System.Double,BallDragDrop.Contracts.IBallStateMachine,BallDragDrop.Services.ImageService)">
             <summary>
             Initializes a new instance of the BallViewModel class for testing
             </summary>
             <param name="x">Initial X position</param>
             <param name="y">Initial Y position</param>
             <param name="radius">Ball radius</param>
+            <param name="stateMachine">State machine for managing ball state transitions</param>
             <param name="imageService">Optional image service for testing</param>
         </member>
         <member name="F:BallDragDrop.ViewModels.BallViewModel._ballModel">
@@ -3134,6 +3673,11 @@
         <member name="F:BallDragDrop.ViewModels.BallViewModel._configurationService">
             <summary>
             Configuration service for accessing application settings
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._stateMachine">
+            <summary>
+            State machine for managing ball state transitions
             </summary>
         </member>
         <member name="F:BallDragDrop.ViewModels.BallViewModel._ballImage">
@@ -3238,6 +3782,13 @@
             <param name="initialX">Initial X position</param>
             <param name="initialY">Initial Y position</param>
             <param name="radius">Ball radius (if not provided, uses configuration default)</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.ResetBall(System.Double,System.Double)">
+            <summary>
+            Resets the ball to its initial state and position
+            </summary>
+            <param name="centerX">Center X position to reset to</param>
+            <param name="centerY">Center Y position to reset to</param>
         </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.LoadBallVisualAsync(System.String)">
             <summary>
@@ -3446,12 +3997,32 @@
             </summary>
             <param name="propertyName">Name of the property that changed</param>
         </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.ForcePositionUpdate">
+            <summary>
+            Forces PropertyChanged events for position properties even if values haven't changed
+            This is needed when the physics engine updates the model directly
+            </summary>
+        </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.ExtractAssetNameFromPath(System.String)">
             <summary>
             Extracts the asset name from a file path
             </summary>
             <param name="filePath">The file path to extract the asset name from</param>
             <returns>The extracted asset name, or "No Asset" if extraction fails</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.OnStateChanged(BallDragDrop.Models.BallState,BallDragDrop.Models.BallState,BallDragDrop.Models.BallTrigger)">
+            <summary>
+            Handles state change notifications from the ball state machine.
+            Updates UI properties and coordinates state-dependent behavior.
+            </summary>
+            <param name="previousState">The state the ball was in before the transition</param>
+            <param name="newState">The state the ball transitioned to</param>
+            <param name="trigger">The trigger that caused the state transition</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.Dispose">
+            <summary>
+            Disposes of resources and unsubscribes from the state machine
+            </summary>
         </member>
         <member name="T:BallDragDrop.ViewModels.RelayCommand`1">
             <summary>
@@ -3569,6 +4140,7 @@
         <member name="T:BallDragDrop.ViewModels.StatusBarViewModel">
             <summary>
             View model for the status bar, implementing INotifyPropertyChanged for UI binding
+            and IBallStateObserver for ball state change notifications
             </summary>
         </member>
         <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._logService">
@@ -3579,6 +4151,11 @@
         <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._performanceMonitor">
             <summary>
             Performance monitor service for FPS data
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._stateMachine">
+            <summary>
+            Ball state machine for tracking ball state changes
             </summary>
         </member>
         <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._ballViewModel">
@@ -3609,6 +4186,11 @@
         <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._statusText">
             <summary>
             Status text field
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._status">
+            <summary>
+            Status field for displaying ball state information
             </summary>
         </member>
         <member name="F:BallDragDrop.ViewModels.StatusBarViewModel._disposed">
@@ -3646,11 +4228,17 @@
             Gets or sets the status text
             </summary>
         </member>
-        <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.#ctor(BallDragDrop.Contracts.ILogService,BallDragDrop.Services.PerformanceMonitor)">
+        <member name="P:BallDragDrop.ViewModels.StatusBarViewModel.Status">
+            <summary>
+            Gets or sets the status field that displays ball state information
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.#ctor(BallDragDrop.Contracts.ILogService,BallDragDrop.Contracts.IBallStateMachine,BallDragDrop.Services.PerformanceMonitor)">
             <summary>
             Initializes a new instance of the StatusBarViewModel class
             </summary>
             <param name="logService">Logging service for tracking status bar operations</param>
+            <param name="stateMachine">Ball state machine for tracking ball state changes</param>
             <param name="performanceMonitor">Performance monitor service for FPS data</param>
         </member>
         <member name="E:BallDragDrop.ViewModels.StatusBarViewModel.PropertyChanged">
@@ -3692,6 +4280,21 @@
             <param name="fps">The FPS value to sanitize</param>
             <returns>A sanitized FPS value</returns>
         </member>
+        <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.FormatBallStateForDisplay(BallDragDrop.Models.BallState)">
+            <summary>
+            Formats the ball state for display in the status bar
+            </summary>
+            <param name="state">The ball state to format</param>
+            <returns>A formatted string representation of the ball state</returns>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.OnStateChanged(BallDragDrop.Models.BallState,BallDragDrop.Models.BallState,BallDragDrop.Models.BallTrigger)">
+            <summary>
+            Handles ball state changes from the state machine
+            </summary>
+            <param name="previousState">The previous ball state</param>
+            <param name="newState">The new ball state</param>
+            <param name="trigger">The trigger that caused the state change</param>
+        </member>
         <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.OnPropertyChanged(System.String)">
             <summary>
             Raises the PropertyChanged event
@@ -3727,6 +4330,11 @@
             Logging service for the MainWindow
             </summary>
         </member>
+        <member name="F:BallDragDrop.Views.MainWindow._ballStateConfiguration">
+            <summary>
+            Ball state configuration for physics engine
+            </summary>
+        </member>
         <member name="M:BallDragDrop.Views.MainWindow.#ctor">
             <summary>
             Initializes a new instance of the MainWindow class
@@ -3736,6 +4344,14 @@
             <summary>
             Initializes the DataContext with MainWindowViewModel
             </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.OnStateChanged(BallDragDrop.Models.BallState,BallDragDrop.Models.BallState,BallDragDrop.Models.BallTrigger)">
+            <summary>
+            Handles state change notifications from the ball state machine
+            </summary>
+            <param name="previousState">The previous state</param>
+            <param name="newState">The new state</param>
+            <param name="trigger">The trigger that caused the state change</param>
         </member>
         <member name="F:BallDragDrop.Views.MainWindow._physicsEngine">
             <summary>
@@ -3927,33 +4543,6 @@
             <param name="animationMetrics">Animation timer metrics</param>
             <returns>Coordination efficiency percentage</returns>
         </member>
-        <member name="M:BallDragDrop.Views.MainWindow.UpdateBallPositionToMouse(BallDragDrop.ViewModels.BallViewModel,System.Windows.Point)">
-            <summary>
-            Updates the ball position to follow the mouse cursor
-            </summary>
-            <param name="viewModel">The ball view model</param>
-            <param name="mousePosition">The current mouse position</param>
-        </member>
-        <member name="M:BallDragDrop.Views.MainWindow.UpdateCursorForPosition(BallDragDrop.ViewModels.BallViewModel,System.Windows.Point)">
-            <summary>
-            Updates the cursor based on the mouse position relative to the ball
-            </summary>
-            <param name="viewModel">The ball view model</param>
-            <param name="canvasPosition">The mouse position relative to the canvas</param>
-        </member>
-        <member name="M:BallDragDrop.Views.MainWindow.StoreMousePosition(System.Windows.Point,System.DateTime)">
-            <summary>
-            Stores the current mouse position and timestamp in the history arrays
-            </summary>
-            <param name="position">Current mouse position</param>
-            <param name="timestamp">Current timestamp</param>
-        </member>
-        <member name="M:BallDragDrop.Views.MainWindow.CalculateVelocityFromHistory">
-            <summary>
-            Calculates velocity from the mouse movement history
-            </summary>
-            <returns>Velocity in X and Y directions</returns>
-        </member>
         <member name="M:BallDragDrop.Views.MainWindow.ConstrainToWindowBoundaries(System.Double,System.Double,System.Double)">
             <summary>
             Ensures the ball stays within the window boundaries
@@ -4019,6 +4608,33 @@
             <param name="sender">The source of the event</param>
             <param name="e">Event data</param>
         </member>
+        <member name="M:BallDragDrop.Views.MainWindow.StoreMousePosition(System.Windows.Point,System.DateTime)">
+            <summary>
+            Stores the current mouse position and timestamp in the history arrays
+            </summary>
+            <param name="position">Current mouse position</param>
+            <param name="timestamp">Current timestamp</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.CalculateVelocityFromHistory">
+            <summary>
+            Calculates velocity from the mouse position history
+            </summary>
+            <returns>Velocity as (X, Y) tuple</returns>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.UpdateBallPositionToMouse(BallDragDrop.ViewModels.BallViewModel,System.Windows.Point)">
+            <summary>
+            Updates the ball position to match the mouse position
+            </summary>
+            <param name="ballViewModel">The ball view model</param>
+            <param name="mousePosition">The mouse position</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.UpdateCursorForPosition(BallDragDrop.ViewModels.BallViewModel,System.Windows.Point)">
+            <summary>
+            Updates the cursor based on the ball position and state
+            </summary>
+            <param name="ballViewModel">The ball view model</param>
+            <param name="position">The current position</param>
+        </member>
         <member name="F:BallDragDrop.Views.MainWindow.MainCanvas">
             <summary>
             MainCanvas Name Field
@@ -4050,6 +4666,68 @@
             <returns>The value plus the offset, or the original value if conversion fails</returns>
         </member>
         <member name="M:BallDragDrop.Views.OffsetConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts back (not implemented)
+            </summary>
+            <param name="value">The value to convert back</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The parameter</param>
+            <param name="culture">The culture info</param>
+            <returns>Not implemented</returns>
+            <exception cref="T:System.NotImplementedException">This method is not implemented</exception>
+        </member>
+        <member name="T:BallDragDrop.Views.ColorToBrushConverter">
+            <summary>
+            Converter to convert Color to SolidColorBrush for XAML binding
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.ColorToBrushConverter.Instance">
+            <summary>
+            Singleton instance of the ColorToBrushConverter
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.ColorToBrushConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts a Color to a SolidColorBrush
+            </summary>
+            <param name="value">The Color value to convert</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The parameter (not used)</param>
+            <param name="culture">The culture info</param>
+            <returns>A SolidColorBrush with the specified color</returns>
+        </member>
+        <member name="M:BallDragDrop.Views.ColorToBrushConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts back (not implemented)
+            </summary>
+            <param name="value">The value to convert back</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The parameter</param>
+            <param name="culture">The culture info</param>
+            <returns>Not implemented</returns>
+            <exception cref="T:System.NotImplementedException">This method is not implemented</exception>
+        </member>
+        <member name="T:BallDragDrop.Views.ColorToColorConverter">
+            <summary>
+            Converter to convert Color to Color for XAML binding (identity converter)
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.ColorToColorConverter.Instance">
+            <summary>
+            Singleton instance of the ColorToColorConverter
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.ColorToColorConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts a Color to a Color (identity conversion)
+            </summary>
+            <param name="value">The Color value to convert</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The parameter (not used)</param>
+            <param name="culture">The culture info</param>
+            <returns>The same Color value</returns>
+        </member>
+        <member name="M:BallDragDrop.Views.ColorToColorConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
             <summary>
             Converts back (not implemented)
             </summary>

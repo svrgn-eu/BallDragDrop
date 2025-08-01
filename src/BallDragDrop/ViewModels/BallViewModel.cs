@@ -10,13 +10,14 @@ using System.Windows.Threading;
 using BallDragDrop.Models;
 using BallDragDrop.Services;
 using BallDragDrop.Contracts;
+using BallDragDrop.Commands;
 
 namespace BallDragDrop.ViewModels
 {
     /// <summary>
-    /// View model for the ball, implementing INotifyPropertyChanged for UI binding
+    /// View model for the ball, implementing INotifyPropertyChanged for UI binding and IBallStateObserver for state machine integration
     /// </summary>
-    public class BallViewModel : INotifyPropertyChanged
+    public class BallViewModel : INotifyPropertyChanged, IBallStateObserver, IDisposable
     {
         #region Properties
 
@@ -45,8 +46,23 @@ namespace BallDragDrop.ViewModels
             {
                 if (_ballModel.X != value)
                 {
+                    double oldValue = _ballModel.X;
                     _ballModel.X = value;
                     OnPropertyChanged();
+                    
+                    // Debug logging to verify X property updates and PropertyChanged firing
+                    if (_logService != null && DateTime.Now.Millisecond % 100 < 20)
+                    {
+                        _logService.LogInformation($"PROPERTY UPDATE: X changed from {oldValue:F2} to {value:F2}, Left={Left:F2}");
+                    }
+                }
+                else
+                {
+                    // Debug: Log when X setter is called but value doesn't change
+                    if (_logService != null && DateTime.Now.Millisecond % 200 < 20)
+                    {
+                        _logService.LogWarning($"PROPERTY NO-CHANGE: X setter called with same value {value:F2}");
+                    }
                 }
             }
         }
@@ -61,8 +77,23 @@ namespace BallDragDrop.ViewModels
             {
                 if (_ballModel.Y != value)
                 {
+                    double oldValue = _ballModel.Y;
                     _ballModel.Y = value;
                     OnPropertyChanged();
+                    
+                    // Debug logging to verify Y property updates and PropertyChanged firing
+                    if (_logService != null && DateTime.Now.Millisecond % 100 < 20)
+                    {
+                        _logService.LogInformation($"PROPERTY UPDATE: Y changed from {oldValue:F2} to {value:F2}, Top={Top:F2}");
+                    }
+                }
+                else
+                {
+                    // Debug: Log when Y setter is called but value doesn't change
+                    if (_logService != null && DateTime.Now.Millisecond % 200 < 20)
+                    {
+                        _logService.LogWarning($"PROPERTY NO-CHANGE: Y setter called with same value {value:F2}");
+                    }
                 }
             }
         }
@@ -149,10 +180,11 @@ namespace BallDragDrop.ViewModels
 
         /// <summary>
         /// Gets or sets whether the ball is currently being dragged
+        /// This property reflects the Held state from the state machine
         /// </summary>
         public bool IsDragging
         {
-            get => _isDragging;
+            get => _stateMachine?.CurrentState == BallState.Held || _isDragging;
             set
             {
                 if (_isDragging != value)
@@ -228,6 +260,128 @@ namespace BallDragDrop.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets the current state of the ball from the state machine
+        /// </summary>
+        public BallState CurrentState => _stateMachine?.CurrentState ?? BallState.Idle;
+
+        /// <summary>
+        /// Gets a value indicating whether the ball is in the Idle state
+        /// </summary>
+        public bool IsInIdleState => CurrentState == BallState.Idle;
+
+        /// <summary>
+        /// Gets a value indicating whether the ball is in the Held state
+        /// </summary>
+        public bool IsInHeldState => CurrentState == BallState.Held;
+
+        /// <summary>
+        /// Gets a value indicating whether the ball is in the Thrown state
+        /// </summary>
+        public bool IsInThrownState => CurrentState == BallState.Thrown;
+
+        /// <summary>
+        /// Gets the visual opacity for the ball based on its current state
+        /// </summary>
+        public double StateOpacity
+        {
+            get
+            {
+                return CurrentState switch
+                {
+                    BallState.Idle => 1.0,      // Full opacity when idle
+                    BallState.Held => 0.8,      // Slightly transparent when held
+                    BallState.Thrown => 1.0,    // Full opacity when thrown
+                    _ => 1.0
+                };
+            }
+        }
+
+        /// <summary>
+        /// Gets the visual scale factor for the ball based on its current state
+        /// </summary>
+        public double StateScale
+        {
+            get
+            {
+                return CurrentState switch
+                {
+                    BallState.Idle => 1.0,      // Normal size when idle
+                    BallState.Held => 1.1,      // Slightly larger when held
+                    BallState.Thrown => 1.0,    // Normal size when thrown
+                    _ => 1.0
+                };
+            }
+        }
+
+        /// <summary>
+        /// Gets the visual glow effect intensity for the ball based on its current state
+        /// </summary>
+        public double StateGlowRadius
+        {
+            get
+            {
+                return CurrentState switch
+                {
+                    BallState.Idle => 0.0,      // No glow when idle
+                    BallState.Held => 8.0,      // Glow when held
+                    BallState.Thrown => 4.0,    // Subtle glow when thrown
+                    _ => 0.0
+                };
+            }
+        }
+
+        /// <summary>
+        /// Gets the visual glow color for the ball based on its current state
+        /// </summary>
+        public Color StateGlowColor
+        {
+            get
+            {
+                return CurrentState switch
+                {
+                    BallState.Idle => Colors.Transparent,     // No glow when idle
+                    BallState.Held => Colors.LightBlue,       // Blue glow when held
+                    BallState.Thrown => Colors.Orange,        // Orange glow when thrown
+                    _ => Colors.Transparent
+                };
+            }
+        }
+
+        /// <summary>
+        /// Gets the visual border thickness for the ball based on its current state
+        /// </summary>
+        public double StateBorderThickness
+        {
+            get
+            {
+                return CurrentState switch
+                {
+                    BallState.Idle => 0.0,      // No border when idle
+                    BallState.Held => 2.0,      // Thick border when held
+                    BallState.Thrown => 1.0,    // Thin border when thrown
+                    _ => 0.0
+                };
+            }
+        }
+
+        /// <summary>
+        /// Gets the visual border color for the ball based on its current state
+        /// </summary>
+        public Color StateBorderColor
+        {
+            get
+            {
+                return CurrentState switch
+                {
+                    BallState.Idle => Colors.Transparent,     // No border when idle
+                    BallState.Held => Colors.Blue,            // Blue border when held
+                    BallState.Thrown => Colors.Red,           // Red border when thrown
+                    _ => Colors.Transparent
+                };
+            }
+        }
+
         #endregion Properties
 
         #region Construction
@@ -236,11 +390,13 @@ namespace BallDragDrop.ViewModels
         /// Initializes a new instance of the BallViewModel class
         /// </summary>
         /// <param name="logService">Logging service for tracking user interactions</param>
+        /// <param name="stateMachine">State machine for managing ball state transitions</param>
         /// <param name="imageService">Image service for loading and managing visual content</param>
         /// <param name="configurationService">Configuration service for accessing application settings</param>
-        public BallViewModel(ILogService logService, ImageService imageService = null, IConfigurationService configurationService = null)
+        public BallViewModel(ILogService logService, IBallStateMachine stateMachine, ImageService imageService = null, IConfigurationService configurationService = null)
         {
             _logService = logService ?? throw new ArgumentNullException(nameof(logService));
+            _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
             _imageService = imageService ?? new ImageService(logService);
             _configurationService = configurationService;
             
@@ -276,6 +432,9 @@ namespace BallDragDrop.ViewModels
             MouseMoveCommand = new RelayCommand<MouseEventArgs>(OnMouseMove);
             MouseUpCommand = new RelayCommand<MouseEventArgs>(OnMouseUp);
 
+            // Subscribe to state machine notifications
+            _stateMachine.Subscribe(this);
+
             // Load default ball image asynchronously (fire-and-forget with error handling)
             _ = Task.Run(async () =>
             {
@@ -298,11 +457,13 @@ namespace BallDragDrop.ViewModels
         /// <param name="x">Initial X position</param>
         /// <param name="y">Initial Y position</param>
         /// <param name="radius">Ball radius</param>
+        /// <param name="stateMachine">State machine for managing ball state transitions</param>
         /// <param name="imageService">Optional image service for testing</param>
-        public BallViewModel(double x, double y, double radius, ImageService imageService = null)
+        public BallViewModel(double x, double y, double radius, IBallStateMachine stateMachine = null, ImageService imageService = null)
         {
             // For testing, use a null log service or get from app
             _logService = GetLogServiceFromApp();
+            _stateMachine = stateMachine; // Allow null for testing
             _imageService = imageService ?? new ImageService(_logService);
             
             // Initialize with provided values
@@ -332,6 +493,9 @@ namespace BallDragDrop.ViewModels
             MouseDownCommand = new RelayCommand<MouseEventArgs>(OnMouseDown);
             MouseMoveCommand = new RelayCommand<MouseEventArgs>(OnMouseMove);
             MouseUpCommand = new RelayCommand<MouseEventArgs>(OnMouseUp);
+
+            // Subscribe to state machine notifications if available
+            _stateMachine?.Subscribe(this);
             
             _logService?.LogDebug("BallViewModel created for testing at position ({0}, {1}) with radius {2}", x, y, radius);
         }
@@ -365,6 +529,11 @@ namespace BallDragDrop.ViewModels
         /// Configuration service for accessing application settings
         /// </summary>
         private readonly IConfigurationService _configurationService;
+
+        /// <summary>
+        /// State machine for managing ball state transitions
+        /// </summary>
+        private readonly IBallStateMachine _stateMachine;
 
         /// <summary>
         /// Image source for the ball
@@ -492,6 +661,77 @@ namespace BallDragDrop.ViewModels
             
             _logService.LogDebug("BallViewModel initialized at position ({0}, {1}) with radius {2}", 
                 initialX, initialY, radius);
+        }
+
+        /// <summary>
+        /// Resets the ball to its initial state and position
+        /// </summary>
+        /// <param name="centerX">Center X position to reset to</param>
+        /// <param name="centerY">Center Y position to reset to</param>
+        public void ResetBall(double centerX, double centerY)
+        {
+            try
+            {
+                _logService?.LogDebug("ResetBall called with center position ({CenterX:F2}, {CenterY:F2})", centerX, centerY);
+
+                // Stop any ongoing animation
+                if (IsAnimated && _animationTimer.IsEnabled)
+                {
+                    _animationTimer.Stop();
+                    _logService?.LogDebug("Animation stopped during reset");
+                }
+
+                // Clear drag state
+                if (_isDragging)
+                {
+                    _isDragging = false;
+                    OnPropertyChanged(nameof(IsDragging));
+                    _logService?.LogDebug("Drag state cleared during reset");
+                }
+
+                // Clear mouse tracking history
+                _mouseHistoryCount = 0;
+                _logService?.LogDebug("Mouse tracking history cleared during reset");
+
+                // Reset ball position to center
+                _ballModel.X = centerX;
+                _ballModel.Y = centerY;
+
+                // Clear ball velocity
+                _ballModel.Stop();
+
+                // Notify property changes for position
+                OnPropertyChanged(nameof(X));
+                OnPropertyChanged(nameof(Y));
+                OnPropertyChanged(nameof(Left));
+                OnPropertyChanged(nameof(Top));
+
+                // Trigger state machine reset if available
+                if (_stateMachine != null && _stateMachine.CanFire(BallTrigger.Reset))
+                {
+                    _stateMachine.Fire(BallTrigger.Reset);
+                    _logService?.LogDebug("State machine reset triggered");
+                }
+                else
+                {
+                    _logService?.LogWarning("State machine not available or cannot fire Reset trigger");
+                }
+
+                // Restart animation if the content is animated
+                if (IsAnimated)
+                {
+                    _animationTimer.Start();
+                    _logService?.LogDebug("Animation restarted after reset");
+                }
+
+                _logService?.LogInformation("Ball reset completed - position: ({CenterX:F2}, {CenterY:F2}), state: {CurrentState}", 
+                    centerX, centerY, CurrentState);
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error during ball reset operation");
+                throw;
+            }
         }
 
         /// <summary>
@@ -1593,28 +1833,47 @@ namespace BallDragDrop.ViewModels
             // Check if the click is inside the ball
             if (_ballModel.ContainsPoint(position.X, position.Y))
             {
-                // Log user interaction
-                _logService?.LogInformation("User started dragging ball at position ({X}, {Y})", position.X, position.Y);
-                
-                // Start dragging
-                IsDragging = true;
-                _lastMousePosition = position;
-                _dragStartPosition = new Point(X, Y);
-                _lastUpdateTime = DateTime.Now;
+                // Only process mouse down if we can transition to Held state (from Idle or Thrown)
+                if (_stateMachine != null && _stateMachine.CanFire(BallTrigger.MouseDown))
+                {
+                    // Log user interaction
+                    _logService?.LogInformation("User started dragging ball at position ({X}, {Y})", position.X, position.Y);
+                    
+                    // Fire the MouseDown trigger to transition to Held state
+                    try
+                    {
+                        _stateMachine.Fire(BallTrigger.MouseDown);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        _logService?.LogError(ex, "Failed to transition to Held state on mouse down");
+                        return;
+                    }
 
-                // Stop any current movement
-                _ballModel.Stop();
+                    // Start dragging
+                    IsDragging = true;
+                    _lastMousePosition = position;
+                    _dragStartPosition = new Point(X, Y);
+                    _lastUpdateTime = DateTime.Now;
 
-                // Ensure animation continues during drag operations
-                EnsureAnimationContinuesDuringDrag();
+                    // Stop any current movement
+                    _ballModel.Stop();
 
-                // Capture the mouse
-                Mouse.Capture((IInputElement)e.Source);
-                
-                // Reset mouse history when starting a new drag
-                _mouseHistoryCount = 0;
-                
-                _logService?.LogDebug("Ball drag initiated - mouse captured, movement stopped, animation maintained");
+                    // Ensure animation continues during drag operations
+                    EnsureAnimationContinuesDuringDrag();
+
+                    // Capture the mouse
+                    Mouse.Capture((IInputElement)e.Source);
+                    
+                    // Reset mouse history when starting a new drag
+                    _mouseHistoryCount = 0;
+                    
+                    _logService?.LogDebug("Ball drag initiated - mouse captured, movement stopped, animation maintained");
+                }
+                else
+                {
+                    _logService?.LogDebug("Mouse down ignored - cannot transition to Held state from current state ({CurrentState}) or state machine unavailable", CurrentState);
+                }
             }
             else
             {
@@ -1659,8 +1918,8 @@ namespace BallDragDrop.ViewModels
             var position = e.GetPosition(null);
             var currentTime = DateTime.Now;
 
-            // If dragging, update the ball position and track movement history
-            if (IsDragging)
+            // Only allow dragging if we're in the Held state
+            if (IsDragging && (_stateMachine?.CurrentState == BallState.Held || _stateMachine == null))
             {
                 // Calculate the movement delta
                 double deltaX = position.X - _lastMousePosition.X;
@@ -1755,79 +2014,108 @@ namespace BallDragDrop.ViewModels
             {
                 var stopwatch = Stopwatch.StartNew();
                 
-                // Log the end of dragging
-                _logService?.LogInformation("User released ball at position ({X:F1}, {Y:F1})", X, Y);
-                
-                // Stop dragging
-                IsDragging = false;
-
-                // Release mouse capture
-                Mouse.Capture(null);
-
-                // Calculate velocity based on movement for throwing
-                if (e != null)
+                // Only process mouse up if we're in Held state and can transition to Thrown
+                if (_stateMachine != null && _stateMachine.CanFire(BallTrigger.Release))
                 {
-                    var currentPosition = e.GetPosition(null);
-                    var currentTime = DateTime.Now;
+                    // Log the end of dragging
+                    _logService?.LogInformation("User released ball at position ({X:F1}, {Y:F1})", X, Y);
                     
-                    // Store the final position in the history
-                    StoreMousePosition(currentPosition, currentTime);
-                    
-                    // Create a physics engine instance to calculate velocity
-                    var physicsEngine = new Models.PhysicsEngine();
-                    
-                    // Calculate velocity using the mouse movement history for more accuracy
-                    var (velocityX, velocityY) = physicsEngine.CalculateVelocityFromHistory(
-                        _mousePositionHistory, 
-                        _mouseTimestampHistory, 
-                        _mouseHistoryCount);
-                    
-                    // If we don't have enough history or the calculation failed, fall back to simple calculation
-                    if (Math.Abs(velocityX) < 0.001 && Math.Abs(velocityY) < 0.001 && _mouseHistoryCount > 1)
+                    // Check if velocity has already been set by MainWindow (preferred)
+                    // If not, calculate it here as fallback
+                    if (Math.Abs(_ballModel.VelocityX) < 0.001 && Math.Abs(_ballModel.VelocityY) < 0.001)
                     {
-                        // Calculate time elapsed since last update
-                        double timeElapsed = (currentTime - _lastUpdateTime).TotalSeconds;
-                        
-                        // Only calculate velocity if enough time has passed to avoid division by very small numbers
-                        if (timeElapsed > 0.001)
+                        // Calculate velocity based on movement for throwing (fallback)
+                        double velocityX = 0, velocityY = 0;
+                        if (e != null)
                         {
-                            // Calculate distance moved
-                            double deltaX = currentPosition.X - _lastMousePosition.X;
-                            double deltaY = currentPosition.Y - _lastMousePosition.Y;
+                            var currentPosition = e.GetPosition(null);
+                            var currentTime = DateTime.Now;
                             
-                            // Calculate velocity using simple method
-                            (velocityX, velocityY) = physicsEngine.CalculateVelocity(deltaX, deltaY, timeElapsed);
+                            // Store the final position in the history
+                            StoreMousePosition(currentPosition, currentTime);
+                            
+                            // Create a physics engine instance to calculate velocity
+                            var physicsEngine = new Models.PhysicsEngine();
+                            
+                            // Calculate velocity using the mouse movement history for more accuracy
+                            (velocityX, velocityY) = physicsEngine.CalculateVelocityFromHistory(
+                                _mousePositionHistory, 
+                                _mouseTimestampHistory, 
+                                _mouseHistoryCount);
+                            
+                            // If we don't have enough history or the calculation failed, fall back to simple calculation
+                            if (Math.Abs(velocityX) < 0.001 && Math.Abs(velocityY) < 0.001 && _mouseHistoryCount > 1)
+                            {
+                                // Calculate time elapsed since last update
+                                double timeElapsed = (currentTime - _lastUpdateTime).TotalSeconds;
+                                
+                                // Only calculate velocity if enough time has passed to avoid division by very small numbers
+                                if (timeElapsed > 0.001)
+                                {
+                                    // Calculate distance moved
+                                    double deltaX = currentPosition.X - _lastMousePosition.X;
+                                    double deltaY = currentPosition.Y - _lastMousePosition.Y;
+                                    
+                                    // Calculate velocity using simple method
+                                    (velocityX, velocityY) = physicsEngine.CalculateVelocity(deltaX, deltaY, timeElapsed);
+                                }
+                            }
+                            
+                            _lastMousePosition = currentPosition;
                         }
+
+                        // Apply the calculated velocity to the ball model
+                        _ballModel.SetVelocity(velocityX, velocityY);
                     }
                     
+                    // Debug logging for velocity (show the actual velocity on the ball model)
+                    _logService?.LogInformation("BALLVIEWMODEL - Final velocity before state transition: ({VelX:F2}, {VelY:F2})", _ballModel.VelocityX, _ballModel.VelocityY);
+
+                    // Fire the Release trigger to transition to Thrown state
+                    try
+                    {
+                        _stateMachine.Fire(BallTrigger.Release);
+                        _logService?.LogInformation("BALLVIEWMODEL - State transition to Thrown successful");
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        _logService?.LogError(ex, "Failed to transition to Thrown state on mouse up");
+                        // Fall back to stopping the ball if state transition fails
+                        _ballModel.Stop();
+                    }
+
+                    // Stop dragging
+                    IsDragging = false;
+
+                    // Release mouse capture
+                    Mouse.Capture(null);
+                    
+                    // Reset the mouse history count for the next drag
+                    _mouseHistoryCount = 0;
+
                     // Lower the threshold for throwing to make it easier to throw the ball
                     double throwThreshold = 100.0; // Reduced from default 200.0
                     
                     // Check if the movement is fast enough to be considered a throw
-                    if (physicsEngine.IsThrow(velocityX, velocityY, throwThreshold))
+                    var physicsEngine2 = new Models.PhysicsEngine();
+                    if (physicsEngine2.IsThrow(_ballModel.VelocityX, _ballModel.VelocityY, throwThreshold))
                     {
                         // Log the throw action
-                        _logService?.LogInformation("Ball thrown with velocity ({VelX:F1}, {VelY:F1})", velocityX, velocityY);
-                        
-                        // Apply the velocity to the ball model
-                        _ballModel.SetVelocity(velocityX, velocityY);
+                        _logService?.LogInformation("Ball thrown with velocity ({VelX:F1}, {VelY:F1})", _ballModel.VelocityX, _ballModel.VelocityY);
                     }
                     else
                     {
-                        // Not a throw, stop the ball
-                        _logService?.LogDebug("Ball dropped (velocity too low for throw): ({0:F1}, {1:F1})", velocityX, velocityY);
-                        _ballModel.Stop();
+                        // Not a throw, but still transition to thrown state briefly before settling
+                        _logService?.LogDebug("Ball dropped (velocity too low for throw): ({0:F1}, {1:F1})", _ballModel.VelocityX, _ballModel.VelocityY);
                     }
-                    
-                    _lastMousePosition = currentPosition;
-                    
-                    // Reset the mouse history count for the next drag
-                    _mouseHistoryCount = 0;
                 }
                 else
                 {
-                    // No event data, stop the ball
-                    _logService?.LogDebug("Ball released without event data - stopping movement");
+                    _logService?.LogDebug("Mouse up ignored - ball not in Held state or state machine unavailable");
+                    
+                    // Fallback behavior - stop dragging and stop the ball
+                    IsDragging = false;
+                    Mouse.Capture(null);
                     _ballModel.Stop();
                 }
                 
@@ -1846,20 +2134,57 @@ namespace BallDragDrop.ViewModels
         /// </summary>
         private void UpdateCursor()
         {
-            if (IsDragging)
+            if (_stateMachine != null)
             {
-                // When dragging the ball, show the "SizeAll" cursor to indicate movement
-                CurrentCursor = Cursors.SizeAll;
-            }
-            else if (_ballModel.ContainsPoint(_lastMousePosition.X, _lastMousePosition.Y))
-            {
-                // When hovering over the ball, show the "Hand" cursor to indicate it can be grabbed
-                CurrentCursor = Cursors.Hand;
+                // State-aware cursor logic
+                switch (_stateMachine.CurrentState)
+                {
+                    case BallState.Held:
+                        // When ball is held, show the "SizeAll" cursor to indicate movement
+                        CurrentCursor = Cursors.SizeAll;
+                        break;
+                    
+                    case BallState.Idle:
+                        if (_ballModel.ContainsPoint(_lastMousePosition.X, _lastMousePosition.Y))
+                        {
+                            // When hovering over idle ball, show the "Hand" cursor to indicate it can be grabbed
+                            CurrentCursor = Cursors.Hand;
+                        }
+                        else
+                        {
+                            // Default cursor when not interacting with idle ball
+                            CurrentCursor = Cursors.Arrow;
+                        }
+                        break;
+                    
+                    case BallState.Thrown:
+                        // When ball is thrown, show default cursor (can't interact)
+                        CurrentCursor = Cursors.Arrow;
+                        break;
+                    
+                    default:
+                        CurrentCursor = Cursors.Arrow;
+                        break;
+                }
             }
             else
             {
-                // Default cursor when not interacting with the ball
-                CurrentCursor = Cursors.Arrow;
+                // Fallback to original logic if state machine is not available
+                if (IsDragging)
+                {
+                    // When dragging the ball, show the "SizeAll" cursor to indicate movement
+                    CurrentCursor = Cursors.SizeAll;
+                }
+                else if (_ballModel.ContainsPoint(_lastMousePosition.X, _lastMousePosition.Y))
+                {
+                    // When hovering over the ball, show the "Hand" cursor to indicate it can be grabbed
+                    CurrentCursor = Cursors.Hand;
+                }
+                else
+                {
+                    // Default cursor when not interacting with the ball
+                    CurrentCursor = Cursors.Arrow;
+                }
             }
         }
 
@@ -1918,23 +2243,59 @@ namespace BallDragDrop.ViewModels
         /// <param name="propertyName">Name of the property that changed</param>
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
+            // Ensure PropertyChanged events are raised on the UI thread
+            if (System.Windows.Application.Current?.Dispatcher?.CheckAccess() == false)
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() => OnPropertyChanged(propertyName));
+                return;
+            }
+
+            // Debug: Log PropertyChanged events for position properties
+            if ((propertyName == nameof(X) || propertyName == nameof(Y)) && _logService != null && DateTime.Now.Millisecond % 150 < 20)
+            {
+                _logService.LogInformation("PROPERTYCHANGED: {PropertyName} event fired, HasSubscribers={HasSubscribers}", 
+                    propertyName, PropertyChanged != null);
+            }
+
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-            // Update dependent properties
+            // Update dependent properties (avoid infinite recursion by only notifying for primary properties)
             if (propertyName == nameof(X) || propertyName == nameof(Y) || propertyName == nameof(Radius))
             {
                 if (propertyName == nameof(X) || propertyName == nameof(Radius))
                 {
-                    OnPropertyChanged(nameof(Left));
-                    OnPropertyChanged(nameof(Width));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Left)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Width)));
+                    
+                    // Debug: Log dependent property notifications
+                    if (propertyName == nameof(X) && _logService != null && DateTime.Now.Millisecond % 150 < 20)
+                    {
+                        _logService.LogInformation("DEPENDENT PROPERTIES: Left and Width events fired for X change");
+                    }
                 }
 
                 if (propertyName == nameof(Y) || propertyName == nameof(Radius))
                 {
-                    OnPropertyChanged(nameof(Top));
-                    OnPropertyChanged(nameof(Height));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Top)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Height)));
+                    
+                    // Debug: Log dependent property notifications
+                    if (propertyName == nameof(Y) && _logService != null && DateTime.Now.Millisecond % 150 < 20)
+                    {
+                        _logService.LogInformation("DEPENDENT PROPERTIES: Top and Height events fired for Y change");
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// Forces PropertyChanged events for position properties even if values haven't changed
+        /// This is needed when the physics engine updates the model directly
+        /// </summary>
+        public void ForcePositionUpdate()
+        {
+            OnPropertyChanged(nameof(X));
+            OnPropertyChanged(nameof(Y));
         }
 
         /// <summary>
@@ -1971,6 +2332,90 @@ namespace BallDragDrop.ViewModels
             {
                 _logService?.LogError(ex, "Error extracting asset name from path: {FilePath}", filePath);
                 return "No Asset";
+            }
+        }
+
+        /// <summary>
+        /// Handles state change notifications from the ball state machine.
+        /// Updates UI properties and coordinates state-dependent behavior.
+        /// </summary>
+        /// <param name="previousState">The state the ball was in before the transition</param>
+        /// <param name="newState">The state the ball transitioned to</param>
+        /// <param name="trigger">The trigger that caused the state transition</param>
+        public void OnStateChanged(BallState previousState, BallState newState, BallTrigger trigger)
+        {
+            _logService?.LogDebug("Ball state changed from {PreviousState} to {NewState} via {Trigger}", 
+                previousState, newState, trigger);
+
+            // Notify UI of state property changes
+            OnPropertyChanged(nameof(CurrentState));
+            OnPropertyChanged(nameof(IsInIdleState));
+            OnPropertyChanged(nameof(IsInHeldState));
+            OnPropertyChanged(nameof(IsInThrownState));
+            OnPropertyChanged(nameof(IsDragging)); // Update IsDragging since it depends on state
+
+            // Notify UI of visual state property changes
+            OnPropertyChanged(nameof(StateOpacity));
+            OnPropertyChanged(nameof(StateScale));
+            OnPropertyChanged(nameof(StateGlowRadius));
+            OnPropertyChanged(nameof(StateGlowColor));
+            OnPropertyChanged(nameof(StateBorderThickness));
+            OnPropertyChanged(nameof(StateBorderColor));
+
+            // Handle state-specific behavior
+            switch (newState)
+            {
+                case BallState.Idle:
+                    // Ball has come to rest - ensure dragging is disabled
+                    if (_isDragging)
+                    {
+                        _isDragging = false;
+                        Mouse.Capture(null);
+                        _logService?.LogDebug("Dragging disabled - ball transitioned to Idle state");
+                    }
+                    break;
+
+                case BallState.Held:
+                    // Ball is being held - dragging behavior is now controlled by state
+                    _logService?.LogDebug("Ball is now in Held state - drag behavior enabled");
+                    break;
+
+                case BallState.Thrown:
+                    // Ball has been released and is in motion
+                    // Ensure dragging is disabled
+                    if (_isDragging)
+                    {
+                        _isDragging = false;
+                        Mouse.Capture(null);
+                        _logService?.LogDebug("Dragging disabled - ball transitioned to Thrown state");
+                    }
+                    break;
+            }
+
+            // Update cursor based on new state
+            UpdateCursor();
+        }
+
+        /// <summary>
+        /// Disposes of resources and unsubscribes from the state machine
+        /// </summary>
+        public void Dispose()
+        {
+            try
+            {
+                // Unsubscribe from state machine notifications
+                _stateMachine?.Unsubscribe(this);
+
+                // Stop animation timer
+                _animationTimer?.Stop();
+
+                // Note: EventThrottler doesn't implement IDisposable
+
+                _logService?.LogDebug("BallViewModel disposed");
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error disposing BallViewModel");
             }
         }
 

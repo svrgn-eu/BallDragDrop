@@ -48,7 +48,7 @@
                 <MenuItem Header="_Load GIF Animation..." Click="LoadGifAnimation_Click" />
                 <MenuItem Header="_Load Aseprite Animation..." Click="LoadAsepriteAnimation_Click" />
                 <Separator />
-                <MenuItem Header="Show _Bounding Box" IsCheckable="True" IsChecked="{Binding ShowBoundingBox, Mode=OneWay}" Click="ToggleBoundingBox_Click" />
+                <MenuItem Header="Show _Bounding Box" IsCheckable="True" IsChecked="{Binding BallViewModel.ShowBoundingBox, Mode=OneWay}" Click="ToggleBoundingBox_Click" />
             </MenuItem>
         </Menu>
 
@@ -59,7 +59,7 @@
                           FontWeight="Bold" Padding="5,2" />
             </StatusBarItem>
             <StatusBarItem MinWidth="100">
-                <TextBlock Text="{Binding StatusBarViewModel.StatusText, FallbackValue='Status: [Loading...]'}" 
+                <TextBlock Text="{Binding StatusBarViewModel.Status, FallbackValue='Status: [Loading...]'}" 
                           FontWeight="Bold" Padding="5,2" />
             </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right" MinWidth="150">
@@ -83,66 +83,88 @@
                 CacheMode="BitmapCache"
                 Grid.Row="1"
                 Margin="2">
-            <!-- Ball UI element -->
-            <Image x:Name="BallImage"
-                   Source="{Binding BallImage}"
-                   Width="{Binding Width}"
-                   Height="{Binding Height}"
-                   Canvas.Left="{Binding Left}"
-                   Canvas.Top="{Binding Top}"
-                   RenderOptions.BitmapScalingMode="HighQuality"
-                   RenderOptions.EdgeMode="Aliased"
-                   RenderOptions.ClearTypeHint="Enabled"
-                   MouseDown="BallImage_MouseDown"
-                   MouseUp="BallImage_MouseUp"
-                   Stretch="Uniform"
-                   RenderTransformOrigin="0.5,0.5"
-                   CacheMode="BitmapCache"
-                   SnapsToDevicePixels="True"
-                   UseLayoutRounding="True">
-                <Image.RenderTransform>
+            <!-- Ball UI element with state-dependent visual feedback -->
+            <Border x:Name="BallBorder"
+                    Width="{Binding BallViewModel.Width}"
+                    Height="{Binding BallViewModel.Height}"
+                    Canvas.Left="{Binding BallViewModel.Left, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                    Canvas.Top="{Binding BallViewModel.Top, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                    BorderThickness="{Binding BallViewModel.StateBorderThickness}"
+                    BorderBrush="{Binding BallViewModel.StateBorderColor, Converter={x:Static local:ColorToBrushConverter.Instance}}"
+                    CornerRadius="{Binding BallViewModel.Radius}"
+                    RenderTransformOrigin="0.5,0.5">
+                <Border.RenderTransform>
                     <TransformGroup>
-                        <ScaleTransform/>
+                        <ScaleTransform ScaleX="{Binding BallViewModel.StateScale}" ScaleY="{Binding BallViewModel.StateScale}"/>
                         <RotateTransform/>
                     </TransformGroup>
-                </Image.RenderTransform>
-                <Image.Effect>
+                </Border.RenderTransform>
+                <Border.Effect>
                     <DropShadowEffect ShadowDepth="3" Direction="315" Color="Black" Opacity="0.3" BlurRadius="5" RenderingBias="Performance"/>
-                </Image.Effect>
-                <Image.Style>
-                    <Style TargetType="Image">
-                        <Setter Property="RenderOptions.CacheInvalidationThresholdMinimum" Value="0.5" />
-                        <Setter Property="RenderOptions.CacheInvalidationThresholdMaximum" Value="2.0" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsAnimated}" Value="True">
-                                <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
-                                <Setter Property="RenderOptions.EdgeMode" Value="Unspecified" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding IsAnimated}" Value="False">
-                                <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
-                                <Setter Property="RenderOptions.EdgeMode" Value="Aliased" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Image.Style>
-            </Image>
+                </Border.Effect>
+                
+                <Image x:Name="BallImage"
+                       Source="{Binding BallViewModel.BallImage}"
+                       Opacity="{Binding BallViewModel.StateOpacity}"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       RenderOptions.EdgeMode="Aliased"
+                       RenderOptions.ClearTypeHint="Enabled"
+                       MouseDown="BallImage_MouseDown"
+                       MouseUp="BallImage_MouseUp"
+                       Stretch="Uniform"
+                       CacheMode="BitmapCache"
+                       SnapsToDevicePixels="True"
+                       UseLayoutRounding="True">
+                    <Image.Effect>
+                        <DropShadowEffect ShadowDepth="0" 
+                                          Direction="0" 
+                                          Color="{Binding BallViewModel.StateGlowColor, Converter={x:Static local:ColorToColorConverter.Instance}}" 
+                                          Opacity="0.8" 
+                                          BlurRadius="{Binding BallViewModel.StateGlowRadius}" 
+                                          RenderingBias="Performance"/>
+                    </Image.Effect>
+                    <Image.Style>
+                        <Style TargetType="Image">
+                            <Setter Property="RenderOptions.CacheInvalidationThresholdMinimum" Value="0.5" />
+                            <Setter Property="RenderOptions.CacheInvalidationThresholdMaximum" Value="2.0" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding BallViewModel.IsAnimated}" Value="True">
+                                    <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
+                                    <Setter Property="RenderOptions.EdgeMode" Value="Unspecified" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding BallViewModel.IsAnimated}" Value="False">
+                                    <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
+                                    <Setter Property="RenderOptions.EdgeMode" Value="Aliased" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+            </Border>
 
             <!-- Bounding box for debugging (shows the actual clickable area) -->
             <Rectangle x:Name="BoundingBoxRectangle"
-                       Width="{Binding Width}"
-                       Height="{Binding Height}"
-                       Canvas.Left="{Binding Left}"
-                       Canvas.Top="{Binding Top}"
+                       Width="{Binding BallViewModel.Width}"
+                       Height="{Binding BallViewModel.Height}"
+                       Canvas.Left="{Binding BallViewModel.Left, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                       Canvas.Top="{Binding BallViewModel.Top, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                        Stroke="Red"
                        StrokeThickness="2"
                        StrokeDashArray="5,3"
                        Fill="Transparent"
-                       IsHitTestVisible="False">
+                       IsHitTestVisible="False"
+                       RenderTransformOrigin="0.5,0.5">
+                <Rectangle.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform ScaleX="{Binding BallViewModel.StateScale}" ScaleY="{Binding BallViewModel.StateScale}"/>
+                        <RotateTransform/>
+                    </TransformGroup>
+                </Rectangle.RenderTransform>
                 <Rectangle.Style>
                     <Style TargetType="Rectangle">
                         <Setter Property="Visibility" Value="Collapsed" />
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding ShowBoundingBox}" Value="True">
+                            <DataTrigger Binding="{Binding BallViewModel.ShowBoundingBox}" Value="True">
                                 <Setter Property="Visibility" Value="Visible" />
                             </DataTrigger>
                         </Style.Triggers>
@@ -154,15 +176,15 @@
             <Ellipse x:Name="CenterPointIndicator"
                      Width="4"
                      Height="4"
-                     Canvas.Left="{Binding X, Converter={x:Static local:OffsetConverter.Instance}, ConverterParameter=-2}"
-                     Canvas.Top="{Binding Y, Converter={x:Static local:OffsetConverter.Instance}, ConverterParameter=-2}"
+                     Canvas.Left="{Binding BallViewModel.X, Converter={x:Static local:OffsetConverter.Instance}, ConverterParameter=-2}"
+                     Canvas.Top="{Binding BallViewModel.Y, Converter={x:Static local:OffsetConverter.Instance}, ConverterParameter=-2}"
                      Fill="Blue"
                      IsHitTestVisible="False">
                 <Ellipse.Style>
                     <Style TargetType="Ellipse">
                         <Setter Property="Visibility" Value="Collapsed" />
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding ShowBoundingBox}" Value="True">
+                            <DataTrigger Binding="{Binding BallViewModel.ShowBoundingBox}" Value="True">
                                 <Setter Property="Visibility" Value="Visible" />
                             </DataTrigger>
                         </Style.Triggers>

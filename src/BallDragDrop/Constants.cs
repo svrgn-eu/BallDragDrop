@@ -40,12 +40,12 @@ namespace BallDragDrop
         /// <summary>
         /// Default friction coefficient for ball movement
         /// </summary>
-        public const double DEFAULT_FRICTION_COEFFICIENT = 0.98;
+        public const double DEFAULT_FRICTION_COEFFICIENT = 0.995;
 
         /// <summary>
         /// Default gravity acceleration
         /// </summary>
-        public const double DEFAULT_GRAVITY = 0.0;
+        public const double DEFAULT_GRAVITY = 300.0;
 
         /// <summary>
         /// Default bounce factor for collisions
