@@ -50,28 +50,63 @@ public partial class App : Application
     /// <param name="e">Event data</param>
     private void Application_Startup(object sender, StartupEventArgs e)
     {
-        // Initialize ServiceBootstrapper during application startup
-        ServiceBootstrapper.Initialize();
-        
-        // Get logging service from dependency injection
-        _logService = ServiceBootstrapper.GetService<ILogService>();
-        
-        // Log comprehensive startup information
-        LogStartupInformation();
-        
-        // Set up global exception handling with injected services
-        var exceptionHandlingService = ServiceBootstrapper.GetService<IExceptionHandlingService>();
-        AppDomain.CurrentDomain.UnhandledException += (s, ex) => CurrentDomain_UnhandledException(s, ex, exceptionHandlingService);
-        DispatcherUnhandledException += (s, ex) => App_DispatcherUnhandledException(s, ex, exceptionHandlingService);
-        TaskScheduler.UnobservedTaskException += (s, ex) => TaskScheduler_UnobservedTaskException(s, ex, exceptionHandlingService);
-        
-        _logService.LogInformation("Global exception handlers configured with dependency injection");
-        
-        // Process command line arguments if any
-        ProcessCommandLineArguments(e.Args);
-        
-        // Show splash screen and initialize application
-        ShowSplashScreenAndInitialize();
+        try
+        {
+            // Initialize basic logging first
+            _logService = new SimpleLogService();
+            
+            // Set up global exception handlers
+            DispatcherUnhandledException += App_DispatcherUnhandledException_Simple;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException_Simple;
+            
+            // Log startup information
+            _logService.LogInformation("=== Ball Drag Drop Application Starting ===");
+            _logService.LogInformation("Startup Time: {StartupTime}", DateTime.Now);
+            
+            // Process command line arguments
+            ProcessCommandLineArguments(e.Args);
+            
+            // Initialize services through bootstrapper
+            ServiceBootstrapper.Initialize();
+            
+            // Show splash screen and initialize
+            ShowSplashScreenAndInitialize();
+        }
+        catch (Exception ex)
+        {
+            // Log the error
+            _logService?.LogError(ex, "Critical error during application startup");
+            
+            // Show error message to user
+            MessageBox.Show(
+                $"A critical error occurred during application startup:\n\n{ex.Message}\n\nThe application will now exit.",
+                "Startup Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            
+            // Exit the application
+            Environment.Exit(1);
+        }
+    }
+    
+    /// <summary>
+    /// Simple exception handler for dispatcher exceptions
+    /// </summary>
+    private void App_DispatcherUnhandledException_Simple(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        Console.WriteLine($"DISPATCHER EXCEPTION: {e.Exception}");
+        MessageBox.Show($"Application Error: {e.Exception.Message}\n\nStack trace:\n{e.Exception.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        e.Handled = true;
+    }
+    
+    /// <summary>
+    /// Simple exception handler for unhandled exceptions
+    /// </summary>
+    private void CurrentDomain_UnhandledException_Simple(object sender, UnhandledExceptionEventArgs e)
+    {
+        var exception = e.ExceptionObject as Exception;
+        Console.WriteLine($"UNHANDLED EXCEPTION: {exception}");
+        MessageBox.Show($"Fatal Error: {exception?.Message}\n\nStack trace:\n{exception?.StackTrace}", "Fatal Error", MessageBoxButton.OK, MessageBoxImage.Error);
     }
     
     #endregion Event Handlers
@@ -143,43 +178,60 @@ public partial class App : Application
     {
         try
         {
+            Console.WriteLine("Creating MainWindow instance...");
+            
             // Create and show the main window
             _mainWindow = new MainWindow();
             
-            // Add debug output
-            _logService?.LogDebug("MainWindow created successfully");
-            Console.WriteLine("MainWindow created successfully");
+            Console.WriteLine("MainWindow instance created");
+            
+            // Ensure window is properly positioned and visible
+            _mainWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            _mainWindow.WindowState = WindowState.Normal;
+            _mainWindow.Topmost = true; // Temporarily make it topmost to ensure visibility
+            
+            Console.WriteLine("MainWindow properties set");
             
             _mainWindow.Show();
             
-            // Add debug output
-            _logService?.LogDebug("MainWindow.Show() called successfully");
             Console.WriteLine("MainWindow.Show() called successfully");
             
             // Force the window to be visible and on top
             _mainWindow.Activate();
             _mainWindow.Focus();
             
-            // Log successful startup
-            _logService?.LogInformation("Application started successfully");
+            Console.WriteLine("MainWindow activated and focused");
             
-            // Add debug output
-            _logService?.LogDebug("Application startup completed");
-            Console.WriteLine("Application startup completed");
+            // Remove topmost after a short delay
+            Task.Delay(1000).ContinueWith(_ => 
+            {
+                try
+                {
+                    Dispatcher.Invoke(() => _mainWindow.Topmost = false);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error removing topmost: {ex.Message}");
+                }
+            });
+            
+            Console.WriteLine($"Window position: Left={_mainWindow.Left}, Top={_mainWindow.Top}");
+            Console.WriteLine($"Window size: Width={_mainWindow.Width}, Height={_mainWindow.Height}");
+            Console.WriteLine($"Window state: {_mainWindow.WindowState}");
+            Console.WriteLine($"Window visible: {_mainWindow.IsVisible}");
+            
+            _logService?.LogInformation("Application started successfully");
         }
         catch (Exception ex)
         {
-            // Log any errors during main window creation
-            _logService?.LogError(ex, "Failed to create main window");
+            Console.WriteLine($"ERROR in ShowMainWindow: {ex}");
             
-            // Add debug output
-            _logService?.LogError(ex, "Error creating main window");
-            Console.WriteLine($"Error creating main window: {ex}");
+            _logService?.LogError(ex, "Failed to create main window");
             
             // Show error message to the user
             MessageBox.Show(
-                $"Failed to start the application: {ex.Message}",
-                "Startup Error",
+                $"Failed to create main window: {ex.Message}\n\nStack trace:\n{ex.StackTrace}",
+                "Main Window Error",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
                 

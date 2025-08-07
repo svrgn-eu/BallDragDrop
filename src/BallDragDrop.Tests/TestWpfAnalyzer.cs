@@ -7,7 +7,9 @@ using System.Collections.Immutable;
 using System.Linq;
 using BallDragDrop.CodeAnalysis;
 
-class Program
+namespace BallDragDrop.Tests.WpfAnalyzer
+{
+    class Program
 {
     static void Main()
     {
@@ -144,4 +146,4 @@ namespace BallDragDrop.Services
         
         return diagnostics.OrderBy(d => d.Location.SourceSpan.Start).ToArray();
     }
-}
+}}

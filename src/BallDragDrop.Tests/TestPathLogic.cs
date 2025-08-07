@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 
-class Program
+namespace BallDragDrop.Tests.PathLogic
+{
+    class Program
 {
     static void Main()
     {
@@ -43,4 +45,4 @@ class Program
             Console.WriteLine("  Not a .xaml.cs file");
         }
     }
-}
+}}
