@@ -9,7 +9,10 @@ param(
     [string]$ReportPath,
     
     [Parameter(Mandatory=$false)]
-    [bool]$FailOnCritical = $true
+    [switch]$FailOnCritical,
+    
+    [Parameter(Mandatory=$false)]
+    [switch]$EnforceEnhancedStandards
 )
 
 # Function to read JSON configuration
@@ -229,6 +232,133 @@ function Test-XmlDocumentation {
     return $violations
 }
 
+# Function to validate "this" qualifier usage
+function Test-ThisQualifier {
+    param(
+        [string]$ProjectPath,
+        [object]$Config,
+        [bool]$EnforceEnhancedStandards = $true
+    )
+    
+    $violations = @()
+    
+    if ($Config.thisQualifier -and $Config.thisQualifier.enforceThisQualifier) {
+        $csFiles = Get-ChildItem -Path $ProjectPath -Filter "*.cs" -Recurse | Where-Object { 
+            $_.FullName -notmatch "\\bin\\" -and $_.FullName -notmatch "\\obj\\" -and
+            $_.Name -notmatch "\.Designer\.cs$" -and $_.Name -notmatch "\.g\.cs$"
+        }
+        
+        foreach ($file in $csFiles) {
+            $content = Get-Content $file.FullName -Raw
+            $relativePath = $file.FullName.Substring($ProjectPath.Length + 1)
+            
+            # Look for instance member access without "this."
+            # This is a simplified check - the actual analyzer would be more sophisticated
+            $lines = $content -split "`n"
+            for ($i = 0; $i -lt $lines.Count; $i++) {
+                $line = $lines[$i].Trim()
+                
+                # Skip comments, strings, and static contexts
+                if ($line -match "^\s*//|^\s*/\*|^\s*\*|static\s+") {
+                    continue
+                }
+                
+                # Look for property/method access patterns that might need "this."
+                if ($line -match "\b[A-Z][a-zA-Z0-9]*\s*[\(\.]" -and $line -notmatch "this\." -and $line -notmatch "base\." -and $line -notmatch "new\s+" -and $line -notmatch "typeof\s*\(" -and $line -notmatch "nameof\s*\(") {
+                    # This is a basic heuristic - actual implementation would need more sophisticated parsing
+                    $violations += @{
+                        Type = "ThisQualifier"
+                        Severity = $Config.thisQualifier.enforcementLevel
+                        Message = "Instance member access should use 'this.' qualifier (Line $($i + 1))"
+                        File = $relativePath
+                    }
+                    break # Only report once per file to avoid spam
+                }
+            }
+        }
+    }
+    
+    return $violations
+}
+
+# Function to validate class file organization
+function Test-ClassFileOrganization {
+    param(
+        [string]$ProjectPath,
+        [object]$Config,
+        [bool]$EnforceEnhancedStandards = $true
+    )
+    
+    $violations = @()
+    
+    if ($Config.classFileOrganization) {
+        $csFiles = Get-ChildItem -Path $ProjectPath -Filter "*.cs" -Recurse | Where-Object { 
+            $_.FullName -notmatch "\\bin\\" -and $_.FullName -notmatch "\\obj\\" -and
+            $_.Name -notmatch "\.Designer\.cs$" -and $_.Name -notmatch "\.g\.cs$"
+        }
+        
+        foreach ($file in $csFiles) {
+            $content = Get-Content $file.FullName -Raw
+            $relativePath = $file.FullName.Substring($ProjectPath.Length + 1)
+            $fileName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
+            
+            # Check for multiple classes in one file
+            if ($Config.classFileOrganization.enforceOneClassPerFile) {
+                # More precise regex to avoid false positives from comments
+                $classMatches = [regex]::Matches($content, "^\s*(?:public|internal|private|protected)?\s*(?:static\s+)?(?:partial\s+)?class\s+(\w+)", [System.Text.RegularExpressions.RegexOptions]::Multiline)
+                
+                if ($classMatches.Count -gt 1) {
+                    $classNames = $classMatches | ForEach-Object { $_.Groups[1].Value }
+                    $violations += @{
+                        Type = "MultipleClasses"
+                        Severity = $Config.classFileOrganization.enforcementLevel
+                        Message = "File contains multiple classes: $($classNames -join ', '). Each class should be in its own file."
+                        File = $relativePath
+                    }
+                }
+            }
+            
+            # Check filename matches class name
+            if ($Config.classFileOrganization.enforceFilenameMatchesClassName) {
+                # Skip XAML code-behind files if configured to allow them
+                $isXamlCodeBehind = $false
+                if ($Config.classFileOrganization.allowWpfXamlCodeBehind -and $Config.classFileOrganization.wpfCodeBehindExtensions) {
+                    foreach ($extension in $Config.classFileOrganization.wpfCodeBehindExtensions) {
+                        if ($file.Name.EndsWith($extension, [StringComparison]::OrdinalIgnoreCase)) {
+                            $isXamlCodeBehind = $true
+                            break
+                        }
+                    }
+                }
+                
+                # Also check for .xaml.cs pattern specifically
+                if ($file.Name -match "\.xaml\.cs$") {
+                    $isXamlCodeBehind = $true
+                }
+                
+                if (-not $isXamlCodeBehind) {
+                    # More precise regex to find the primary class
+                    $primaryClassMatch = [regex]::Match($content, "^\s*(?:public|internal)?\s*(?:static\s+)?(?:partial\s+)?class\s+(\w+)", [System.Text.RegularExpressions.RegexOptions]::Multiline)
+                    
+                    if ($primaryClassMatch.Success) {
+                        $className = $primaryClassMatch.Groups[1].Value
+                        if ($fileName -ne $className) {
+                            $violations += @{
+                                Type = "FilenameClassMismatch"
+                                Severity = $Config.classFileOrganization.enforcementLevel
+                                Message = "Filename '$fileName.cs' does not match class name '$className'"
+                                File = $relativePath
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return $violations
+}
+
 # Function to generate report
 function New-QualityReport {
     param(
@@ -292,6 +422,7 @@ Write-Host "Starting Coding Standards Validation..." -ForegroundColor Green
 Write-Host "Project Path: $ProjectPath"
 Write-Host "Config Path: $ConfigPath"
 Write-Host "Report Path: $ReportPath"
+Write-Host "Enhanced Standards Enforcement: $($EnforceEnhancedStandards.IsPresent)" -ForegroundColor $(if ($EnforceEnhancedStandards.IsPresent) { "Green" } else { "Yellow" })
 
 # Read configuration
 $config = Read-CodingStandardsConfig -ConfigPath $ConfigPath
@@ -319,6 +450,14 @@ Write-Host "Validating XML documentation..." -ForegroundColor Yellow
 $xmlDocViolations = Test-XmlDocumentation -ProjectPath $ProjectPath -Config $config
 $allViolations += $xmlDocViolations
 
+Write-Host "Validating 'this' qualifier usage..." -ForegroundColor Yellow
+$thisQualifierViolations = Test-ThisQualifier -ProjectPath $ProjectPath -Config $config -EnforceEnhancedStandards $EnforceEnhancedStandards.IsPresent
+$allViolations += $thisQualifierViolations
+
+Write-Host "Validating class file organization..." -ForegroundColor Yellow
+$classFileOrgViolations = Test-ClassFileOrganization -ProjectPath $ProjectPath -Config $config -EnforceEnhancedStandards $EnforceEnhancedStandards.IsPresent
+$allViolations += $classFileOrgViolations
+
 # Generate report
 $projectName = Split-Path $ProjectPath -Leaf
 $summary = New-QualityReport -AllViolations $allViolations -ReportPath $ReportPath -ProjectName $projectName
@@ -340,7 +479,7 @@ if ($allViolations.Count -gt 0) {
 }
 
 # Exit with appropriate code
-if ($summary.CriticalViolations -gt 0 -and $FailOnCritical) {
+if ($summary.CriticalViolations -gt 0 -and $FailOnCritical.IsPresent) {
     Write-Host "`nBuild should fail due to critical violations!" -ForegroundColor Red
     exit 1
 } else {

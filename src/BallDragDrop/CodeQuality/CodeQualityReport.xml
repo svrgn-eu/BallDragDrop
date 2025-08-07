@@ -1,0 +1,503 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeQualityReport>
+  <ProjectName>BallDragDrop</ProjectName>
+  <Timestamp>2025-08-04 23:22:58</Timestamp>
+  <Violations>
+    <ViolationType name="">
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\AnimationEngine.cs</File>
+        <Message>Method should be enclosed in a region</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\AnimationTimingMetrics.cs</File>
+        <Message>Method should be enclosed in a region</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\AsepriteLoader.cs</File>
+        <Message>Method should be enclosed in a region</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\BallStateChangedEventArgs.cs</File>
+        <Message>Method should be enclosed in a region</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\BallStateConfiguration.cs</File>
+        <Message>Method should be enclosed in a region</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\DualTimerCoordinationMetrics.cs</File>
+        <Message>Method should be enclosed in a region</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\FpsReading.cs</File>
+        <Message>Method should be enclosed in a region</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\TimerPerformanceMetrics.cs</File>
+        <Message>Method should be enclosed in a region</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\BallStateMachine.cs</File>
+        <Message>Method should be enclosed in a region</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\SettingsManager.cs</File>
+        <Message>Method should be enclosed in a region</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\SimpleLogService.cs</File>
+        <Message>Method should be enclosed in a region</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Performance\AsyncLogProcessor.cs</File>
+        <Message>Method should be enclosed in a region</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Views\SplashScreen.xaml.cs</File>
+        <Message>Method should be enclosed in a region</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\App.xaml.cs</File>
+        <Message>Missing required regions: Properties, Construction</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\AssemblyInfo.cs</File>
+        <Message>Missing required regions: Properties, Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Constants.cs</File>
+        <Message>Missing required regions: Properties, Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Bootstrapper\ServiceBootstrapper.cs</File>
+        <Message>Missing required regions: Construction</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Contracts\IPerformanceMonitor.cs</File>
+        <Message>Missing required regions: Properties, Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\AnimationEngine.cs</File>
+        <Message>Missing required regions: Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\AnimationTimingMetrics.cs</File>
+        <Message>Missing required regions: Properties, Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\AsepriteLoader.cs</File>
+        <Message>Missing required regions: Properties, Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\BallStateChangedEventArgs.cs</File>
+        <Message>Missing required regions: Properties, Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\BallStateConfiguration.cs</File>
+        <Message>Missing required regions: Properties, Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\DualTimerCoordinationMetrics.cs</File>
+        <Message>Missing required regions: Properties, Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\TimerPerformanceMetrics.cs</File>
+        <Message>Missing required regions: Properties, Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\BallStateMachine.cs</File>
+        <Message>Missing required regions: Properties, Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\ConfigurationService.cs</File>
+        <Message>Missing required regions: Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\EventThrottler.cs</File>
+        <Message>Missing required regions: Properties</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\ExceptionHandlingService.cs</File>
+        <Message>Missing required regions: Properties</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\GifData.cs</File>
+        <Message>Missing required regions: Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\ImageService.cs</File>
+        <Message>Missing required regions: Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Log4NetService.cs</File>
+        <Message>Missing required regions: Properties, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\MethodLoggingInterceptor.cs</File>
+        <Message>Missing required regions: Properties, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\SettingsManager.cs</File>
+        <Message>Missing required regions: Properties, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\SimpleLogService.cs</File>
+        <Message>Missing required regions: Properties</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Performance\AsyncLogProcessor.cs</File>
+        <Message>Missing required regions: Properties, Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Performance\LogEntryPool.cs</File>
+        <Message>Missing required regions: Properties</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Performance\LogItem.cs</File>
+        <Message>Missing required regions: Properties, Construction, Methods</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Performance\PerformanceConfiguration.cs</File>
+        <Message>Missing required regions: Construction</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Performance\PerformanceMonitor.cs</File>
+        <Message>Missing required regions: Properties, Construction</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Views\ColorToColorConverter.cs</File>
+        <Message>Missing required regions: Construction</Message>
+      </Violation>
+      <Violation severity="warning">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Views\OffsetConverter.cs</File>
+        <Message>Missing required regions: Construction</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\App.xaml.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\AssemblyInfo.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 1)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Constants.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 67)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Bootstrapper\ServiceBootstrapper.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 1)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Commands\RelayCommand.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Commands\RelayCommandGeneric.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Contracts\IBallStateMachine.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Contracts\IBallStateObserver.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 1)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Contracts\IConfigurationService.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 1)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Contracts\IExceptionHandlingService.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 3)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Contracts\ILogService.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 3)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Contracts\IMethodLoggingInterceptor.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 1)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Contracts\IPerformanceMonitor.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\AnimationEngine.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\AnimationTimingMetrics.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\AsepriteLoader.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\BallModel.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\BallState.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 1)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\BallStateChangedEventArgs.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 3)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\BallStateConfiguration.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\BallTrigger.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 1)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\DualTimerCoordinationMetrics.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 3)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\FpsReading.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 3)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\PhysicsEngine.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\TimerPerformanceMetrics.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 3)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\PathTest\Program.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\BallStateMachine.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\ConfigurationService.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\EventThrottler.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\ExceptionHandlingService.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\FpsCalculator.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\GifData.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\ImageService.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Log4NetService.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\MethodLoggingInterceptor.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\PerformanceMonitor.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\SettingsManager.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\SimpleLogService.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Performance\AsyncLogProcessor.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Performance\LogEntryPool.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Performance\LogItem.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Performance\PerformanceConfiguration.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 3)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Performance\PerformanceMonitor.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Performance\PooledLogEntry.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\ViewModels\BallViewModel.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\ViewModels\MainWindowViewModel.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\ViewModels\StatusBarViewModel.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Views\ColorToBrushConverter.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Views\ColorToColorConverter.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Views\MainWindow.xaml.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Views\OffsetConverter.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Views\SplashScreen.xaml.cs</File>
+        <Message>Instance member access should use 'this.' qualifier (Line 2)</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\App.xaml.cs</File>
+        <Message>Filename 'App.xaml.cs' does not match class name 'App'</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Bootstrapper\ServiceBootstrapper.cs</File>
+        <Message>File contains multiple classes: for, ServiceBootstrapper. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Bootstrapper\ServiceBootstrapper.cs</File>
+        <Message>Filename 'ServiceBootstrapper.cs' does not match class name 'for'</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Commands\RelayCommandGeneric.cs</File>
+        <Message>Filename 'RelayCommandGeneric.cs' does not match class name 'RelayCommand'</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Contracts\IPerformanceMonitor.cs</File>
+        <Message>File contains multiple classes: PerformanceStatistics, OperationStatistics. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Contracts\IPerformanceMonitor.cs</File>
+        <Message>Filename 'IPerformanceMonitor.cs' does not match class name 'PerformanceStatistics'</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\AnimationEngine.cs</File>
+        <Message>File contains multiple classes: AnimationFrame, AnimationEngine. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\AnimationEngine.cs</File>
+        <Message>Filename 'AnimationEngine.cs' does not match class name 'AnimationFrame'</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\AsepriteLoader.cs</File>
+        <Message>File contains multiple classes: AsepriteMetadata, AsepriteSize, AsepriteFrame, AsepriteRect, AsepriteTag, AsepriteData, AsepriteValidationResult, AsepriteLoader. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\AsepriteLoader.cs</File>
+        <Message>Filename 'AsepriteLoader.cs' does not match class name 'AsepriteMetadata'</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\BallModel.cs</File>
+        <Message>File contains multiple classes: BallModel, with, with, with. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\BallStateConfiguration.cs</File>
+        <Message>File contains multiple classes: provides, BallStateConfiguration. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\BallStateConfiguration.cs</File>
+        <Message>Filename 'BallStateConfiguration.cs' does not match class name 'provides'</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Models\PhysicsEngine.cs</File>
+        <Message>File contains multiple classes: PhysicsEngine, with, with. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\ConfigurationService.cs</File>
+        <Message>File contains multiple classes: ConfigurationService, with. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\EventThrottler.cs</File>
+        <Message>File contains multiple classes: for, EventThrottler. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\EventThrottler.cs</File>
+        <Message>Filename 'EventThrottler.cs' does not match class name 'for'</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\FpsCalculator.cs</File>
+        <Message>File contains multiple classes: for, FpsCalculator. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\FpsCalculator.cs</File>
+        <Message>Filename 'FpsCalculator.cs' does not match class name 'for'</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Log4NetService.cs</File>
+        <Message>File contains multiple classes: Log4NetService, LogScope, DisposableScope. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\PerformanceMonitor.cs</File>
+        <Message>File contains multiple classes: PerformanceMonitor, PerformanceMetricsEventArgs, FpsUpdatedEventArgs. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\SettingsManager.cs</File>
+        <Message>File contains multiple classes: SettingsManager, with. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\SimpleLogService.cs</File>
+        <Message>File contains multiple classes: SimpleLogService, LogScope. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Performance\PerformanceMonitor.cs</File>
+        <Message>File contains multiple classes: LoggingPerformanceMonitor, for, OperationMetrics. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Services\Performance\PerformanceMonitor.cs</File>
+        <Message>Filename 'PerformanceMonitor.cs' does not match class name 'LoggingPerformanceMonitor'</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\ViewModels\BallViewModel.cs</File>
+        <Message>File contains multiple classes: BallViewModel, for, RelayCommand. Each class should be in its own file.</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Views\MainWindow.xaml.cs</File>
+        <Message>Filename 'MainWindow.xaml.cs' does not match class name 'MainWindow'</Message>
+      </Violation>
+      <Violation severity="error">
+        <File>\Dev\WPF\BallDragDropWithKiro\src\BallDragDrop\Views\SplashScreen.xaml.cs</File>
+        <Message>Filename 'SplashScreen.xaml.cs' does not match class name 'SplashScreen'</Message>
+      </Violation>
+    </ViolationType>
+  </Violations>
+  <Summary>
+    <TotalViolations>122</TotalViolations>
+    <CriticalViolations>80</CriticalViolations>
+    <Warnings>42</Warnings>
+    <BuildStatus>Failed</BuildStatus>
+  </Summary>
+</CodeQualityReport>

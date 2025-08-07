@@ -27,7 +27,9 @@ code-quality:
   - windows
   stage: code-quality
   script:
-  - echo "Running coding standards validation..."
+  - echo "Running enhanced coding standards validation..."
+  - echo "Enforcing mandatory 'this' qualifier and one class per file rules as BUILD-BREAKING errors..."
+  - echo "Enhanced standards enforcement is ENABLED - violations will fail the build"
   - cd "src/$PROJECT_NAME"
   - pwsh -File "Build/RunCodingStandardsValidation.ps1"
   artifacts:

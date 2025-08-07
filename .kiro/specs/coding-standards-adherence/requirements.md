@@ -146,4 +146,6 @@ The BallDragDrop solution consists of:
 4. WHEN filename does not match class name THEN the system SHALL flag violations with suggestions for correct naming
 5. WHEN nested classes are used THEN the system SHALL allow them within the same file as their parent class
 6. WHEN partial classes are used THEN the system SHALL allow multiple partial class definitions across separate files with matching names
-7. WHEN file organization violations are detected THEN the system SHALL provide automatic code fixes to separate classes into dedicated files
+7. WHEN WPF XAML code-behind files are used THEN the system SHALL allow files with ".xaml.cs" extension to contain classes matching the base filename (e.g., "MainWindow.xaml.cs" containing class "MainWindow")
+8. WHEN WPF XAML files are detected THEN the system SHALL exempt the corresponding code-behind files from strict filename matching rules
+9. WHEN file organization violations are detected THEN the system SHALL provide automatic code fixes to separate classes into dedicated files

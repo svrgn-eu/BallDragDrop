@@ -109,5 +109,52 @@ namespace BallDragDrop.CodeAnalysis
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: "Code should be checked for potential null reference exceptions.");
+
+        // This Qualifier Violations (10.x series)
+        public static readonly DiagnosticDescriptor MissingThisQualifierProperty = new DiagnosticDescriptor(
+            id: "BDD10001",
+            title: "Missing 'this' qualifier for instance property access",
+            messageFormat: "Instance property '{0}' must be accessed with 'this.' qualifier",
+            category: "Style",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true,
+            description: "All instance property access must use the 'this.' qualifier for explicit member identification.");
+
+        public static readonly DiagnosticDescriptor MissingThisQualifierMethod = new DiagnosticDescriptor(
+            id: "BDD10002",
+            title: "Missing 'this' qualifier for instance method call",
+            messageFormat: "Instance method '{0}' must be called with 'this.' qualifier",
+            category: "Style",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true,
+            description: "All instance method calls must use the 'this.' qualifier for explicit member identification.");
+
+        public static readonly DiagnosticDescriptor MissingThisQualifierField = new DiagnosticDescriptor(
+            id: "BDD10003",
+            title: "Missing 'this' qualifier for instance field access",
+            messageFormat: "Instance field '{0}' must be accessed with 'this.' qualifier",
+            category: "Style",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true,
+            description: "All instance field access must use the 'this.' qualifier for explicit member identification.");
+
+        // Class File Organization Violations (11.x series)
+        public static readonly DiagnosticDescriptor MultipleClassesInFile = new DiagnosticDescriptor(
+            id: "BDD11001",
+            title: "Multiple classes detected in single file",
+            messageFormat: "File '{0}' contains multiple classes. Each class should be in a dedicated file.",
+            category: "Organization",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true,
+            description: "Each C# file should contain exactly one class definition for better code organization and maintainability.");
+
+        public static readonly DiagnosticDescriptor FilenameClassNameMismatch = new DiagnosticDescriptor(
+            id: "BDD11002",
+            title: "Filename does not match class name",
+            messageFormat: "Class '{0}' should be in a file named '{0}.cs', but is in '{1}'",
+            category: "Organization",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true,
+            description: "The filename should match the class name exactly for better code organization and discoverability.");
     }
 }

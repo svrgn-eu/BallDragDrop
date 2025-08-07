@@ -250,6 +250,36 @@
             Disposes the service provider and cleans up resources
             </summary>
         </member>
+        <member name="T:BallDragDrop.Commands.RelayCommand">
+            <summary>
+            A command whose sole purpose is to relay its functionality to other objects by invoking delegates.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Commands.RelayCommand.#ctor(System.Action,System.Func{System.Boolean})">
+            <summary>
+            Initializes a new instance of the RelayCommand class.
+            </summary>
+            <param name="execute">The execution logic.</param>
+            <param name="canExecute">The execution status logic.</param>
+        </member>
+        <member name="E:BallDragDrop.Commands.RelayCommand.CanExecuteChanged">
+            <summary>
+            Occurs when changes occur that affect whether or not the command should execute.
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Commands.RelayCommand.CanExecute(System.Object)">
+            <summary>
+            Defines the method that determines whether the command can execute in its current state.
+            </summary>
+            <param name="parameter">Data used by the command.</param>
+            <returns>true if this command can be executed; otherwise, false.</returns>
+        </member>
+        <member name="M:BallDragDrop.Commands.RelayCommand.Execute(System.Object)">
+            <summary>
+            Defines the method to be called when the command is invoked.
+            </summary>
+            <param name="parameter">Data used by the command.</param>
+        </member>
         <member name="T:BallDragDrop.Commands.RelayCommand`1">
             <summary>
             A command whose sole purpose is to relay its functionality to other objects by invoking delegates.
@@ -276,36 +306,6 @@
             <returns>true if this command can be executed; otherwise, false.</returns>
         </member>
         <member name="M:BallDragDrop.Commands.RelayCommand`1.Execute(System.Object)">
-            <summary>
-            Defines the method to be called when the command is invoked.
-            </summary>
-            <param name="parameter">Data used by the command.</param>
-        </member>
-        <member name="T:BallDragDrop.Commands.RelayCommand">
-            <summary>
-            A command whose sole purpose is to relay its functionality to other objects by invoking delegates.
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Commands.RelayCommand.#ctor(System.Action,System.Func{System.Boolean})">
-            <summary>
-            Initializes a new instance of the RelayCommand class.
-            </summary>
-            <param name="execute">The execution logic.</param>
-            <param name="canExecute">The execution status logic.</param>
-        </member>
-        <member name="E:BallDragDrop.Commands.RelayCommand.CanExecuteChanged">
-            <summary>
-            Occurs when changes occur that affect whether or not the command should execute.
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Commands.RelayCommand.CanExecute(System.Object)">
-            <summary>
-            Defines the method that determines whether the command can execute in its current state.
-            </summary>
-            <param name="parameter">Data used by the command.</param>
-            <returns>true if this command can be executed; otherwise, false.</returns>
-        </member>
-        <member name="M:BallDragDrop.Commands.RelayCommand.Execute(System.Object)">
             <summary>
             Defines the method to be called when the command is invoked.
             </summary>
@@ -2210,6 +2210,26 @@
             Clears all FPS readings
             </summary>
         </member>
+        <member name="T:BallDragDrop.Services.GifData">
+            <summary>
+            Data structure for holding GIF animation data
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.GifData.Frames">
+            <summary>
+            Gets or sets the list of animation frames
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.GifData.LoopCount">
+            <summary>
+            Gets or sets the loop count (0 = infinite, -1 = no looping)
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.GifData.TotalDuration">
+            <summary>
+            Gets or sets the total duration of the animation
+            </summary>
+        </member>
         <member name="T:BallDragDrop.Services.VisualContentType">
             <summary>
             Enumeration for supported visual content types
@@ -2233,26 +2253,6 @@
         <member name="F:BallDragDrop.Services.VisualContentType.Unknown">
             <summary>
             Unknown content type
-            </summary>
-        </member>
-        <member name="T:BallDragDrop.Services.GifData">
-            <summary>
-            Data structure for holding GIF animation data
-            </summary>
-        </member>
-        <member name="P:BallDragDrop.Services.GifData.Frames">
-            <summary>
-            Gets or sets the list of animation frames
-            </summary>
-        </member>
-        <member name="P:BallDragDrop.Services.GifData.LoopCount">
-            <summary>
-            Gets or sets the loop count (0 = infinite, -1 = no looping)
-            </summary>
-        </member>
-        <member name="P:BallDragDrop.Services.GifData.TotalDuration">
-            <summary>
-            Gets or sets the total duration of the animation
             </summary>
         </member>
         <member name="T:BallDragDrop.Services.ImageService">
@@ -4312,6 +4312,68 @@
             </summary>
             <param name="disposing">True if disposing managed resources</param>
         </member>
+        <member name="T:BallDragDrop.Views.ColorToBrushConverter">
+            <summary>
+            Converter to convert Color to SolidColorBrush for XAML binding
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.ColorToBrushConverter.Instance">
+            <summary>
+            Singleton instance of the ColorToBrushConverter
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.ColorToBrushConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts a Color to a SolidColorBrush
+            </summary>
+            <param name="value">The Color value to convert</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The parameter (not used)</param>
+            <param name="culture">The culture info</param>
+            <returns>A SolidColorBrush with the specified color</returns>
+        </member>
+        <member name="M:BallDragDrop.Views.ColorToBrushConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts back (not implemented)
+            </summary>
+            <param name="value">The value to convert back</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The parameter</param>
+            <param name="culture">The culture info</param>
+            <returns>Not implemented</returns>
+            <exception cref="T:System.NotImplementedException">This method is not implemented</exception>
+        </member>
+        <member name="T:BallDragDrop.Views.ColorToColorConverter">
+            <summary>
+            Converter to convert Color to Color for XAML binding (identity converter)
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.ColorToColorConverter.Instance">
+            <summary>
+            Singleton instance of the ColorToColorConverter
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Views.ColorToColorConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts a Color to a Color (identity conversion)
+            </summary>
+            <param name="value">The Color value to convert</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The parameter (not used)</param>
+            <param name="culture">The culture info</param>
+            <returns>The same Color value</returns>
+        </member>
+        <member name="M:BallDragDrop.Views.ColorToColorConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts back (not implemented)
+            </summary>
+            <param name="value">The value to convert back</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The parameter</param>
+            <param name="culture">The culture info</param>
+            <returns>Not implemented</returns>
+            <exception cref="T:System.NotImplementedException">This method is not implemented</exception>
+        </member>
         <member name="T:BallDragDrop.Views.MainWindow">
             <summary>
             Interaction logic for MainWindow.xaml
@@ -4666,68 +4728,6 @@
             <returns>The value plus the offset, or the original value if conversion fails</returns>
         </member>
         <member name="M:BallDragDrop.Views.OffsetConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
-            <summary>
-            Converts back (not implemented)
-            </summary>
-            <param name="value">The value to convert back</param>
-            <param name="targetType">The target type</param>
-            <param name="parameter">The parameter</param>
-            <param name="culture">The culture info</param>
-            <returns>Not implemented</returns>
-            <exception cref="T:System.NotImplementedException">This method is not implemented</exception>
-        </member>
-        <member name="T:BallDragDrop.Views.ColorToBrushConverter">
-            <summary>
-            Converter to convert Color to SolidColorBrush for XAML binding
-            </summary>
-        </member>
-        <member name="F:BallDragDrop.Views.ColorToBrushConverter.Instance">
-            <summary>
-            Singleton instance of the ColorToBrushConverter
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Views.ColorToBrushConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
-            <summary>
-            Converts a Color to a SolidColorBrush
-            </summary>
-            <param name="value">The Color value to convert</param>
-            <param name="targetType">The target type</param>
-            <param name="parameter">The parameter (not used)</param>
-            <param name="culture">The culture info</param>
-            <returns>A SolidColorBrush with the specified color</returns>
-        </member>
-        <member name="M:BallDragDrop.Views.ColorToBrushConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
-            <summary>
-            Converts back (not implemented)
-            </summary>
-            <param name="value">The value to convert back</param>
-            <param name="targetType">The target type</param>
-            <param name="parameter">The parameter</param>
-            <param name="culture">The culture info</param>
-            <returns>Not implemented</returns>
-            <exception cref="T:System.NotImplementedException">This method is not implemented</exception>
-        </member>
-        <member name="T:BallDragDrop.Views.ColorToColorConverter">
-            <summary>
-            Converter to convert Color to Color for XAML binding (identity converter)
-            </summary>
-        </member>
-        <member name="F:BallDragDrop.Views.ColorToColorConverter.Instance">
-            <summary>
-            Singleton instance of the ColorToColorConverter
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Views.ColorToColorConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
-            <summary>
-            Converts a Color to a Color (identity conversion)
-            </summary>
-            <param name="value">The Color value to convert</param>
-            <param name="targetType">The target type</param>
-            <param name="parameter">The parameter (not used)</param>
-            <param name="culture">The culture info</param>
-            <returns>The same Color value</returns>
-        </member>
-        <member name="M:BallDragDrop.Views.ColorToColorConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
             <summary>
             Converts back (not implemented)
             </summary>

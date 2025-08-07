@@ -9,6 +9,9 @@
     <CodingStandardsScriptPath Condition="'$(CodingStandardsScriptPath)' == ''">$(MSBuildThisFileDirectory)ValidateCodingStandards.ps1</CodingStandardsScriptPath>
     <FailBuildOnCriticalViolations Condition="'$(FailBuildOnCriticalViolations)' == ''">false</FailBuildOnCriticalViolations>
     <EnableCodingStandardsValidation Condition="'$(EnableCodingStandardsValidation)' == ''">true</EnableCodingStandardsValidation>
+    <EnforceEnhancedStandards Condition="'$(EnforceEnhancedStandards)' == ''">false</EnforceEnhancedStandards>
+    <TreatThisQualifierViolationsAsErrors Condition="'$(TreatThisQualifierViolationsAsErrors)' == ''">false</TreatThisQualifierViolationsAsErrors>
+    <TreatClassFileOrganizationViolationsAsErrors Condition="'$(TreatClassFileOrganizationViolationsAsErrors)' == ''">false</TreatClassFileOrganizationViolationsAsErrors>
   </PropertyGroup>
 
   <!-- Define the pre-build validation target -->
@@ -22,7 +25,7 @@
     <MakeDir Directories="$(CodingStandardsReportDir)" />
     
     <!-- Execute PowerShell validation script -->
-    <Exec Command="powershell.exe -ExecutionPolicy Bypass -File &quot;$(CodingStandardsScriptPath)&quot; -ProjectPath &quot;$(MSBuildProjectDirectory)&quot; -ConfigPath &quot;$(CodingStandardsConfigFile)&quot; -ReportPath &quot;$(CodingStandardsReportFile)&quot; -FailOnCritical:$$(FailBuildOnCriticalViolations)"
+    <Exec Command="powershell.exe -ExecutionPolicy Bypass -File &quot;$(CodingStandardsScriptPath)&quot; -ProjectPath &quot;$(MSBuildProjectDirectory)&quot; -ConfigPath &quot;$(CodingStandardsConfigFile)&quot; -ReportPath &quot;$(CodingStandardsReportFile)&quot; -FailOnCritical:$$(FailBuildOnCriticalViolations) -EnforceEnhancedStandards:$$(EnforceEnhancedStandards)"
           ContinueOnError="true"
           IgnoreExitCode="false">
       <Output TaskParameter="ExitCode" PropertyName="CodingStandardsExitCode" />
@@ -50,7 +53,7 @@
   <Target Name="GenerateCodingStandardsReport">
     <Message Text="Generating coding standards report..." Importance="high" />
     <MakeDir Directories="$(CodingStandardsReportDir)" />
-    <Exec Command="powershell.exe -ExecutionPolicy Bypass -File &quot;$(CodingStandardsScriptPath)&quot; -ProjectPath &quot;$(MSBuildProjectDirectory)&quot; -ConfigPath &quot;$(CodingStandardsConfigFile)&quot; -ReportPath &quot;$(CodingStandardsReportFile)&quot; -FailOnCritical:$$false"
+    <Exec Command="powershell.exe -ExecutionPolicy Bypass -File &quot;$(CodingStandardsScriptPath)&quot; -ProjectPath &quot;$(MSBuildProjectDirectory)&quot; -ConfigPath &quot;$(CodingStandardsConfigFile)&quot; -ReportPath &quot;$(CodingStandardsReportFile)&quot; -FailOnCritical:$$false -EnforceEnhancedStandards:$$true"
           ContinueOnError="true" />
     <Message Text="Report generated: $(CodingStandardsReportFile)" Importance="high" />
   </Target>

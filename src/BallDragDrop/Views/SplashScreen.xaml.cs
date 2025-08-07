@@ -18,29 +18,6 @@ namespace BallDragDrop.Views
         public event EventHandler InitializationComplete;
 
         #endregion Properties
-        
-        #region Construction
-
-        /// <summary>
-        /// Initializes a new instance of the SplashScreen class
-        /// </summary>
-        public SplashScreen()
-        {
-            InitializeComponent();
-            
-            // Initialize flags
-            _isInitializationComplete = false;
-            _isMinimumTimeElapsed = false;
-            
-            // Set up timer for minimum display time (1.5 seconds)
-            _minimumDisplayTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(1.5)
-            };
-            _minimumDisplayTimer.Tick += MinimumDisplayTimer_Tick;
-        }
-
-        #endregion Construction
 
         #region Fields
 
@@ -61,6 +38,29 @@ namespace BallDragDrop.Views
 
         #endregion Fields
         
+        #region Construction
+
+        /// <summary>
+        /// Initializes a new instance of the SplashScreen class
+        /// </summary>
+        public SplashScreen()
+        {
+            this.InitializeComponent();
+            
+            // Initialize flags
+            this._isInitializationComplete = false;
+            this._isMinimumTimeElapsed = false;
+            
+            // Set up timer for minimum display time (1.5 seconds)
+            this._minimumDisplayTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1.5)
+            };
+            this._minimumDisplayTimer.Tick += this.MinimumDisplayTimer_Tick;
+        }
+
+        #endregion Construction
+        
         #region Event Handlers
 
         /// <summary>
@@ -71,11 +71,30 @@ namespace BallDragDrop.Views
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Start the minimum display timer
-            _minimumDisplayTimer.Start();
+            this._minimumDisplayTimer.Start();
             
             // Start the initialization process
-            Task.Run(() => InitializeApplication());
+            Task.Run(() => this.InitializeApplication());
         }
+        
+        /// <summary>
+        /// Event handler for minimum display timer tick
+        /// </summary>
+        /// <param name="sender">The source of the event</param>
+        /// <param name="e">Event data</param>
+        private void MinimumDisplayTimer_Tick(object sender, EventArgs e)
+        {
+            // Stop the timer
+            this._minimumDisplayTimer.Stop();
+            
+            // Mark minimum time as elapsed
+            this._isMinimumTimeElapsed = true;
+            
+            // Check if we can close the splash screen
+            this.CheckIfReadyToClose();
+        }
+
+        #endregion Event Handlers
         
         #region Methods
 
@@ -88,22 +107,22 @@ namespace BallDragDrop.Views
             try
             {
                 // Update status
-                await Dispatcher.InvokeAsync(() => StatusText.Text = "Initializing...");
+                await this.Dispatcher.InvokeAsync(() => this.StatusText.Text = "Initializing...");
                 
                 // Simulate initialization tasks
                 await Task.Delay(500);
-                await Dispatcher.InvokeAsync(() => StatusText.Text = "Loading resources...");
+                await this.Dispatcher.InvokeAsync(() => this.StatusText.Text = "Loading resources...");
                 
                 await Task.Delay(500);
-                await Dispatcher.InvokeAsync(() => StatusText.Text = "Preparing application...");
+                await this.Dispatcher.InvokeAsync(() => this.StatusText.Text = "Preparing application...");
                 
                 await Task.Delay(500);
                 
                 // Mark initialization as complete
-                _isInitializationComplete = true;
+                this._isInitializationComplete = true;
                 
                 // Check if we can close the splash screen
-                await Dispatcher.InvokeAsync(CheckIfReadyToClose);
+                await this.Dispatcher.InvokeAsync(this.CheckIfReadyToClose);
             }
             catch (Exception ex)
             {
@@ -111,33 +130,14 @@ namespace BallDragDrop.Views
                 Console.WriteLine($"Error during initialization: {ex.Message}");
                 
                 // Update status to show error
-                await Dispatcher.InvokeAsync(() => 
+                await this.Dispatcher.InvokeAsync(() => 
                 {
-                    StatusText.Text = "Error during initialization";
-                    LoadingProgress.IsIndeterminate = false;
-                    LoadingProgress.Value = 0;
+                    this.StatusText.Text = "Error during initialization";
+                    this.LoadingProgress.IsIndeterminate = false;
+                    this.LoadingProgress.Value = 0;
                 });
             }
         }
-        
-        /// <summary>
-        /// Event handler for minimum display timer tick
-        /// </summary>
-        /// <param name="sender">The source of the event</param>
-        /// <param name="e">Event data</param>
-        private void MinimumDisplayTimer_Tick(object sender, EventArgs e)
-        {
-            // Stop the timer
-            _minimumDisplayTimer.Stop();
-            
-            // Mark minimum time as elapsed
-            _isMinimumTimeElapsed = true;
-            
-            // Check if we can close the splash screen
-            CheckIfReadyToClose();
-        }
-
-        #endregion Event Handlers
         
         /// <summary>
         /// Checks if the splash screen is ready to close
@@ -145,13 +145,13 @@ namespace BallDragDrop.Views
         private void CheckIfReadyToClose()
         {
             // If both initialization is complete and minimum time has elapsed, close the splash screen
-            if (_isInitializationComplete && _isMinimumTimeElapsed)
+            if (this._isInitializationComplete && this._isMinimumTimeElapsed)
             {
                 // Raise the initialization complete event
-                InitializationComplete?.Invoke(this, EventArgs.Empty);
+                this.InitializationComplete?.Invoke(this, EventArgs.Empty);
                 
                 // Close the splash screen
-                Close();
+                this.Close();
             }
         }
         
@@ -162,7 +162,7 @@ namespace BallDragDrop.Views
         /// <exception cref="ArgumentNullException">Thrown when status is null</exception>
         public void UpdateStatus(string status)
         {
-            Dispatcher.InvokeAsync(() => StatusText.Text = status);
+            this.Dispatcher.InvokeAsync(() => this.StatusText.Text = status);
         }
 
         #endregion Methods

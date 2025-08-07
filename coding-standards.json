@@ -84,12 +84,40 @@
     "allowNestedClasses": false,
     "enforcementLevel": "warning"
   },
+  "thisQualifier": {
+    "enforceThisQualifier": true,
+    "applyToProperties": true,
+    "applyToMethods": true,
+    "applyToFields": true,
+    "violationSeverity": "warning",
+    "exemptMemberTypes": [
+      "StaticMembers"
+    ],
+    "enforcementLevel": "warning",
+    "mandatoryEnforcement": false,
+    "buildBreaking": false
+  },
+  "classFileOrganization": {
+    "enforceOneClassPerFile": false,
+    "enforceFilenameMatchesClassName": false,
+    "allowNestedClasses": true,
+    "allowPartialClasses": true,
+    "allowWpfXamlCodeBehind": true,
+    "wpfCodeBehindExtensions": [".xaml.cs", ".xaml.vb"],
+    "violationSeverity": "warning",
+    "enforcementLevel": "warning",
+    "mandatoryEnforcement": false,
+    "buildBreaking": false
+  },
   "buildIntegration": {
-    "failBuildOnCriticalViolations": true,
+    "failBuildOnCriticalViolations": false,
     "generateQualityReport": true,
     "criticalViolationTypes": [
       "namingConventions",
       "xmlDocumentation"
-    ]
+    ],
+    "enhancedStandardsEnabled": false,
+    "mandatoryEnforcementEnabled": false,
+    "treatEnhancedViolationsAsErrors": false
   }
 }

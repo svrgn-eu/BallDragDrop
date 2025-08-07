@@ -53,34 +53,34 @@ public partial class MainWindow : Window, IBallStateObserver
     /// </summary>
     public MainWindow()
     {
-        InitializeComponent();
+        this.InitializeComponent();
         
         // Get logging service from dependency injection
-        _logService = ServiceBootstrapper.GetService<ILogService>();
+        this._logService = ServiceBootstrapper.GetService<ILogService>();
         
         // Get ball state configuration from dependency injection
-        _ballStateConfiguration = ServiceBootstrapper.GetService<BallStateConfiguration>();
+        this._ballStateConfiguration = ServiceBootstrapper.GetService<BallStateConfiguration>();
         
         // Initialize physics engine
-        _physicsEngine = new Models.PhysicsEngine();
-        _lastPhysicsUpdate = DateTime.Now;
-        _isPhysicsRunning = false;
+        this._physicsEngine = new Models.PhysicsEngine();
+        this._lastPhysicsUpdate = DateTime.Now;
+        this._isPhysicsRunning = false;
         
         // Get performance monitor from dependency injection
-        _performanceMonitor = ServiceBootstrapper.GetService<Services.PerformanceMonitor>();
+        this._performanceMonitor = ServiceBootstrapper.GetService<Services.PerformanceMonitor>();
         
         // Set up event handlers
-        this.SizeChanged += Window_SizeChanged;
-        this.Loaded += Window_Loaded;
-        this.Closed += MainWindow_Closed;
+        this.SizeChanged += this.Window_SizeChanged;
+        this.Loaded += this.Window_Loaded;
+        this.Closed += this.MainWindow_Closed;
         
         // Subscribe to CompositionTarget.Rendering for physics updates
-        CompositionTarget.Rendering += CompositionTarget_Rendering;
+        CompositionTarget.Rendering += this.CompositionTarget_Rendering;
         
         // Initialize DataContext immediately in constructor
-        InitializeDataContext();
+        this.InitializeDataContext();
         
-        _logService.LogDebug("MainWindow initialized");
+        this._logService.LogDebug("MainWindow initialized");
     }
     
     /// <summary>
@@ -90,19 +90,19 @@ public partial class MainWindow : Window, IBallStateObserver
     {
         try
         {
-            _logService.LogDebug("InitializeDataContext started");
+            this._logService.LogDebug("InitializeDataContext started");
             Console.WriteLine("InitializeDataContext started");
             
             // Create a new MainWindowViewModel using dependency injection
             MainWindowViewModel mainViewModel = ServiceBootstrapper.GetService<MainWindowViewModel>();
             
-            _logService.LogDebug("MainWindowViewModel created successfully");
+            this._logService.LogDebug("MainWindowViewModel created successfully");
             Console.WriteLine("MainWindowViewModel created successfully");
             
             // Set the DataContext for the window
             this.DataContext = mainViewModel;
             
-            _logService.LogDebug("DataContext set successfully");
+            this._logService.LogDebug("DataContext set successfully");
             
             // Initialize the ball position (will be updated in Window_Loaded)
             mainViewModel.BallViewModel.Initialize(400, 300, 25);
@@ -112,18 +112,18 @@ public partial class MainWindow : Window, IBallStateObserver
             if (stateMachine != null)
             {
                 stateMachine.Subscribe(this);
-                _logService.LogDebug("MainWindow subscribed to state machine notifications");
+                this._logService.LogDebug("MainWindow subscribed to state machine notifications");
             }
             else
             {
-                _logService.LogWarning("State machine not available for subscription");
+                this._logService.LogWarning("State machine not available for subscription");
             }
             
-            _logService.LogDebug("InitializeDataContext completed successfully");
+            this._logService.LogDebug("InitializeDataContext completed successfully");
         }
         catch (Exception ex)
         {
-            _logService.LogError(ex, "Error in InitializeDataContext");
+            this._logService.LogError(ex, "Error in InitializeDataContext");
             
             // Show error message
             MessageBox.Show($"Error initializing DataContext: {ex.Message}", "Initialization Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -1580,132 +1580,4 @@ public partial class MainWindow : Window, IBallStateObserver
     #endregion Mouse Position Tracking
 }
 
-/// <summary>
-/// Simple converter to offset a value by a specified amount
-/// </summary>
-public class OffsetConverter : IValueConverter
-{
-    /// <summary>
-    /// Singleton instance of the OffsetConverter
-    /// </summary>
-    public static readonly OffsetConverter Instance = new OffsetConverter();
 
-    /// <summary>
-    /// Converts a value by adding the specified offset
-    /// </summary>
-    /// <param name="value">The value to convert</param>
-    /// <param name="targetType">The target type</param>
-    /// <param name="parameter">The offset amount as a string</param>
-    /// <param name="culture">The culture info</param>
-    /// <returns>The value plus the offset, or the original value if conversion fails</returns>
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (value is double doubleValue && parameter is string parameterString)
-        {
-            // Use invariant culture to avoid locale-specific parsing issues
-            if (double.TryParse(parameterString, NumberStyles.Float, CultureInfo.InvariantCulture, out double offset))
-            {
-                return doubleValue + offset;
-            }
-        }
-        return value;
-    }
-
-    /// <summary>
-    /// Converts back (not implemented)
-    /// </summary>
-    /// <param name="value">The value to convert back</param>
-    /// <param name="targetType">The target type</param>
-    /// <param name="parameter">The parameter</param>
-    /// <param name="culture">The culture info</param>
-    /// <returns>Not implemented</returns>
-    /// <exception cref="NotImplementedException">This method is not implemented</exception>
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-/// <summary>
-/// Converter to convert Color to SolidColorBrush for XAML binding
-/// </summary>
-public class ColorToBrushConverter : IValueConverter
-{
-    /// <summary>
-    /// Singleton instance of the ColorToBrushConverter
-    /// </summary>
-    public static readonly ColorToBrushConverter Instance = new ColorToBrushConverter();
-
-    /// <summary>
-    /// Converts a Color to a SolidColorBrush
-    /// </summary>
-    /// <param name="value">The Color value to convert</param>
-    /// <param name="targetType">The target type</param>
-    /// <param name="parameter">The parameter (not used)</param>
-    /// <param name="culture">The culture info</param>
-    /// <returns>A SolidColorBrush with the specified color</returns>
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (value is Color color)
-        {
-            return new SolidColorBrush(color);
-        }
-        return new SolidColorBrush(Colors.Transparent);
-    }
-
-    /// <summary>
-    /// Converts back (not implemented)
-    /// </summary>
-    /// <param name="value">The value to convert back</param>
-    /// <param name="targetType">The target type</param>
-    /// <param name="parameter">The parameter</param>
-    /// <param name="culture">The culture info</param>
-    /// <returns>Not implemented</returns>
-    /// <exception cref="NotImplementedException">This method is not implemented</exception>
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-/// <summary>
-/// Converter to convert Color to Color for XAML binding (identity converter)
-/// </summary>
-public class ColorToColorConverter : IValueConverter
-{
-    /// <summary>
-    /// Singleton instance of the ColorToColorConverter
-    /// </summary>
-    public static readonly ColorToColorConverter Instance = new ColorToColorConverter();
-
-    /// <summary>
-    /// Converts a Color to a Color (identity conversion)
-    /// </summary>
-    /// <param name="value">The Color value to convert</param>
-    /// <param name="targetType">The target type</param>
-    /// <param name="parameter">The parameter (not used)</param>
-    /// <param name="culture">The culture info</param>
-    /// <returns>The same Color value</returns>
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (value is Color color)
-        {
-            return color;
-        }
-        return Colors.Transparent;
-    }
-
-    /// <summary>
-    /// Converts back (not implemented)
-    /// </summary>
-    /// <param name="value">The value to convert back</param>
-    /// <param name="targetType">The target type</param>
-    /// <param name="parameter">The parameter</param>
-    /// <param name="culture">The culture info</param>
-    /// <returns>Not implemented</returns>
-    /// <exception cref="NotImplementedException">This method is not implemented</exception>
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
-}

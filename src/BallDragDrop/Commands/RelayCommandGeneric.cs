@@ -6,12 +6,13 @@ namespace BallDragDrop.Commands
     /// <summary>
     /// A command whose sole purpose is to relay its functionality to other objects by invoking delegates.
     /// </summary>
-    public class RelayCommand : ICommand
+    /// <typeparam name="T">The type of the command parameter.</typeparam>
+    public class RelayCommand<T> : ICommand
     {
         #region Properties
 
-        private readonly Action _execute;
-        private readonly Func<bool> _canExecute;
+        private readonly Action<T> _execute;
+        private readonly Predicate<T> _canExecute;
 
         #endregion Properties
 
@@ -22,7 +23,7 @@ namespace BallDragDrop.Commands
         /// </summary>
         /// <param name="execute">The execution logic.</param>
         /// <param name="canExecute">The execution status logic.</param>
-        public RelayCommand(Action execute, Func<bool> canExecute = null)
+        public RelayCommand(Action<T> execute, Predicate<T> canExecute = null)
         {
             this._execute = execute ?? throw new ArgumentNullException(nameof(execute));
             this._canExecute = canExecute;
@@ -48,7 +49,7 @@ namespace BallDragDrop.Commands
         /// <returns>true if this command can be executed; otherwise, false.</returns>
         public bool CanExecute(object parameter)
         {
-            return this._canExecute?.Invoke() ?? true;
+            return this._canExecute?.Invoke((T)parameter) ?? true;
         }
 
         /// <summary>
@@ -57,7 +58,7 @@ namespace BallDragDrop.Commands
         /// <param name="parameter">Data used by the command.</param>
         public void Execute(object parameter)
         {
-            this._execute();
+            this._execute((T)parameter);
         }
 
         #endregion Methods

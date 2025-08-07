@@ -59,8 +59,13 @@
     <EnableCodingStandardsValidation Condition="'$(Configuration)' == 'Release'">true</EnableCodingStandardsValidation>
 
     <!-- Configure whether to fail build on critical violations -->
-    <!-- Set to false initially to avoid breaking existing builds -->
-    <FailBuildOnCriticalViolations>false</FailBuildOnCriticalViolations>
+    <!-- Set to true to enforce enhanced standards -->
+    <FailBuildOnCriticalViolations>true</FailBuildOnCriticalViolations>
+
+    <!-- Enhanced standards enforcement -->
+    <EnforceEnhancedStandards>true</EnforceEnhancedStandards>
+    <TreatThisQualifierViolationsAsErrors>true</TreatThisQualifierViolationsAsErrors>
+    <TreatClassFileOrganizationViolationsAsErrors>true</TreatClassFileOrganizationViolationsAsErrors>
 
     <!-- Generate XML documentation for better analysis -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

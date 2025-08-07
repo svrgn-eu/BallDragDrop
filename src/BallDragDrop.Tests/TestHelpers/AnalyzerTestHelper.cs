@@ -110,5 +110,76 @@ namespace BallDragDrop.Tests.TestHelpers
             Assert.AreEqual(expectedLine, actualLine, $"Expected diagnostic at line {expectedLine}, but found at line {actualLine}");
             Assert.AreEqual(expectedColumn, actualColumn, $"Expected diagnostic at column {expectedColumn}, but found at column {actualColumn}");
         }
+
+        /// <summary>
+        /// Creates a compilation from multiple source files
+        /// </summary>
+        /// <param name="sources">Dictionary of file paths to source code</param>
+        /// <returns>A compilation object</returns>
+        public static Compilation CreateCompilationWithMultipleFiles(System.Collections.Generic.Dictionary<string, string> sources)
+        {
+            var syntaxTrees = sources.Select(kvp => CSharpSyntaxTree.ParseText(kvp.Value, path: kvp.Key)).ToArray();
+            
+            var references = new[]
+            {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.Console).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo).Assembly.Location)
+            };
+
+            return CSharpCompilation.Create(
+                "TestAssembly",
+                syntaxTrees,
+                references,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        }
+
+        /// <summary>
+        /// Runs an analyzer on multiple files and returns diagnostics
+        /// </summary>
+        /// <param name="analyzer">The analyzer to run</param>
+        /// <param name="sources">Dictionary of file paths to source code</param>
+        /// <returns>Array of diagnostics</returns>
+        public static Diagnostic[] GetDiagnosticsWithMultipleFiles(DiagnosticAnalyzer analyzer, System.Collections.Generic.Dictionary<string, string> sources)
+        {
+            var compilation = CreateCompilationWithMultipleFiles(sources);
+            var compilationWithAnalyzers = compilation.WithAnalyzers(ImmutableArray.Create(analyzer));
+            
+            var diagnostics = compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync().Result;
+            return diagnostics.OrderBy(d => d.Location.SourceSpan.Start).ToArray();
+        }
+
+        /// <summary>
+        /// Verifies that no diagnostics are reported for the given sources with multiple files
+        /// </summary>
+        /// <param name="analyzer">The analyzer to run</param>
+        /// <param name="sources">Dictionary of file paths to source code</param>
+        public static void VerifyNoDiagnosticsWithMultipleFiles(DiagnosticAnalyzer analyzer, System.Collections.Generic.Dictionary<string, string> sources)
+        {
+            var diagnostics = GetDiagnosticsWithMultipleFiles(analyzer, sources);
+            
+            if (diagnostics.Length > 0)
+            {
+                var diagnosticMessages = string.Join("\n", diagnostics.Select(d => $"{d.Id}: {d.GetMessage()} at {d.Location}"));
+                throw new AssertFailedException($"Expected no diagnostics, but found:\n{diagnosticMessages}");
+            }
+        }
+
+        /// <summary>
+        /// Verifies that specific diagnostics are reported for the given sources with multiple files
+        /// </summary>
+        /// <param name="analyzer">The analyzer to run</param>
+        /// <param name="sources">Dictionary of file paths to source code</param>
+        /// <param name="expectedDiagnosticIds">The expected diagnostic IDs</param>
+        public static void VerifyDiagnosticsWithMultipleFiles(DiagnosticAnalyzer analyzer, System.Collections.Generic.Dictionary<string, string> sources, string[] expectedDiagnosticIds)
+        {
+            var diagnostics = GetDiagnosticsWithMultipleFiles(analyzer, sources);
+            var actualIds = diagnostics.Select(d => d.Id).ToArray();
+            
+            CollectionAssert.AreEqual(expectedDiagnosticIds, actualIds, 
+                $"Expected diagnostics: [{string.Join(", ", expectedDiagnosticIds)}], " +
+                $"but found: [{string.Join(", ", actualIds)}]");
+        }
     }
 }
