@@ -219,6 +219,159 @@ namespace BallDragDrop.Services
             _logService?.LogDebug("Show bounding box setting changed from {OldValue} to {NewValue}", oldValue, show);
         }
 
+        /// <summary>
+        /// Gets the cursor configuration from settings
+        /// </summary>
+        /// <returns>The cursor configuration</returns>
+        public CursorConfiguration GetCursorConfiguration()
+        {
+            _logService?.LogMethodEntry(nameof(GetCursorConfiguration));
+            
+            try
+            {
+                if (_configuration == null)
+                {
+                    _logService?.LogWarning("Configuration not initialized, returning default cursor configuration");
+                    return GetDefaultCursorConfiguration();
+                }
+
+                var cursorConfig = new CursorConfiguration
+                {
+                    EnableCustomCursors = _configuration.CursorConfiguration_EnableCustomCursors,
+                    DefaultCursorPath = _configuration.CursorConfiguration_DefaultCursorPath ?? "",
+                    HoverCursorPath = _configuration.CursorConfiguration_HoverCursorPath ?? "",
+                    GrabbingCursorPath = _configuration.CursorConfiguration_GrabbingCursorPath ?? "",
+                    ReleasingCursorPath = _configuration.CursorConfiguration_ReleasingCursorPath ?? "",
+                    DebounceTimeMs = _configuration.CursorConfiguration_DebounceTimeMs,
+                    ReleasingDurationMs = _configuration.CursorConfiguration_ReleasingDurationMs
+                };
+
+                _logService?.LogDebug("Retrieved cursor configuration: EnableCustomCursors={EnableCustomCursors}, DebounceTimeMs={DebounceTimeMs}", 
+                    cursorConfig.EnableCustomCursors, cursorConfig.DebounceTimeMs);
+                
+                _logService?.LogMethodExit(nameof(GetCursorConfiguration));
+                return cursorConfig;
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error retrieving cursor configuration");
+                _logService?.LogMethodExit(nameof(GetCursorConfiguration));
+                return GetDefaultCursorConfiguration();
+            }
+        }
+
+        /// <summary>
+        /// Validates the cursor configuration and returns validation results
+        /// </summary>
+        /// <param name="configuration">The cursor configuration to validate</param>
+        /// <returns>True if configuration is valid, false otherwise</returns>
+        public bool ValidateCursorConfiguration(CursorConfiguration configuration)
+        {
+            _logService?.LogMethodEntry(nameof(ValidateCursorConfiguration));
+            
+            if (configuration == null)
+            {
+                _logService?.LogWarning("Cursor configuration is null");
+                _logService?.LogMethodExit(nameof(ValidateCursorConfiguration));
+                return false;
+            }
+
+            var isValid = true;
+
+            // Validate debounce time
+            if (configuration.DebounceTimeMs < 1 || configuration.DebounceTimeMs > 1000)
+            {
+                _logService?.LogWarning("Invalid debounce time: {DebounceTimeMs}ms. Must be between 1 and 1000ms", 
+                    configuration.DebounceTimeMs);
+                isValid = false;
+            }
+
+            // Validate releasing duration
+            if (configuration.ReleasingDurationMs < 50 || configuration.ReleasingDurationMs > 5000)
+            {
+                _logService?.LogWarning("Invalid releasing duration: {ReleasingDurationMs}ms. Must be between 50 and 5000ms", 
+                    configuration.ReleasingDurationMs);
+                isValid = false;
+            }
+
+            // Validate cursor paths if custom cursors are enabled
+            if (configuration.EnableCustomCursors)
+            {
+                var cursorPaths = new[]
+                {
+                    ("DefaultCursorPath", configuration.DefaultCursorPath),
+                    ("HoverCursorPath", configuration.HoverCursorPath),
+                    ("GrabbingCursorPath", configuration.GrabbingCursorPath),
+                    ("ReleasingCursorPath", configuration.ReleasingCursorPath)
+                };
+
+                foreach (var (pathName, pathValue) in cursorPaths)
+                {
+                    if (string.IsNullOrWhiteSpace(pathValue))
+                    {
+                        _logService?.LogWarning("Cursor path {PathName} is null or empty", pathName);
+                        isValid = false;
+                        continue;
+                    }
+
+                    // Validate that the path has a PNG extension
+                    if (!pathValue.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logService?.LogWarning("Cursor path {PathName} does not have .png extension: {PathValue}", 
+                            pathName, pathValue);
+                        isValid = false;
+                    }
+
+                    // Check if file exists (relative to application directory)
+                    try
+                    {
+                        var appDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) 
+                                          ?? Environment.CurrentDirectory;
+                        var fullPath = Path.Combine(appDirectory, pathValue);
+                        
+                        if (!File.Exists(fullPath))
+                        {
+                            _logService?.LogWarning("Cursor file not found for {PathName}: {FullPath}", pathName, fullPath);
+                            // Don't mark as invalid - file might be created later, just log warning
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logService?.LogError(ex, "Error validating cursor path {PathName}: {PathValue}", pathName, pathValue);
+                        isValid = false;
+                    }
+                }
+            }
+
+            _logService?.LogDebug("Cursor configuration validation result: {IsValid}", isValid);
+            _logService?.LogMethodExit(nameof(ValidateCursorConfiguration));
+            return isValid;
+        }
+
+        /// <summary>
+        /// Gets the default cursor configuration with fallback values
+        /// </summary>
+        /// <returns>Default cursor configuration</returns>
+        public CursorConfiguration GetDefaultCursorConfiguration()
+        {
+            _logService?.LogMethodEntry(nameof(GetDefaultCursorConfiguration));
+            
+            var defaultConfig = new CursorConfiguration
+            {
+                EnableCustomCursors = true,
+                DefaultCursorPath = Constants.DEFAULT_CURSOR_PATH,
+                HoverCursorPath = Constants.DEFAULT_HOVER_CURSOR_PATH,
+                GrabbingCursorPath = Constants.DEFAULT_GRABBING_CURSOR_PATH,
+                ReleasingCursorPath = Constants.DEFAULT_RELEASING_CURSOR_PATH,
+                DebounceTimeMs = Constants.DEFAULT_CURSOR_DEBOUNCE_TIME_MS,
+                ReleasingDurationMs = Constants.DEFAULT_CURSOR_RELEASING_DURATION_MS
+            };
+
+            _logService?.LogDebug("Created default cursor configuration");
+            _logService?.LogMethodExit(nameof(GetDefaultCursorConfiguration));
+            return defaultConfig;
+        }
+
         #endregion Public Methods
     }
 }

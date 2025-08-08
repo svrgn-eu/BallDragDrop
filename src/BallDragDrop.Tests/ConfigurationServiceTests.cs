@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using BallDragDrop.Contracts;
+using BallDragDrop.Models;
 using BallDragDrop.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -437,5 +438,201 @@ namespace BallDragDrop.Tests
         }
 
         #endregion Integration Tests
+
+        #region Cursor Configuration Tests
+
+        [TestMethod]
+        public async Task GetCursorConfiguration_WithDefaultConfiguration_ShouldReturnDefaults()
+        {
+            // Arrange
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+            service.Initialize();
+
+            // Act
+            var result = service.GetCursorConfiguration();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.EnableCustomCursors);
+            Assert.AreEqual("Resources/Cursors/default.png", result.DefaultCursorPath);
+            Assert.AreEqual("Resources/Cursors/hover.png", result.HoverCursorPath);
+            Assert.AreEqual("Resources/Cursors/grabbing.png", result.GrabbingCursorPath);
+            Assert.AreEqual("Resources/Cursors/releasing.png", result.ReleasingCursorPath);
+            Assert.AreEqual(16, result.DebounceTimeMs);
+            Assert.AreEqual(200, result.ReleasingDurationMs);
+        }
+
+        [TestMethod]
+        public async Task GetCursorConfiguration_WithCustomConfiguration_ShouldReturnCustomValues()
+        {
+            // Arrange
+            var json = @"{
+                ""CursorConfiguration_EnableCustomCursors"": false,
+                ""CursorConfiguration_DefaultCursorPath"": ""Custom/default.png"",
+                ""CursorConfiguration_HoverCursorPath"": ""Custom/hover.png"",
+                ""CursorConfiguration_GrabbingCursorPath"": ""Custom/grabbing.png"",
+                ""CursorConfiguration_ReleasingCursorPath"": ""Custom/releasing.png"",
+                ""CursorConfiguration_DebounceTimeMs"": 32,
+                ""CursorConfiguration_ReleasingDurationMs"": 500
+            }";
+            await File.WriteAllTextAsync(_testConfigFilePath, json);
+
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+            service.Initialize();
+
+            // Act
+            var result = service.GetCursorConfiguration();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsFalse(result.EnableCustomCursors);
+            Assert.AreEqual("Custom/default.png", result.DefaultCursorPath);
+            Assert.AreEqual("Custom/hover.png", result.HoverCursorPath);
+            Assert.AreEqual("Custom/grabbing.png", result.GrabbingCursorPath);
+            Assert.AreEqual("Custom/releasing.png", result.ReleasingCursorPath);
+            Assert.AreEqual(32, result.DebounceTimeMs);
+            Assert.AreEqual(500, result.ReleasingDurationMs);
+        }
+
+        [TestMethod]
+        public void GetCursorConfiguration_WithUninitializedConfiguration_ShouldReturnDefaults()
+        {
+            // Arrange
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+            // Don't call Initialize()
+
+            // Act
+            var result = service.GetCursorConfiguration();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.EnableCustomCursors);
+            Assert.AreEqual("Resources/Cursors/default.png", result.DefaultCursorPath);
+        }
+
+        [TestMethod]
+        public void GetDefaultCursorConfiguration_ShouldReturnValidDefaults()
+        {
+            // Arrange
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+
+            // Act
+            var result = service.GetDefaultCursorConfiguration();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.EnableCustomCursors);
+            Assert.AreEqual("Resources/Cursors/default.png", result.DefaultCursorPath);
+            Assert.AreEqual("Resources/Cursors/hover.png", result.HoverCursorPath);
+            Assert.AreEqual("Resources/Cursors/grabbing.png", result.GrabbingCursorPath);
+            Assert.AreEqual("Resources/Cursors/releasing.png", result.ReleasingCursorPath);
+            Assert.AreEqual(16, result.DebounceTimeMs);
+            Assert.AreEqual(200, result.ReleasingDurationMs);
+        }
+
+        [TestMethod]
+        public void ValidateCursorConfiguration_WithNullConfiguration_ShouldReturnFalse()
+        {
+            // Arrange
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+
+            // Act
+            var result = service.ValidateCursorConfiguration(null);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public void ValidateCursorConfiguration_WithValidConfiguration_ShouldReturnTrue()
+        {
+            // Arrange
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+            var config = service.GetDefaultCursorConfiguration();
+
+            // Act
+            var result = service.ValidateCursorConfiguration(config);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public void ValidateCursorConfiguration_WithInvalidDebounceTime_ShouldReturnFalse()
+        {
+            // Arrange
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+            var config = service.GetDefaultCursorConfiguration();
+            config.DebounceTimeMs = 0; // Invalid - too low
+
+            // Act
+            var result = service.ValidateCursorConfiguration(config);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public void ValidateCursorConfiguration_WithInvalidReleasingDuration_ShouldReturnFalse()
+        {
+            // Arrange
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+            var config = service.GetDefaultCursorConfiguration();
+            config.ReleasingDurationMs = 10; // Invalid - too low
+
+            // Act
+            var result = service.ValidateCursorConfiguration(config);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public void ValidateCursorConfiguration_WithEmptyCursorPath_ShouldReturnFalse()
+        {
+            // Arrange
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+            var config = service.GetDefaultCursorConfiguration();
+            config.DefaultCursorPath = ""; // Invalid - empty path
+
+            // Act
+            var result = service.ValidateCursorConfiguration(config);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public void ValidateCursorConfiguration_WithNonPngExtension_ShouldReturnFalse()
+        {
+            // Arrange
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+            var config = service.GetDefaultCursorConfiguration();
+            config.DefaultCursorPath = "Resources/Cursors/default.jpg"; // Invalid - not PNG
+
+            // Act
+            var result = service.ValidateCursorConfiguration(config);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public void ValidateCursorConfiguration_WithCustomCursorsDisabled_ShouldSkipPathValidation()
+        {
+            // Arrange
+            var service = new ConfigurationService(_mockLogService.Object, _testConfigFilePath);
+            var config = service.GetDefaultCursorConfiguration();
+            config.EnableCustomCursors = false;
+            config.DefaultCursorPath = ""; // Would be invalid if custom cursors were enabled
+
+            // Act
+            var result = service.ValidateCursorConfiguration(config);
+
+            // Assert
+            Assert.IsTrue(result); // Should be valid because custom cursors are disabled
+        }
+
+        #endregion Cursor Configuration Tests
     }
 }

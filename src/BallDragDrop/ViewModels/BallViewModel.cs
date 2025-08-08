@@ -2252,15 +2252,19 @@ namespace BallDragDrop.ViewModels
 
             try
             {
-                // Only trigger hover state if ball is in idle state
-                if (_stateMachine?.CurrentState == BallState.Idle)
+                // Allow hover state when ball is idle or thrown (mid-air)
+                if (_stateMachine?.CurrentState == BallState.Idle || _stateMachine?.CurrentState == BallState.Thrown)
                 {
                     // Fire the MouseOverBall trigger to transition to hover state
                     if (_handStateMachine != null && _handStateMachine.CanFire(HandTrigger.MouseOverBall))
                     {
                         _handStateMachine.Fire(HandTrigger.MouseOverBall);
-                        _logService?.LogDebug("Hand state machine: MouseOverBall triggered");
+                        _logService?.LogDebug("Hand state machine: MouseOverBall triggered for ball state {BallState}", _stateMachine?.CurrentState);
                     }
+                }
+                else
+                {
+                    _logService?.LogDebug("Mouse enter ignored - ball is in {BallState} state", _stateMachine?.CurrentState);
                 }
             }
             catch (Exception ex)
