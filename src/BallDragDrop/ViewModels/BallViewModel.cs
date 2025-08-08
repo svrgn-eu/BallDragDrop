@@ -37,6 +37,16 @@ namespace BallDragDrop.ViewModels
         public ICommand MouseUpCommand { get; }
 
         /// <summary>
+        /// Command for handling mouse enter events
+        /// </summary>
+        public ICommand MouseEnterCommand { get; }
+
+        /// <summary>
+        /// Command for handling mouse leave events
+        /// </summary>
+        public ICommand MouseLeaveCommand { get; }
+
+        /// <summary>
         /// Gets or sets the X position of the ball
         /// </summary>
         public double X
@@ -266,6 +276,11 @@ namespace BallDragDrop.ViewModels
         public BallState CurrentState => _stateMachine?.CurrentState ?? BallState.Idle;
 
         /// <summary>
+        /// Gets the current hand state from the hand state machine
+        /// </summary>
+        public HandState CurrentHandState => _handStateMachine?.CurrentState ?? HandState.Default;
+
+        /// <summary>
         /// Gets a value indicating whether the ball is in the Idle state
         /// </summary>
         public bool IsInIdleState => CurrentState == BallState.Idle;
@@ -391,12 +406,14 @@ namespace BallDragDrop.ViewModels
         /// </summary>
         /// <param name="logService">Logging service for tracking user interactions</param>
         /// <param name="stateMachine">State machine for managing ball state transitions</param>
+        /// <param name="handStateMachine">Hand state machine for managing cursor states</param>
         /// <param name="imageService">Image service for loading and managing visual content</param>
         /// <param name="configurationService">Configuration service for accessing application settings</param>
-        public BallViewModel(ILogService logService, IBallStateMachine stateMachine, ImageService imageService = null, IConfigurationService configurationService = null)
+        public BallViewModel(ILogService logService, IBallStateMachine stateMachine, IHandStateMachine handStateMachine, ImageService imageService = null, IConfigurationService configurationService = null)
         {
             _logService = logService ?? throw new ArgumentNullException(nameof(logService));
             _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
+            _handStateMachine = handStateMachine ?? throw new ArgumentNullException(nameof(handStateMachine));
             _imageService = imageService ?? new ImageService(logService);
             _configurationService = configurationService;
             
@@ -431,9 +448,17 @@ namespace BallDragDrop.ViewModels
             MouseDownCommand = new RelayCommand<MouseEventArgs>(OnMouseDown);
             MouseMoveCommand = new RelayCommand<MouseEventArgs>(OnMouseMove);
             MouseUpCommand = new RelayCommand<MouseEventArgs>(OnMouseUp);
+            MouseEnterCommand = new RelayCommand<MouseEventArgs>(OnMouseEnter);
+            MouseLeaveCommand = new RelayCommand<MouseEventArgs>(OnMouseLeave);
 
             // Subscribe to state machine notifications
             _stateMachine.Subscribe(this);
+            
+            // Subscribe to hand state machine notifications
+            if (_handStateMachine != null)
+            {
+                _handStateMachine.StateChanged += OnHandStateChanged;
+            }
 
             // Load default ball image asynchronously (fire-and-forget with error handling)
             _ = Task.Run(async () =>
@@ -458,12 +483,14 @@ namespace BallDragDrop.ViewModels
         /// <param name="y">Initial Y position</param>
         /// <param name="radius">Ball radius</param>
         /// <param name="stateMachine">State machine for managing ball state transitions</param>
+        /// <param name="handStateMachine">Hand state machine for managing cursor states</param>
         /// <param name="imageService">Optional image service for testing</param>
-        public BallViewModel(double x, double y, double radius, IBallStateMachine stateMachine = null, ImageService imageService = null)
+        public BallViewModel(double x, double y, double radius, IBallStateMachine stateMachine = null, IHandStateMachine handStateMachine = null, ImageService imageService = null)
         {
             // For testing, use a null log service or get from app
             _logService = GetLogServiceFromApp();
             _stateMachine = stateMachine; // Allow null for testing
+            _handStateMachine = handStateMachine; // Allow null for testing
             _imageService = imageService ?? new ImageService(_logService);
             
             // Initialize with provided values
@@ -493,9 +520,17 @@ namespace BallDragDrop.ViewModels
             MouseDownCommand = new RelayCommand<MouseEventArgs>(OnMouseDown);
             MouseMoveCommand = new RelayCommand<MouseEventArgs>(OnMouseMove);
             MouseUpCommand = new RelayCommand<MouseEventArgs>(OnMouseUp);
+            MouseEnterCommand = new RelayCommand<MouseEventArgs>(OnMouseEnter);
+            MouseLeaveCommand = new RelayCommand<MouseEventArgs>(OnMouseLeave);
 
             // Subscribe to state machine notifications if available
             _stateMachine?.Subscribe(this);
+            
+            // Subscribe to hand state machine notifications if available
+            if (_handStateMachine != null)
+            {
+                _handStateMachine.StateChanged += OnHandStateChanged;
+            }
             
             _logService?.LogDebug("BallViewModel created for testing at position ({0}, {1}) with radius {2}", x, y, radius);
         }
@@ -534,6 +569,11 @@ namespace BallDragDrop.ViewModels
         /// State machine for managing ball state transitions
         /// </summary>
         private readonly IBallStateMachine _stateMachine;
+
+        /// <summary>
+        /// Hand state machine for managing cursor states
+        /// </summary>
+        private readonly IHandStateMachine _handStateMachine;
 
         /// <summary>
         /// Image source for the ball
@@ -1843,6 +1883,13 @@ namespace BallDragDrop.ViewModels
                     try
                     {
                         _stateMachine.Fire(BallTrigger.MouseDown);
+                        
+                        // Also trigger hand state machine to start grabbing
+                        if (_handStateMachine != null && _handStateMachine.CanFire(HandTrigger.StartGrabbing))
+                        {
+                            _handStateMachine.Fire(HandTrigger.StartGrabbing);
+                            _logService?.LogDebug("Hand state machine: StartGrabbing triggered");
+                        }
                     }
                     catch (InvalidOperationException ex)
                     {
@@ -2076,6 +2123,13 @@ namespace BallDragDrop.ViewModels
                     {
                         _stateMachine.Fire(BallTrigger.Release);
                         _logService?.LogInformation("BALLVIEWMODEL - State transition to Thrown successful");
+                        
+                        // Also trigger hand state machine to stop grabbing
+                        if (_handStateMachine != null && _handStateMachine.CanFire(HandTrigger.StopGrabbing))
+                        {
+                            _handStateMachine.Fire(HandTrigger.StopGrabbing);
+                            _logService?.LogDebug("Hand state machine: StopGrabbing triggered");
+                        }
                     }
                     catch (InvalidOperationException ex)
                     {
@@ -2185,6 +2239,75 @@ namespace BallDragDrop.ViewModels
                     // Default cursor when not interacting with the ball
                     CurrentCursor = Cursors.Arrow;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Handles mouse enter events for ball-specific hover detection
+        /// </summary>
+        /// <param name="e">Mouse event arguments</param>
+        private void OnMouseEnter(MouseEventArgs e)
+        {
+            if (e == null) return;
+
+            try
+            {
+                // Only trigger hover state if ball is in idle state
+                if (_stateMachine?.CurrentState == BallState.Idle)
+                {
+                    // Fire the MouseOverBall trigger to transition to hover state
+                    if (_handStateMachine != null && _handStateMachine.CanFire(HandTrigger.MouseOverBall))
+                    {
+                        _handStateMachine.Fire(HandTrigger.MouseOverBall);
+                        _logService?.LogDebug("Hand state machine: MouseOverBall triggered");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error handling mouse enter event");
+            }
+        }
+
+        /// <summary>
+        /// Handles mouse leave events for ball-specific hover detection
+        /// </summary>
+        /// <param name="e">Mouse event arguments</param>
+        private void OnMouseLeave(MouseEventArgs e)
+        {
+            if (e == null) return;
+
+            try
+            {
+                // Fire the MouseLeaveBall trigger to exit hover state
+                if (_handStateMachine != null && _handStateMachine.CanFire(HandTrigger.MouseLeaveBall))
+                {
+                    _handStateMachine.Fire(HandTrigger.MouseLeaveBall);
+                    _logService?.LogDebug("Hand state machine: MouseLeaveBall triggered");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error handling mouse leave event");
+            }
+        }
+
+        /// <summary>
+        /// Handles hand state changes from the hand state machine
+        /// </summary>
+        /// <param name="sender">The source of the event</param>
+        /// <param name="e">Event data containing hand state change information</param>
+        private void OnHandStateChanged(object sender, HandStateChangedEventArgs e)
+        {
+            try
+            {
+                // Notify UI that hand state has changed
+                OnPropertyChanged(nameof(CurrentHandState));
+                _logService?.LogDebug("Hand state changed from {PreviousState} to {NewState}", e.PreviousState, e.NewState);
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogError(ex, "Error handling hand state change");
             }
         }
 

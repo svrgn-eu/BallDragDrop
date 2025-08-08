@@ -231,6 +231,11 @@
             Registers other application-specific services
             </summary>
         </member>
+        <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.RegisterCursorServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers cursor-related services for dependency injection
+            </summary>
+        </member>
         <member name="M:BallDragDrop.Bootstrapper.ServiceBootstrapper.GetService``1">
             <summary>
             Gets a service of the specified type
@@ -561,6 +566,28 @@
             Gets or sets whether to show the ball's bounding box for debugging
             </summary>
         </member>
+        <member name="T:BallDragDrop.Contracts.ICursorService">
+            <summary>
+            Service for managing custom PNG cursors based on hand state
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.ICursorService.SetCursorForHandState(BallDragDrop.Models.HandState)">
+            <summary>
+            Sets the cursor for the specified hand state
+            </summary>
+            <param name="handState">The hand state</param>
+        </member>
+        <member name="M:BallDragDrop.Contracts.ICursorService.ReloadConfigurationAsync">
+            <summary>
+            Reloads cursor configuration from settings
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.ICursorService.GetCurrentCursorState">
+            <summary>
+            Gets the current cursor state for debugging
+            </summary>
+            <returns>Current cursor state description</returns>
+        </member>
         <member name="T:BallDragDrop.Contracts.IExceptionHandlingService">
             <summary>
             Interface for enhanced exception handling service
@@ -599,6 +626,39 @@
             </summary>
             <param name="exception">The critical exception</param>
             <param name="applicationState">Current application state</param>
+        </member>
+        <member name="T:BallDragDrop.Contracts.IHandStateMachine">
+            <summary>
+            State machine for managing hand/interaction states that drive cursor changes
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Contracts.IHandStateMachine.CurrentState">
+            <summary>
+            Current hand state
+            </summary>
+        </member>
+        <member name="E:BallDragDrop.Contracts.IHandStateMachine.StateChanged">
+            <summary>
+            Event fired when hand state changes
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IHandStateMachine.Fire(BallDragDrop.Models.HandTrigger)">
+            <summary>
+            Triggers a hand state transition
+            </summary>
+            <param name="trigger">The trigger causing the transition</param>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IHandStateMachine.CanFire(BallDragDrop.Models.HandTrigger)">
+            <summary>
+            Checks if a trigger can be fired from current state
+            </summary>
+            <param name="trigger">The trigger to check</param>
+            <returns>True if trigger is valid</returns>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IHandStateMachine.Reset">
+            <summary>
+            Resets hand state machine to default state
+            </summary>
         </member>
         <member name="T:BallDragDrop.Contracts.ILogService">
             <summary>
@@ -1649,6 +1709,46 @@
             resetting the ball to its initial position and clearing all velocity.
             </summary>
         </member>
+        <member name="T:BallDragDrop.Models.CursorConfiguration">
+            <summary>
+            Configuration model for cursor settings
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.CursorConfiguration.DefaultCursorPath">
+            <summary>
+            Path to default cursor PNG file
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.CursorConfiguration.HoverCursorPath">
+            <summary>
+            Path to hover cursor PNG file
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.CursorConfiguration.GrabbingCursorPath">
+            <summary>
+            Path to grabbing cursor PNG file
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.CursorConfiguration.ReleasingCursorPath">
+            <summary>
+            Path to releasing cursor PNG file
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.CursorConfiguration.EnableCustomCursors">
+            <summary>
+            Whether to enable custom cursors
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.CursorConfiguration.DebounceTimeMs">
+            <summary>
+            Cursor update debounce time in milliseconds
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.CursorConfiguration.ReleasingDurationMs">
+            <summary>
+            Duration to show releasing cursor in milliseconds
+            </summary>
+        </member>
         <member name="T:BallDragDrop.Models.DualTimerCoordinationMetrics">
             <summary>
             Comprehensive metrics for dual timer system coordination
@@ -1727,6 +1827,99 @@
             </summary>
             <param name="fps">The FPS value</param>
             <param name="timestamp">The timestamp when this reading was taken</param>
+        </member>
+        <member name="T:BallDragDrop.Models.HandState">
+            <summary>
+            Hand states for cursor management
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.HandState.Default">
+            <summary>
+            Normal cursor, ready for interaction
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.HandState.Hover">
+            <summary>
+            Mouse over interactable element
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.HandState.Grabbing">
+            <summary>
+            Actively dragging/holding
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.HandState.Releasing">
+            <summary>
+            Brief state during release
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Models.HandStateChangedEventArgs">
+            <summary>
+            Event arguments for hand state changes
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.HandStateChangedEventArgs.PreviousState">
+            <summary>
+            Previous hand state
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.HandStateChangedEventArgs.NewState">
+            <summary>
+            New hand state
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.HandStateChangedEventArgs.Trigger">
+            <summary>
+            Trigger that caused the state change
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Models.HandStateChangedEventArgs.Timestamp">
+            <summary>
+            Timestamp of the state change
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Models.HandStateChangedEventArgs.#ctor(BallDragDrop.Models.HandState,BallDragDrop.Models.HandState,BallDragDrop.Models.HandTrigger)">
+            <summary>
+            Initializes a new instance of the HandStateChangedEventArgs class
+            </summary>
+            <param name="previousState">Previous hand state</param>
+            <param name="newState">New hand state</param>
+            <param name="trigger">Trigger that caused the state change</param>
+        </member>
+        <member name="T:BallDragDrop.Models.HandTrigger">
+            <summary>
+            Triggers for hand state transitions
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.HandTrigger.MouseOverBall">
+            <summary>
+            Mouse enters ball area
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.HandTrigger.MouseLeaveBall">
+            <summary>
+            Mouse leaves ball area
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.HandTrigger.StartGrabbing">
+            <summary>
+            Begin drag operation
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.HandTrigger.StopGrabbing">
+            <summary>
+            End drag operation
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.HandTrigger.ReleaseComplete">
+            <summary>
+            Release animation complete
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Models.HandTrigger.Reset">
+            <summary>
+            Reset to default state
+            </summary>
         </member>
         <member name="T:BallDragDrop.Models.PhysicsEngine">
             <summary>
@@ -2139,57 +2332,231 @@
             </summary>
             <param name="show">True to show bounding box, false to hide</param>
         </member>
+        <member name="T:BallDragDrop.Services.CursorImageLoader">
+            <summary>
+            Handles PNG image loading and conversion to WPF cursors
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.CursorImageLoader.CursorSize">
+            <summary>
+            Standard cursor size in pixels
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.CursorImageLoader._logService">
+            <summary>
+            Log service for error reporting
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorImageLoader.#ctor(BallDragDrop.Contracts.ILogService)">
+            <summary>
+            Initializes a new instance of the CursorImageLoader class
+            </summary>
+            <param name="logService">Log service for error reporting</param>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorImageLoader.LoadPngAsCursor(System.String)">
+            <summary>
+            Loads a PNG file and converts it to a WPF Cursor
+            </summary>
+            <param name="pngPath">Relative path to the PNG file from application directory</param>
+            <returns>WPF Cursor object</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorImageLoader.LoadPngAsCursorWithFallback(System.String,System.Windows.Input.Cursor)">
+            <summary>
+            Loads a PNG file and converts it to a WPF Cursor with fallback handling
+            </summary>
+            <param name="pngPath">Relative path to the PNG file from application directory</param>
+            <param name="fallbackCursor">Cursor to use if loading fails</param>
+            <returns>WPF Cursor object</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorImageLoader.LoadBitmapWithValidation(System.String)">
+            <summary>
+            Loads a bitmap with validation and error handling
+            </summary>
+            <param name="fullPath">Full path to the image file</param>
+            <returns>Loaded bitmap image</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorImageLoader.ResizeImage(System.Windows.Media.Imaging.BitmapImage)">
+            <summary>
+            Resizes an image to the standard cursor size (30x30)
+            </summary>
+            <param name="source">Source bitmap image</param>
+            <returns>Resized bitmap image</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorImageLoader.ConvertBitmapToCursor(System.Windows.Media.Imaging.BitmapImage)">
+            <summary>
+            Converts a BitmapImage to a Cursor
+            </summary>
+            <param name="bitmap">Source bitmap</param>
+            <returns>WPF Cursor</returns>
+        </member>
+        <member name="T:BallDragDrop.Services.CursorManager">
+            <summary>
+            Manages cursor loading, caching, and application
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.CursorManager._configurationService">
+            <summary>
+            Configuration service for cursor settings
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.CursorManager._logService">
+            <summary>
+            Log service for error reporting
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.CursorManager._imageLoader">
+            <summary>
+            Image loader for PNG cursor files
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.CursorManager._cursorCache">
+            <summary>
+            Cache of loaded cursors by hand state
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.CursorManager._cacheLock">
+            <summary>
+            Lock object for thread-safe cache operations
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.CursorManager._currentConfiguration">
+            <summary>
+            Current cursor configuration
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.CursorManager._currentHandState">
+            <summary>
+            Current hand state for debugging
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.CursorManager._cursorUpdateThrottler">
+            <summary>
+            Event throttler for cursor updates to prevent flickering
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.#ctor(BallDragDrop.Contracts.IConfigurationService,BallDragDrop.Contracts.ILogService,BallDragDrop.Services.CursorImageLoader,BallDragDrop.Models.CursorConfiguration)">
+            <summary>
+            Initializes a new instance of the CursorManager class
+            </summary>
+            <param name="configurationService">Configuration service</param>
+            <param name="logService">Log service</param>
+            <param name="imageLoader">Image loader for PNG files</param>
+            <param name="cursorConfiguration">Cursor configuration</param>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.SetCursorForHandState(BallDragDrop.Models.HandState)">
+            <summary>
+            Sets the cursor for the specified hand state
+            </summary>
+            <param name="handState">The hand state</param>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.ReloadConfigurationAsync">
+            <summary>
+            Reloads cursor configuration from settings
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.GetCurrentCursorState">
+            <summary>
+            Gets the current cursor state for debugging
+            </summary>
+            <returns>Current cursor state description</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.GetCursorForHandState(BallDragDrop.Models.HandState)">
+            <summary>
+            Gets the cursor for the specified hand state, loading from cache or file
+            </summary>
+            <param name="handState">Hand state</param>
+            <returns>Cursor for the hand state</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.LoadCursorFromConfiguration(BallDragDrop.Models.HandState)">
+            <summary>
+            Loads a cursor from configuration for the specified hand state
+            </summary>
+            <param name="handState">Hand state</param>
+            <returns>Loaded cursor</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.GetCursorPathForHandState(BallDragDrop.Models.HandState)">
+            <summary>
+            Gets the cursor path for the specified hand state from configuration
+            </summary>
+            <param name="handState">Hand state</param>
+            <returns>Cursor path or empty string if not configured</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.ApplyCursor(System.Windows.Input.Cursor)">
+            <summary>
+            Applies the cursor to the main window
+            </summary>
+            <param name="cursor">Cursor to apply</param>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.SetSystemCursor">
+            <summary>
+            Sets the system default cursor
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.LoadConfiguration">
+            <summary>
+            Loads cursor configuration from the configuration service
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.ClearCache">
+            <summary>
+            Clears the cursor cache
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.InitializeCursorUpdateThrottler">
+            <summary>
+            Initializes the cursor update throttler for performance
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.UpdateCursorNow">
+            <summary>
+            Updates the cursor immediately based on current hand state
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.SetSystemCursorThrottled">
+            <summary>
+            Sets the system default cursor using throttling
+            </summary>
+        </member>
         <member name="T:BallDragDrop.Services.EventThrottler">
             <summary>
-            Utility class for throttling events to limit their frequency
+            Throttles event execution to prevent rapid successive calls
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.EventThrottler._action">
+            <summary>
+            The action to execute when throttle allows
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.EventThrottler._throttleIntervalMs">
+            <summary>
+            The throttle interval in milliseconds
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.EventThrottler._lastExecution">
+            <summary>
+            Last execution timestamp
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.EventThrottler._lock">
+            <summary>
+            Lock object for thread safety
             </summary>
         </member>
         <member name="M:BallDragDrop.Services.EventThrottler.#ctor(System.Action,System.Int32)">
             <summary>
             Initializes a new instance of the EventThrottler class
             </summary>
-            <param name="action">The action to execute when throttled</param>
-            <param name="intervalMs">The minimum interval between executions in milliseconds</param>
-            <exception cref="T:System.ArgumentNullException">Thrown when action is null</exception>
-        </member>
-        <member name="F:BallDragDrop.Services.EventThrottler._timer">
-            <summary>
-            Timer for delayed execution
-            </summary>
-        </member>
-        <member name="F:BallDragDrop.Services.EventThrottler._action">
-            <summary>
-            Action to execute when throttled
-            </summary>
-        </member>
-        <member name="F:BallDragDrop.Services.EventThrottler._interval">
-            <summary>
-            Minimum interval between executions
-            </summary>
-        </member>
-        <member name="F:BallDragDrop.Services.EventThrottler._isQueued">
-            <summary>
-            Flag indicating if an execution is queued
-            </summary>
-        </member>
-        <member name="F:BallDragDrop.Services.EventThrottler._lastExecutionTime">
-            <summary>
-            Timestamp of the last execution
-            </summary>
+            <param name="action">Action to execute</param>
+            <param name="throttleIntervalMs">Throttle interval in milliseconds</param>
         </member>
         <member name="M:BallDragDrop.Services.EventThrottler.Execute">
             <summary>
-            Executes the action, throttling if called too frequently
+            Executes the action if throttle interval has passed
             </summary>
         </member>
         <member name="M:BallDragDrop.Services.EventThrottler.ExecuteNow">
             <summary>
-            Executes the action immediately, bypassing throttling
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Services.EventThrottler.Timer_Tick(System.Object,System.EventArgs)">
-            <summary>
-            Event handler for the timer tick
+            Executes the action immediately, bypassing throttle interval
             </summary>
         </member>
         <member name="T:BallDragDrop.Services.ExceptionHandlingService">
@@ -2321,6 +2688,126 @@
         <member name="P:BallDragDrop.Services.GifData.TotalDuration">
             <summary>
             Gets or sets the total duration of the animation
+            </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.HandStateMachine">
+            <summary>
+            State machine for managing hand/interaction states
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.HandStateMachine._stateMachine">
+            <summary>
+            The underlying state machine implementation
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.HandStateMachine._logService">
+            <summary>
+            Log service for error reporting and debugging
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.HandStateMachine._cursorService">
+            <summary>
+            Cursor service for updating cursors based on hand state
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.HandStateMachine._releasingTimer">
+            <summary>
+            Timer for releasing state duration
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.HandStateMachine._lock">
+            <summary>
+            Lock object for thread safety
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.HandStateMachine._cursorConfiguration">
+            <summary>
+            Cursor configuration for timing settings
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Services.HandStateMachine.CurrentState">
+            <summary>
+            Current hand state
+            </summary>
+        </member>
+        <member name="E:BallDragDrop.Services.HandStateMachine.StateChanged">
+            <summary>
+            Event fired when hand state changes
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.#ctor(BallDragDrop.Contracts.ILogService,BallDragDrop.Contracts.ICursorService,BallDragDrop.Models.CursorConfiguration)">
+            <summary>
+            Initializes a new instance of the HandStateMachine class
+            </summary>
+            <param name="logService">Log service for error reporting</param>
+            <param name="cursorService">Cursor service for updating cursors</param>
+            <param name="cursorConfiguration">Cursor configuration for timing settings</param>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.ConfigureStateMachine">
+            <summary>
+            Configures the state machine transitions and behaviors
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.Fire(BallDragDrop.Models.HandTrigger)">
+            <summary>
+            Triggers a hand state transition
+            </summary>
+            <param name="trigger">The trigger causing the transition</param>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.CanFire(BallDragDrop.Models.HandTrigger)">
+            <summary>
+            Checks if a trigger can be fired from current state
+            </summary>
+            <param name="trigger">The trigger to check</param>
+            <returns>True if trigger is valid</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.Reset">
+            <summary>
+            Resets hand state machine to default state
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.OnStateChanged(BallDragDrop.Models.BallState,BallDragDrop.Models.BallState,BallDragDrop.Models.BallTrigger)">
+            <summary>
+            Called when the ball state changes
+            </summary>
+            <param name="previousState">Previous ball state</param>
+            <param name="newState">New ball state</param>
+            <param name="trigger">Trigger that caused the ball state change</param>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.OnMouseOverBall">
+            <summary>
+            Handles mouse entering ball area
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.OnMouseLeaveBall">
+            <summary>
+            Handles mouse leaving ball area
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.OnDragStart">
+            <summary>
+            Handles drag operation start
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.OnDragStop">
+            <summary>
+            Handles drag operation stop
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.OnHandStateChanged(BallDragDrop.Models.HandState)">
+            <summary>
+            Called when the hand state changes
+            </summary>
+            <param name="newState">New hand state</param>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.StartReleasingTimer">
+            <summary>
+            Starts the timer for the releasing state duration
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.Dispose">
+            <summary>
+            Disposes resources used by the hand state machine
             </summary>
         </member>
         <member name="T:BallDragDrop.Services.VisualContentType">
@@ -3608,6 +4095,16 @@
             Command for handling mouse up events
             </summary>
         </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.MouseEnterCommand">
+            <summary>
+            Command for handling mouse enter events
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.MouseLeaveCommand">
+            <summary>
+            Command for handling mouse leave events
+            </summary>
+        </member>
         <member name="P:BallDragDrop.ViewModels.BallViewModel.X">
             <summary>
             Gets or sets the X position of the ball
@@ -3684,6 +4181,11 @@
             Gets the current state of the ball from the state machine
             </summary>
         </member>
+        <member name="P:BallDragDrop.ViewModels.BallViewModel.CurrentHandState">
+            <summary>
+            Gets the current hand state from the hand state machine
+            </summary>
+        </member>
         <member name="P:BallDragDrop.ViewModels.BallViewModel.IsInIdleState">
             <summary>
             Gets a value indicating whether the ball is in the Idle state
@@ -3729,16 +4231,17 @@
             Gets the visual border color for the ball based on its current state
             </summary>
         </member>
-        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(BallDragDrop.Contracts.ILogService,BallDragDrop.Contracts.IBallStateMachine,BallDragDrop.Services.ImageService,BallDragDrop.Contracts.IConfigurationService)">
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(BallDragDrop.Contracts.ILogService,BallDragDrop.Contracts.IBallStateMachine,BallDragDrop.Contracts.IHandStateMachine,BallDragDrop.Services.ImageService,BallDragDrop.Contracts.IConfigurationService)">
             <summary>
             Initializes a new instance of the BallViewModel class
             </summary>
             <param name="logService">Logging service for tracking user interactions</param>
             <param name="stateMachine">State machine for managing ball state transitions</param>
+            <param name="handStateMachine">Hand state machine for managing cursor states</param>
             <param name="imageService">Image service for loading and managing visual content</param>
             <param name="configurationService">Configuration service for accessing application settings</param>
         </member>
-        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(System.Double,System.Double,System.Double,BallDragDrop.Contracts.IBallStateMachine,BallDragDrop.Services.ImageService)">
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.#ctor(System.Double,System.Double,System.Double,BallDragDrop.Contracts.IBallStateMachine,BallDragDrop.Contracts.IHandStateMachine,BallDragDrop.Services.ImageService)">
             <summary>
             Initializes a new instance of the BallViewModel class for testing
             </summary>
@@ -3746,6 +4249,7 @@
             <param name="y">Initial Y position</param>
             <param name="radius">Ball radius</param>
             <param name="stateMachine">State machine for managing ball state transitions</param>
+            <param name="handStateMachine">Hand state machine for managing cursor states</param>
             <param name="imageService">Optional image service for testing</param>
         </member>
         <member name="F:BallDragDrop.ViewModels.BallViewModel._ballModel">
@@ -3771,6 +4275,11 @@
         <member name="F:BallDragDrop.ViewModels.BallViewModel._stateMachine">
             <summary>
             State machine for managing ball state transitions
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.ViewModels.BallViewModel._handStateMachine">
+            <summary>
+            Hand state machine for managing cursor states
             </summary>
         </member>
         <member name="F:BallDragDrop.ViewModels.BallViewModel._ballImage">
@@ -4069,6 +4578,25 @@
             Updates the cursor based on the current state
             </summary>
         </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.OnMouseEnter(System.Windows.Input.MouseEventArgs)">
+            <summary>
+            Handles mouse enter events for ball-specific hover detection
+            </summary>
+            <param name="e">Mouse event arguments</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.OnMouseLeave(System.Windows.Input.MouseEventArgs)">
+            <summary>
+            Handles mouse leave events for ball-specific hover detection
+            </summary>
+            <param name="e">Mouse event arguments</param>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.OnHandStateChanged(System.Object,BallDragDrop.Models.HandStateChangedEventArgs)">
+            <summary>
+            Handles hand state changes from the hand state machine
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data containing hand state change information</param>
+        </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.ConstrainPosition(System.Double,System.Double,System.Double,System.Double)">
             <summary>
             Constrains the ball position to the specified boundaries
@@ -4326,6 +4854,11 @@
             Gets or sets the status field that displays ball state information
             </summary>
         </member>
+        <member name="P:BallDragDrop.ViewModels.StatusBarViewModel.HandState">
+            <summary>
+            Gets the current hand state for display
+            </summary>
+        </member>
         <member name="M:BallDragDrop.ViewModels.StatusBarViewModel.#ctor(BallDragDrop.Contracts.ILogService,BallDragDrop.Contracts.IBallStateMachine,BallDragDrop.Services.PerformanceMonitor)">
             <summary>
             Initializes a new instance of the StatusBarViewModel class
@@ -4426,6 +4959,11 @@
         <member name="F:BallDragDrop.Views.MainWindow._ballStateConfiguration">
             <summary>
             Ball state configuration for physics engine
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Views.MainWindow._handStateMachine">
+            <summary>
+            Hand state machine for cursor management
             </summary>
         </member>
         <member name="M:BallDragDrop.Views.MainWindow.#ctor">
@@ -4553,9 +5091,37 @@
             <param name="sender">The source of the event</param>
             <param name="e">Event data</param>
         </member>
+        <member name="M:BallDragDrop.Views.MainWindow.BallImage_MouseEnter(System.Object,System.Windows.Input.MouseEventArgs)">
+            <summary>
+            Event handler for mouse enter on the ball image
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.BallImage_MouseLeave(System.Object,System.Windows.Input.MouseEventArgs)">
+            <summary>
+            Event handler for mouse leave on the ball image
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
         <member name="M:BallDragDrop.Views.MainWindow.CompositionTarget_Rendering(System.Object,System.EventArgs)">
             <summary>
             Event handler for composition target rendering
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.OnCanvasMouseEnter(System.Object,System.Windows.Input.MouseEventArgs)">
+            <summary>
+            Event handler for mouse entering the canvas
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.OnCanvasMouseLeave(System.Object,System.Windows.Input.MouseEventArgs)">
+            <summary>
+            Event handler for mouse leaving the canvas
             </summary>
             <param name="sender">The source of the event</param>
             <param name="e">Event data</param>
@@ -4566,6 +5132,13 @@
             </summary>
             <param name="value">The double value to format</param>
             <returns>A safe string representation of the value</returns>
+        </member>
+        <member name="M:BallDragDrop.Views.MainWindow.IsMouseOverBall(System.Windows.Point)">
+            <summary>
+            Determines if the mouse position is over the ball element
+            </summary>
+            <param name="position">The mouse position relative to the canvas</param>
+            <returns>True if the mouse is over the ball, false otherwise</returns>
         </member>
         <member name="M:BallDragDrop.Views.MainWindow.InitializeOptimizedTimers">
             <summary>

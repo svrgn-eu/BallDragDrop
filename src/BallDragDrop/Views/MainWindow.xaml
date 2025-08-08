@@ -63,6 +63,10 @@
                 <TextBlock Text="{Binding StatusBarViewModel.Status, FallbackValue='Status: [Loading...]'}" 
                           FontWeight="Bold" Padding="5,2" />
             </StatusBarItem>
+            <StatusBarItem MinWidth="100">
+                <TextBlock Text="{Binding StatusBarViewModel.HandState, StringFormat='Hand: {0}', FallbackValue='Hand: Default'}" 
+                          FontWeight="Bold" Padding="5,2" />
+            </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right" MinWidth="150">
                 <StackPanel Orientation="Horizontal" Margin="5,2">
                     <TextBlock Text="{Binding StatusBarViewModel.CurrentFpsDisplay, FallbackValue='FPS: --'}" 
@@ -112,6 +116,8 @@
                        RenderOptions.ClearTypeHint="Enabled"
                        MouseDown="BallImage_MouseDown"
                        MouseUp="BallImage_MouseUp"
+                       MouseEnter="BallImage_MouseEnter"
+                       MouseLeave="BallImage_MouseLeave"
                        Stretch="Uniform"
                        CacheMode="BitmapCache"
                        SnapsToDevicePixels="True"
