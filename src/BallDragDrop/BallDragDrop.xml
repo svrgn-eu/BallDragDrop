@@ -2335,13 +2335,13 @@
         </member>
         <member name="M:BallDragDrop.Services.ConfigurationService.GetCursorConfiguration">
             <summary>
-            Gets the cursor configuration from settings
+            Gets the cursor configuration from settings with comprehensive error handling and validation
             </summary>
             <returns>The cursor configuration</returns>
         </member>
         <member name="M:BallDragDrop.Services.ConfigurationService.ValidateCursorConfiguration(BallDragDrop.Models.CursorConfiguration)">
             <summary>
-            Validates the cursor configuration and returns validation results
+            Validates the cursor configuration with comprehensive error handling and detailed validation results
             </summary>
             <param name="configuration">The cursor configuration to validate</param>
             <returns>True if configuration is valid, false otherwise</returns>
@@ -2351,6 +2351,28 @@
             Gets the default cursor configuration with fallback values
             </summary>
             <returns>Default cursor configuration</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ConfigurationService.ValidateAndCorrectCursorConfiguration(BallDragDrop.Models.CursorConfiguration)">
+            <summary>
+            Validates and corrects cursor configuration, applying fixes where possible
+            </summary>
+            <param name="configuration">Configuration to validate and correct</param>
+            <returns>Corrected configuration</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ConfigurationService.ValidateCursorPath(System.String,System.String)">
+            <summary>
+            Validates a single cursor path
+            </summary>
+            <param name="pathName">Name of the path for logging</param>
+            <param name="pathValue">Path value to validate</param>
+            <returns>Validation result</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ConfigurationService.CorrectCursorPaths(BallDragDrop.Models.CursorConfiguration)">
+            <summary>
+            Corrects cursor paths in the configuration
+            </summary>
+            <param name="configuration">Configuration to correct</param>
+            <returns>Number of corrections made</returns>
         </member>
         <member name="T:BallDragDrop.Services.CursorImageLoader">
             <summary>
@@ -2382,7 +2404,7 @@
         </member>
         <member name="M:BallDragDrop.Services.CursorImageLoader.LoadPngAsCursorWithFallback(System.String,System.Windows.Input.Cursor)">
             <summary>
-            Loads a PNG file and converts it to a WPF Cursor with fallback handling
+            Loads a PNG file and converts it to a WPF Cursor with comprehensive fallback handling
             </summary>
             <param name="pngPath">Relative path to the PNG file from application directory</param>
             <param name="fallbackCursor">Cursor to use if loading fails</param>
@@ -2390,21 +2412,28 @@
         </member>
         <member name="M:BallDragDrop.Services.CursorImageLoader.LoadBitmapWithValidation(System.String)">
             <summary>
-            Loads a bitmap with validation and error handling
+            Loads a bitmap with comprehensive validation and error handling
             </summary>
             <param name="fullPath">Full path to the image file</param>
             <returns>Loaded bitmap image</returns>
         </member>
         <member name="M:BallDragDrop.Services.CursorImageLoader.ResizeImage(System.Windows.Media.Imaging.BitmapImage)">
             <summary>
-            Resizes an image to the standard cursor size (30x30)
+            Resizes an image to the standard cursor size (30x30) with comprehensive error handling
             </summary>
             <param name="source">Source bitmap image</param>
             <returns>Resized bitmap image</returns>
         </member>
         <member name="M:BallDragDrop.Services.CursorImageLoader.ConvertBitmapToCursor(System.Windows.Media.Imaging.BitmapImage)">
             <summary>
-            Converts a BitmapImage to a Cursor
+            Converts a BitmapImage to a Cursor with comprehensive error handling
+            </summary>
+            <param name="bitmap">Source bitmap</param>
+            <returns>WPF Cursor</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorImageLoader.ConvertBitmapToCursorAlternative(System.Windows.Media.Imaging.BitmapImage)">
+            <summary>
+            Alternative method to convert bitmap to cursor when stream source is not available
             </summary>
             <param name="bitmap">Source bitmap</param>
             <returns>WPF Cursor</returns>
@@ -2471,7 +2500,7 @@
         </member>
         <member name="M:BallDragDrop.Services.CursorManager.ReloadConfigurationAsync">
             <summary>
-            Reloads cursor configuration from settings
+            Reloads cursor configuration from settings with comprehensive error handling and recovery
             </summary>
         </member>
         <member name="M:BallDragDrop.Services.CursorManager.GetCurrentCursorState">
@@ -2482,7 +2511,7 @@
         </member>
         <member name="M:BallDragDrop.Services.CursorManager.GetCursorForHandState(BallDragDrop.Models.HandState)">
             <summary>
-            Gets the cursor for the specified hand state, loading from cache or file
+            Gets the cursor for the specified hand state, loading from cache or file with comprehensive error handling
             </summary>
             <param name="handState">Hand state</param>
             <returns>Cursor for the hand state</returns>
@@ -2494,6 +2523,14 @@
             <param name="handState">Hand state</param>
             <returns>Loaded cursor</returns>
         </member>
+        <member name="M:BallDragDrop.Services.CursorManager.LoadCursorWithFallback(System.String,System.Windows.Input.Cursor)">
+            <summary>
+            Loads a cursor with comprehensive error handling and fallback mechanisms
+            </summary>
+            <param name="pngPath">Path to the PNG cursor file</param>
+            <param name="fallbackCursor">Cursor to use if loading fails</param>
+            <returns>Loaded cursor or fallback cursor</returns>
+        </member>
         <member name="M:BallDragDrop.Services.CursorManager.GetCursorPathForHandState(BallDragDrop.Models.HandState)">
             <summary>
             Gets the cursor path for the specified hand state from configuration
@@ -2503,23 +2540,54 @@
         </member>
         <member name="M:BallDragDrop.Services.CursorManager.ApplyCursor(System.Windows.Input.Cursor)">
             <summary>
-            Applies the cursor to the main window
+            Applies the cursor to the main window with comprehensive error handling
             </summary>
             <param name="cursor">Cursor to apply</param>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.HandleCursorApplicationError(System.Exception,BallDragDrop.Models.HandState)">
+            <summary>
+            Handles errors that occur during cursor application with recovery mechanisms
+            </summary>
+            <param name="ex">The exception that occurred</param>
+            <param name="handState">The hand state that was being applied</param>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.TryApplySystemCursorRecovery">
+            <summary>
+            Attempts to recover by applying the default system cursor
+            </summary>
+            <returns>True if recovery was successful</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.TryApplyToCurrentWindow(System.Windows.Input.Cursor)">
+            <summary>
+            Attempts to apply cursor to the current active window
+            </summary>
+            <param name="cursor">Cursor to apply</param>
+            <returns>True if application was successful</returns>
         </member>
         <member name="M:BallDragDrop.Services.CursorManager.SetSystemCursor">
             <summary>
             Sets the system default cursor
             </summary>
         </member>
+        <member name="M:BallDragDrop.Services.CursorManager.SetSystemCursorSafe">
+            <summary>
+            Sets the system default cursor with maximum safety and minimal error handling
+            </summary>
+        </member>
         <member name="M:BallDragDrop.Services.CursorManager.LoadConfiguration">
             <summary>
-            Loads cursor configuration from the configuration service
+            Loads cursor configuration from the configuration service with comprehensive validation and error recovery
             </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.CreateFallbackConfiguration">
+            <summary>
+            Creates a safe fallback cursor configuration when all else fails
+            </summary>
+            <returns>Fallback cursor configuration</returns>
         </member>
         <member name="M:BallDragDrop.Services.CursorManager.ClearCache">
             <summary>
-            Clears the cursor cache
+            Clears the cursor cache with comprehensive error handling
             </summary>
         </member>
         <member name="M:BallDragDrop.Services.CursorManager.InitializeCursorUpdateThrottler">
@@ -2529,7 +2597,7 @@
         </member>
         <member name="M:BallDragDrop.Services.CursorManager.UpdateCursorNow">
             <summary>
-            Updates the cursor immediately based on current hand state
+            Updates the cursor immediately based on current hand state with comprehensive error handling
             </summary>
         </member>
         <member name="M:BallDragDrop.Services.CursorManager.SetSystemCursorThrottled">
@@ -2770,7 +2838,7 @@
         </member>
         <member name="M:BallDragDrop.Services.HandStateMachine.Fire(BallDragDrop.Models.HandTrigger)">
             <summary>
-            Triggers a hand state transition
+            Triggers a hand state transition with comprehensive error handling and recovery
             </summary>
             <param name="trigger">The trigger causing the transition</param>
         </member>
@@ -2783,12 +2851,31 @@
         </member>
         <member name="M:BallDragDrop.Services.HandStateMachine.Reset">
             <summary>
-            Resets hand state machine to default state
+            Resets hand state machine to default state with comprehensive error handling
             </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.RecoverToDefaultState(System.String)">
+            <summary>
+            Recovers the hand state machine to default state with logging
+            </summary>
+            <param name="reason">Reason for recovery</param>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.ForceResetStateMachine">
+            <summary>
+            Forces the state machine to reset by recreating it
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.TryHandleInvalidTransition(BallDragDrop.Models.HandTrigger,BallDragDrop.Models.HandState)">
+            <summary>
+            Attempts to handle invalid state transitions gracefully
+            </summary>
+            <param name="trigger">The invalid trigger</param>
+            <param name="currentState">Current state</param>
+            <returns>True if handled gracefully</returns>
         </member>
         <member name="M:BallDragDrop.Services.HandStateMachine.OnStateChanged(BallDragDrop.Models.BallState,BallDragDrop.Models.BallState,BallDragDrop.Models.BallTrigger)">
             <summary>
-            Called when the ball state changes
+            Called when the ball state changes with comprehensive error handling
             </summary>
             <param name="previousState">Previous ball state</param>
             <param name="newState">New ball state</param>
@@ -2796,38 +2883,44 @@
         </member>
         <member name="M:BallDragDrop.Services.HandStateMachine.OnMouseOverBall">
             <summary>
-            Handles mouse entering ball area
+            Handles mouse entering ball area with comprehensive error handling
             </summary>
         </member>
         <member name="M:BallDragDrop.Services.HandStateMachine.OnMouseLeaveBall">
             <summary>
-            Handles mouse leaving ball area
+            Handles mouse leaving ball area with comprehensive error handling
             </summary>
         </member>
         <member name="M:BallDragDrop.Services.HandStateMachine.OnDragStart">
             <summary>
-            Handles drag operation start
+            Handles drag operation start with comprehensive error handling
             </summary>
         </member>
         <member name="M:BallDragDrop.Services.HandStateMachine.OnDragStop">
             <summary>
-            Handles drag operation stop
+            Handles drag operation stop with comprehensive error handling
             </summary>
         </member>
         <member name="M:BallDragDrop.Services.HandStateMachine.OnHandStateChanged(BallDragDrop.Models.HandState)">
             <summary>
-            Called when the hand state changes
+            Called when the hand state changes with comprehensive error handling
             </summary>
             <param name="newState">New hand state</param>
         </member>
         <member name="M:BallDragDrop.Services.HandStateMachine.StartReleasingTimer">
             <summary>
-            Starts the timer for the releasing state duration
+            Starts the timer for the releasing state duration with comprehensive error handling
             </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.HandStateMachine.TimerCallback(System.Object)">
+            <summary>
+            Timer callback method with error handling
+            </summary>
+            <param name="state">Timer state (unused)</param>
         </member>
         <member name="M:BallDragDrop.Services.HandStateMachine.Dispose">
             <summary>
-            Disposes resources used by the hand state machine
+            Disposes resources used by the hand state machine with comprehensive error handling
             </summary>
         </member>
         <member name="T:BallDragDrop.Services.VisualContentType">
