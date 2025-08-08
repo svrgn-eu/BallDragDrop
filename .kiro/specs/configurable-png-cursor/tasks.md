@@ -2,7 +2,10 @@
 - [-] 0. do it all at once
 
 
+
   - [ ] 1. Create core hand state machine and cursor infrastructure
+
+
     - [ ] 1.1 Define hand state machine interfaces and enums
       - Create IHandStateMachine interface with state management methods
       - Define HandState enum (Default, Hover, Grabbing, Releasing)
