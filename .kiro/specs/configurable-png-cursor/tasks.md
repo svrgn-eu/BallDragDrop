@@ -155,7 +155,10 @@
       - Register CursorImageLoader service
       - _Requirements: 2.1, 2.2_
 
-    - [-] 8.2 Update configuration service for cursor settings
+    - [x] 8.2 Update configuration service for cursor settings
+
+
+
 
 
 

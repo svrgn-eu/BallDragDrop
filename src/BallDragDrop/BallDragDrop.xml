@@ -373,6 +373,36 @@
             Configuration file name
             </summary>
         </member>
+        <member name="F:BallDragDrop.Constants.DEFAULT_CURSOR_PATH">
+            <summary>
+            Default path to the default cursor PNG file
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.DEFAULT_HOVER_CURSOR_PATH">
+            <summary>
+            Default path to the hover cursor PNG file
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.DEFAULT_GRABBING_CURSOR_PATH">
+            <summary>
+            Default path to the grabbing cursor PNG file
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.DEFAULT_RELEASING_CURSOR_PATH">
+            <summary>
+            Default path to the releasing cursor PNG file
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.DEFAULT_CURSOR_DEBOUNCE_TIME_MS">
+            <summary>
+            Default cursor update debounce time in milliseconds
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Constants.DEFAULT_CURSOR_RELEASING_DURATION_MS">
+            <summary>
+            Default releasing cursor duration in milliseconds
+            </summary>
+        </member>
         <member name="F:BallDragDrop.Constants.MAX_ACCEPTABLE_FRAME_TIME_MS">
             <summary>
             Maximum acceptable frame time in milliseconds (~60 FPS)
@@ -541,6 +571,25 @@
             </summary>
             <param name="show">True to show bounding box, false to hide</param>
         </member>
+        <member name="M:BallDragDrop.Contracts.IConfigurationService.GetCursorConfiguration">
+            <summary>
+            Gets the cursor configuration from settings
+            </summary>
+            <returns>The cursor configuration</returns>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IConfigurationService.ValidateCursorConfiguration(BallDragDrop.Models.CursorConfiguration)">
+            <summary>
+            Validates the cursor configuration and returns validation results
+            </summary>
+            <param name="configuration">The cursor configuration to validate</param>
+            <returns>True if configuration is valid, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IConfigurationService.GetDefaultCursorConfiguration">
+            <summary>
+            Gets the default cursor configuration with fallback values
+            </summary>
+            <returns>Default cursor configuration</returns>
+        </member>
         <member name="T:BallDragDrop.Contracts.IAppConfiguration">
             <summary>
             Application configuration interface using Config.Net
@@ -564,6 +613,41 @@
         <member name="P:BallDragDrop.Contracts.IAppConfiguration.ShowBoundingBox">
             <summary>
             Gets or sets whether to show the ball's bounding box for debugging
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Contracts.IAppConfiguration.CursorConfiguration_EnableCustomCursors">
+            <summary>
+            Gets or sets whether custom cursors are enabled
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Contracts.IAppConfiguration.CursorConfiguration_DefaultCursorPath">
+            <summary>
+            Gets or sets the default cursor PNG path
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Contracts.IAppConfiguration.CursorConfiguration_HoverCursorPath">
+            <summary>
+            Gets or sets the hover cursor PNG path
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Contracts.IAppConfiguration.CursorConfiguration_GrabbingCursorPath">
+            <summary>
+            Gets or sets the grabbing cursor PNG path
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Contracts.IAppConfiguration.CursorConfiguration_ReleasingCursorPath">
+            <summary>
+            Gets or sets the releasing cursor PNG path
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Contracts.IAppConfiguration.CursorConfiguration_DebounceTimeMs">
+            <summary>
+            Gets or sets the cursor update debounce time in milliseconds
+            </summary>
+        </member>
+        <member name="P:BallDragDrop.Contracts.IAppConfiguration.CursorConfiguration_ReleasingDurationMs">
+            <summary>
+            Gets or sets the releasing cursor duration in milliseconds
             </summary>
         </member>
         <member name="T:BallDragDrop.Contracts.ICursorService">
@@ -2331,6 +2415,25 @@
             Sets whether to show the ball's bounding box for debugging
             </summary>
             <param name="show">True to show bounding box, false to hide</param>
+        </member>
+        <member name="M:BallDragDrop.Services.ConfigurationService.GetCursorConfiguration">
+            <summary>
+            Gets the cursor configuration from settings
+            </summary>
+            <returns>The cursor configuration</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ConfigurationService.ValidateCursorConfiguration(BallDragDrop.Models.CursorConfiguration)">
+            <summary>
+            Validates the cursor configuration and returns validation results
+            </summary>
+            <param name="configuration">The cursor configuration to validate</param>
+            <returns>True if configuration is valid, false otherwise</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.ConfigurationService.GetDefaultCursorConfiguration">
+            <summary>
+            Gets the default cursor configuration with fallback values
+            </summary>
+            <returns>Default cursor configuration</returns>
         </member>
         <member name="T:BallDragDrop.Services.CursorImageLoader">
             <summary>
