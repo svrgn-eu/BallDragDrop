@@ -205,6 +205,14 @@ namespace BallDragDrop.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets the current hand state for display
+        /// </summary>
+        public string HandState
+        {
+            get => _ballViewModel?.CurrentHandState.ToString() ?? "Default";
+        }
+
         #endregion Properties
 
         #region Construction
@@ -320,6 +328,13 @@ namespace BallDragDrop.ViewModels
                     AssetName = ProcessAssetName(_ballViewModel.AssetName);
                     _logService?.LogDebug("Asset name updated: {AssetName}", AssetName);
                 }
+                
+                // Handle hand state changes
+                if (e.PropertyName == nameof(BallViewModel.CurrentHandState) && _ballViewModel != null)
+                {
+                    OnPropertyChanged(nameof(HandState));
+                    _logService?.LogDebug("Hand state updated: {HandState}", HandState);
+                }
             }
             catch (Exception ex)
             {
@@ -351,6 +366,9 @@ namespace BallDragDrop.ViewModels
 
             // Initialize asset name from current ball view model state
             AssetName = ProcessAssetName(_ballViewModel.AssetName);
+
+            // Initialize hand state display
+            OnPropertyChanged(nameof(HandState));
 
             _logService?.LogDebug("StatusBarViewModel connected to BallViewModel");
         }

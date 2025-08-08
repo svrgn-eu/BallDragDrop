@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using BallDragDrop.Contracts;
+using BallDragDrop.Models;
 using Config.Net;
 
 namespace BallDragDrop.Services

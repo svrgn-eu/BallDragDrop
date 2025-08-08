@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using BallDragDrop.Models;
 using Config.Net;
 
 namespace BallDragDrop.Contracts
@@ -48,6 +49,25 @@ namespace BallDragDrop.Contracts
         /// </summary>
         /// <param name="show">True to show bounding box, false to hide</param>
         void SetShowBoundingBox(bool show);
+
+        /// <summary>
+        /// Gets the cursor configuration from settings
+        /// </summary>
+        /// <returns>The cursor configuration</returns>
+        CursorConfiguration GetCursorConfiguration();
+
+        /// <summary>
+        /// Validates the cursor configuration and returns validation results
+        /// </summary>
+        /// <param name="configuration">The cursor configuration to validate</param>
+        /// <returns>True if configuration is valid, false otherwise</returns>
+        bool ValidateCursorConfiguration(CursorConfiguration configuration);
+
+        /// <summary>
+        /// Gets the default cursor configuration with fallback values
+        /// </summary>
+        /// <returns>Default cursor configuration</returns>
+        CursorConfiguration GetDefaultCursorConfiguration();
     }
 
     /// <summary>
@@ -78,5 +98,47 @@ namespace BallDragDrop.Contracts
         /// </summary>
         [Option(DefaultValue = false)]
         bool ShowBoundingBox { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether custom cursors are enabled
+        /// </summary>
+        [Option(DefaultValue = true)]
+        bool CursorConfiguration_EnableCustomCursors { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default cursor PNG path
+        /// </summary>
+        [Option(DefaultValue = "Resources/Cursors/default.png")]
+        string CursorConfiguration_DefaultCursorPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the hover cursor PNG path
+        /// </summary>
+        [Option(DefaultValue = "Resources/Cursors/hover.png")]
+        string CursorConfiguration_HoverCursorPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the grabbing cursor PNG path
+        /// </summary>
+        [Option(DefaultValue = "Resources/Cursors/grabbing.png")]
+        string CursorConfiguration_GrabbingCursorPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the releasing cursor PNG path
+        /// </summary>
+        [Option(DefaultValue = "Resources/Cursors/releasing.png")]
+        string CursorConfiguration_ReleasingCursorPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cursor update debounce time in milliseconds
+        /// </summary>
+        [Option(DefaultValue = 16)]
+        int CursorConfiguration_DebounceTimeMs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the releasing cursor duration in milliseconds
+        /// </summary>
+        [Option(DefaultValue = 200)]
+        int CursorConfiguration_ReleasingDurationMs { get; set; }
     }
 }

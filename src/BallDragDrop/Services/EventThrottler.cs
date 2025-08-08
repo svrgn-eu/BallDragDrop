@@ -1,131 +1,88 @@
 using System;
-using System.Windows.Threading;
+using System.Threading;
 
 namespace BallDragDrop.Services
 {
     /// <summary>
-    /// Utility class for throttling events to limit their frequency
+    /// Throttles event execution to prevent rapid successive calls
     /// </summary>
     public class EventThrottler
     {
-        #region Construction
-        
-        /// <summary>
-        /// Initializes a new instance of the EventThrottler class
-        /// </summary>
-        /// <param name="action">The action to execute when throttled</param>
-        /// <param name="intervalMs">The minimum interval between executions in milliseconds</param>
-        /// <exception cref="ArgumentNullException">Thrown when action is null</exception>
-        public EventThrottler(Action action, int intervalMs)
-        {
-            _action = action ?? throw new ArgumentNullException(nameof(action));
-            _interval = TimeSpan.FromMilliseconds(intervalMs);
-            _isQueued = false;
-            _lastExecutionTime = DateTime.MinValue;
-            
-            // Create a timer for delayed execution
-            _timer = new DispatcherTimer
-            {
-                Interval = _interval
-            };
-            _timer.Tick += Timer_Tick;
-        }
-
-        #endregion Construction
-
         #region Fields
 
         /// <summary>
-        /// Timer for delayed execution
-        /// </summary>
-        private readonly DispatcherTimer _timer;
-
-        /// <summary>
-        /// Action to execute when throttled
+        /// The action to execute when throttle allows
         /// </summary>
         private readonly Action _action;
 
         /// <summary>
-        /// Minimum interval between executions
+        /// The throttle interval in milliseconds
         /// </summary>
-        private readonly TimeSpan _interval;
+        private readonly int _throttleIntervalMs;
 
         /// <summary>
-        /// Flag indicating if an execution is queued
+        /// Last execution timestamp
         /// </summary>
-        private bool _isQueued;
+        private DateTime _lastExecution = DateTime.MinValue;
 
         /// <summary>
-        /// Timestamp of the last execution
+        /// Lock object for thread safety
         /// </summary>
-        private DateTime _lastExecutionTime;
+        private readonly object _lock = new object();
 
         #endregion Fields
 
-        #region Methods
-        
+        #region Construction
+
         /// <summary>
-        /// Executes the action, throttling if called too frequently
+        /// Initializes a new instance of the EventThrottler class
+        /// </summary>
+        /// <param name="action">Action to execute</param>
+        /// <param name="throttleIntervalMs">Throttle interval in milliseconds</param>
+        public EventThrottler(Action action, int throttleIntervalMs)
+        {
+            _action = action ?? throw new ArgumentNullException(nameof(action));
+            _throttleIntervalMs = throttleIntervalMs;
+        }
+
+        #endregion Construction
+
+        #region Execute
+
+        /// <summary>
+        /// Executes the action if throttle interval has passed
         /// </summary>
         public void Execute()
         {
-            // If we're already queued, just return
-            if (_isQueued)
+            lock (_lock)
             {
-                return;
-            }
-            
-            // Check if enough time has passed since the last execution
-            TimeSpan timeSinceLastExecution = DateTime.Now - _lastExecutionTime;
-            if (timeSinceLastExecution >= _interval)
-            {
-                // Execute immediately
-                ExecuteNow();
-            }
-            else
-            {
-                // Queue for later execution
-                _isQueued = true;
-                _timer.Start();
+                var now = DateTime.Now;
+                var timeSinceLastExecution = now - _lastExecution;
+                
+                if (timeSinceLastExecution.TotalMilliseconds >= _throttleIntervalMs)
+                {
+                    _action();
+                    _lastExecution = now;
+                }
             }
         }
-        
+
+        #endregion Execute
+
+        #region ExecuteNow
+
         /// <summary>
-        /// Executes the action immediately, bypassing throttling
+        /// Executes the action immediately, bypassing throttle interval
         /// </summary>
         public void ExecuteNow()
         {
-            // Stop the timer if it's running
-            _timer.Stop();
-            
-            // Execute the action
-            _action();
-            
-            // Update the last execution time
-            _lastExecutionTime = DateTime.Now;
-            
-            // Reset the queued flag
-            _isQueued = false;
-        }
-        
-        /// <summary>
-        /// Event handler for the timer tick
-        /// </summary>
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            // Stop the timer
-            _timer.Stop();
-            
-            // Execute the action
-            _action();
-            
-            // Update the last execution time
-            _lastExecutionTime = DateTime.Now;
-            
-            // Reset the queued flag
-            _isQueued = false;
+            lock (_lock)
+            {
+                _action();
+                _lastExecution = DateTime.Now;
+            }
         }
 
-        #endregion Methods
+        #endregion ExecuteNow
     }
 }
