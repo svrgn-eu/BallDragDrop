@@ -85,6 +85,8 @@ namespace BallDragDrop.Services
 
         #endregion Construction
 
+        #region Methods
+
         #region ConfigureStateMachine
 
         /// <summary>
@@ -923,5 +925,7 @@ namespace BallDragDrop.Services
         }
 
         #endregion Dispose
+
+        #endregion Methods
     }
 }

@@ -89,6 +89,8 @@ namespace BallDragDrop.Services
 
         #endregion Construction
 
+        #region Methods
+
         #region SetCursorForHandState
 
         /// <summary>
@@ -919,5 +921,7 @@ namespace BallDragDrop.Services
         }
 
         #endregion SetSystemCursorThrottled
+
+        #endregion Methods
     }
 }
