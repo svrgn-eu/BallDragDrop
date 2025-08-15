@@ -294,7 +294,7 @@ namespace BallDragDrop.Services
                     }
                     catch (Exception cacheEx)
                     {
-                        _logService.LogWarning("Failed to cache cursor for hand state '{HandState}', continuing without caching", handState);
+                        _logService.LogWarning("Failed to cache cursor for hand state '{HandState}', continuing without caching. Error: {Error}", handState, cacheEx.Message);
                     }
                     
                     return cursor;
@@ -442,14 +442,24 @@ namespace BallDragDrop.Services
                     cursor = Cursors.Arrow;
                 }
 
-                if (Application.Current?.MainWindow != null)
+                // Ensure all Application.Current access happens on the UI thread
+                if (Application.Current?.Dispatcher != null)
                 {
                     Application.Current.Dispatcher.BeginInvoke(() =>
                     {
                         try
                         {
-                            Application.Current.MainWindow.Cursor = cursor;
-                            _logService.LogDebug("Successfully applied cursor to main window");
+                            if (Application.Current?.MainWindow != null)
+                            {
+                                Application.Current.MainWindow.Cursor = cursor;
+                                _logService.LogDebug("Successfully applied cursor to main window");
+                            }
+                            else
+                            {
+                                _logService.LogWarning("Main window not available for cursor application");
+                                // Try to apply to current window if available
+                                TryApplyToCurrentWindowOnUIThread(cursor);
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -459,8 +469,8 @@ namespace BallDragDrop.Services
                 }
                 else
                 {
-                    _logService.LogWarning("Main window not available for cursor application");
-                    // Try to apply to current window if available
+                    _logService.LogWarning("Application dispatcher not available for cursor application");
+                    // Fallback to direct application (may fail on non-UI threads)
                     TryApplyToCurrentWindow(cursor);
                 }
             }
@@ -523,11 +533,14 @@ namespace BallDragDrop.Services
         {
             try
             {
-                if (Application.Current?.MainWindow != null)
+                if (Application.Current?.Dispatcher != null)
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        Application.Current.MainWindow.Cursor = Cursors.Arrow;
+                        if (Application.Current?.MainWindow != null)
+                        {
+                            Application.Current.MainWindow.Cursor = Cursors.Arrow;
+                        }
                     });
                     return true;
                 }
@@ -572,6 +585,39 @@ namespace BallDragDrop.Services
 
         #endregion TryApplyToCurrentWindow
 
+        #region TryApplyToCurrentWindowOnUIThread
+
+        /// <summary>
+        /// Attempts to apply cursor to the current active window, ensuring it runs on UI thread
+        /// </summary>
+        /// <param name="cursor">Cursor to apply</param>
+        private void TryApplyToCurrentWindowOnUIThread(Cursor cursor)
+        {
+            try
+            {
+                // This method is already called from UI thread context
+                if (Application.Current?.Windows != null)
+                {
+                    foreach (Window window in Application.Current.Windows)
+                    {
+                        if (window.IsVisible && window.IsEnabled)
+                        {
+                            window.Cursor = cursor;
+                            _logService.LogDebug("Applied cursor to window: {WindowTitle}", window.Title);
+                            return;
+                        }
+                    }
+                }
+                _logService.LogWarning("No suitable window found for cursor application");
+            }
+            catch (Exception ex)
+            {
+                _logService.LogDebug("Failed to apply cursor to current window on UI thread. Exception: {Exception}", ex.Message);
+            }
+        }
+
+        #endregion TryApplyToCurrentWindowOnUIThread
+
         #region SetSystemCursor
 
         /// <summary>
@@ -600,10 +646,23 @@ namespace BallDragDrop.Services
         {
             try
             {
-                // Use the most basic cursor application possible
-                if (Application.Current?.MainWindow != null)
+                // Use the most basic cursor application possible, ensuring UI thread access
+                if (Application.Current?.Dispatcher != null)
                 {
-                    Application.Current.MainWindow.Cursor = Cursors.Arrow;
+                    Application.Current.Dispatcher.BeginInvoke(() =>
+                    {
+                        try
+                        {
+                            if (Application.Current?.MainWindow != null)
+                            {
+                                Application.Current.MainWindow.Cursor = Cursors.Arrow;
+                            }
+                        }
+                        catch
+                        {
+                            // Silently fail - this is the last resort recovery method
+                        }
+                    });
                 }
             }
             catch
@@ -734,7 +793,7 @@ namespace BallDragDrop.Services
                         catch (Exception cursorEx)
                         {
                             disposalErrors++;
-                            _logService.LogWarning("Error processing cached cursor for hand state '{HandState}'", kvp.Key);
+                            _logService.LogWarning("Error processing cached cursor for hand state '{HandState}'. Error: {Error}", kvp.Key, cursorEx.Message);
                         }
                     }
                     
