@@ -14,13 +14,16 @@ namespace BallDragDrop.Services
     /// </summary>
     public class BallStateMachine : IBallStateMachine
     {
+        #region Properties
         private readonly StateMachine<BallState, BallTrigger> _stateMachine;
         private readonly ILogService _logService;
         private readonly BallStateConfiguration _configuration;
         private readonly List<IBallStateObserver> _observers;
         private readonly object _observersLock = new object();
         private readonly object _stateLock = new object();
+        #endregion Properties
 
+        #region Construction
         /// <summary>
         /// Initializes a new instance of the <see cref="BallStateMachine"/> class.
         /// </summary>
@@ -45,6 +48,9 @@ namespace BallDragDrop.Services
                 _logService.LogInformation("BallStateMachine initialized with initial state: {InitialState}", BallState.Idle);
             }
         }
+        #endregion Construction
+
+        #region Methods
 
         /// <summary>
         /// Gets the current state of the ball.
@@ -501,5 +507,7 @@ namespace BallDragDrop.Services
                 }
             }
         }
+
+        #endregion Methods
     }
 }
