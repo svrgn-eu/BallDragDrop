@@ -49,7 +49,7 @@
                 <MenuItem Header="_Load GIF Animation..." Click="LoadGifAnimation_Click" />
                 <MenuItem Header="_Load Aseprite Animation..." Click="LoadAsepriteAnimation_Click" />
                 <Separator />
-                <MenuItem Header="Show _Bounding Box" IsCheckable="True" IsChecked="{Binding BallViewModel.ShowBoundingBox, Mode=OneWay}" Click="ToggleBoundingBox_Click" />
+                <MenuItem Header="Show _Bounding Box" IsCheckable="True" IsChecked="{Binding ShowBoundingBox}" Click="ToggleBoundingBox_Click" />
             </MenuItem>
         </Menu>
 

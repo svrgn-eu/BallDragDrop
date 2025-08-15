@@ -73,11 +73,12 @@ public partial class App : Application
         // Show splash screen and initialize application
         ShowSplashScreenAndInitialize();
     }
-    
+
     #endregion Event Handlers
-    
+
     #region Methods
 
+    #region ShowSplashScreenAndInitialize
     /// <summary>
     /// Shows the splash screen and initializes the application
     /// </summary>
@@ -124,7 +125,9 @@ public partial class App : Application
             ShowMainWindow();
         }
     }
-    
+    #endregion ShowSplashScreenAndInitialize
+
+    #region SplashScreen_InitializationComplete
     /// <summary>
     /// Event handler for splash screen initialization complete
     /// </summary>
@@ -135,7 +138,9 @@ public partial class App : Application
         // Show the main window
         ShowMainWindow();
     }
-    
+    #endregion SplashScreen_InitializationComplete
+
+    #region ShowMainWindow
     /// <summary>
     /// Shows the main window
     /// </summary>
@@ -187,7 +192,9 @@ public partial class App : Application
             Shutdown(1);
         }
     }
-    
+    #endregion ShowMainWindow
+
+    #region Application_Exit
     /// <summary>
     /// Application exit event handler from XAML
     /// </summary>
@@ -212,7 +219,9 @@ public partial class App : Application
         // Ensure proper service disposal during application shutdown
         ServiceBootstrapper.Dispose();
     }
-    
+    #endregion Application_Exit
+
+    #region ProcessCommandLineArguments
     /// <summary>
     /// Processes command line arguments
     /// </summary>
@@ -240,7 +249,9 @@ public partial class App : Application
             _logService.LogDebug("No command line arguments provided");
         }
     }
-    
+    #endregion ProcessCommandLineArguments
+
+    #region CleanupResources
     /// <summary>
     /// Cleans up application resources before exit
     /// </summary>
@@ -258,7 +269,9 @@ public partial class App : Application
             _logService?.LogError(ex, "Error during resource cleanup");
         }
     }
-    
+    #endregion CleanupResources
+
+    #region App_DispatcherUnhandledException
     /// <summary>
     /// Handles unhandled exceptions in the UI thread
     /// </summary>
@@ -287,7 +300,9 @@ public partial class App : Application
         // Prevent the application from crashing
         e.Handled = true;
     }
-    
+    #endregion App_DispatcherUnhandledException
+
+    #region CurrentDomain_UnhandledException
     /// <summary>
     /// Handles unhandled exceptions in non-UI threads
     /// </summary>
@@ -316,7 +331,9 @@ public partial class App : Application
             exceptionHandlingService.HandleException(exception, "Background thread exception");
         }
     }
-    
+    #endregion CurrentDomain_UnhandledException
+
+    #region TaskScheduler_UnobservedTaskException
     /// <summary>
     /// Handles unobserved task exceptions
     /// </summary>
@@ -331,7 +348,9 @@ public partial class App : Application
         // Mark the exception as observed to prevent it from crashing the application
         e.SetObserved();
     }
-    
+    #endregion TaskScheduler_UnobservedTaskException
+
+    #region LogStartupInformation
     /// <summary>
     /// Logs comprehensive startup information including version and configuration
     /// </summary>
@@ -360,7 +379,9 @@ public partial class App : Application
             _logService?.LogError(ex, "Failed to log startup information");
         }
     }
-    
+    #endregion LogStartupInformation
+
+    #region LogShutdownInformation
     /// <summary>
     /// Logs comprehensive shutdown information
     /// </summary>
@@ -387,7 +408,9 @@ public partial class App : Application
             _logService?.LogError(ex, "Failed to log shutdown information");
         }
     }
-    
+    #endregion LogShutdownInformation
+
+    #region FlushLogs
     /// <summary>
     /// Flushes any pending log entries
     /// </summary>
@@ -404,7 +427,9 @@ public partial class App : Application
             _logService?.LogError(ex, "Failed to flush logs");
         }
     }
-    
+    #endregion FlushLogs
+
+    #region InitializeSettings
     /// <summary>
     /// Initializes application settings
     /// </summary>
@@ -472,7 +497,9 @@ public partial class App : Application
             _logService?.LogError(ex, "Failed to initialize application settings");
         }
     }
-    
+    #endregion InitializeSettings
+
+    #region SaveSettings
     /// <summary>
     /// Saves application settings
     /// </summary>
@@ -525,7 +552,9 @@ public partial class App : Application
             _logService?.LogError(ex, "Failed to save application settings");
         }
     }
-    
+    #endregion SaveSettings
+
+    #region GetSettingsManager
     /// <summary>
     /// Gets the settings manager instance
     /// </summary>
@@ -534,7 +563,9 @@ public partial class App : Application
     {
         return _settingsManager;
     }
-    
+    #endregion GetSettingsManager
+
+    #region GetLogService
     /// <summary>
     /// Gets the logging service instance
     /// </summary>
@@ -543,7 +574,9 @@ public partial class App : Application
     {
         return _logService;
     }
-    
+    #endregion GetLogService
+
+    #region GetConfigurationService
     /// <summary>
     /// Gets the configuration service instance
     /// </summary>
@@ -552,7 +585,9 @@ public partial class App : Application
     {
         return _configurationService;
     }
-    
+    #endregion GetConfigurationService
+
+    #region InitializeDefaultBallImage
     /// <summary>
     /// Initializes the default ball image from configuration
     /// </summary>
@@ -588,6 +623,7 @@ public partial class App : Application
             _logService?.LogError(ex, "Failed to initialize default ball image from configuration");
         }
     }
+    #endregion InitializeDefaultBallImage
 
     #endregion Methods
 }
