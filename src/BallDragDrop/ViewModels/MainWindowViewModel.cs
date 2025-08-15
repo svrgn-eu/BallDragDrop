@@ -62,7 +62,11 @@ namespace BallDragDrop.ViewModels
         public System.Windows.Input.ICommand MouseDownCommand => _ballViewModel.MouseDownCommand;
         public System.Windows.Input.ICommand MouseMoveCommand => _ballViewModel.MouseMoveCommand;
         public System.Windows.Input.ICommand MouseUpCommand => _ballViewModel.MouseUpCommand;
-        public bool ShowBoundingBox => _ballViewModel.ShowBoundingBox;
+        public bool ShowBoundingBox 
+        { 
+            get => _ballViewModel.ShowBoundingBox;
+            set => _ballViewModel.ShowBoundingBox = value;
+        }
 
         // Expose BallViewModel visual state properties for state-dependent visual feedback
         public double StateOpacity => _ballViewModel.StateOpacity;

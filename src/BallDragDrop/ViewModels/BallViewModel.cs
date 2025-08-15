@@ -501,6 +501,7 @@ namespace BallDragDrop.ViewModels
             _isAnimated = false;
             _contentType = VisualContentType.Unknown;
             _assetName = "No Asset";
+            _showBoundingBox = false; // Default to false for testing
             
             // Initialize mouse history arrays for velocity calculation
             _mousePositionHistory = new Point[Constants.MOUSE_HISTORY_SIZE];

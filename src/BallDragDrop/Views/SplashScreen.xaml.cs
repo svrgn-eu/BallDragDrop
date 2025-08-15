@@ -95,9 +95,10 @@ namespace BallDragDrop.Views
         }
 
         #endregion Event Handlers
-        
+
         #region Methods
 
+        #region InitializeApplication
         /// <summary>
         /// Initializes the application
         /// </summary>
@@ -107,14 +108,14 @@ namespace BallDragDrop.Views
             try
             {
                 // Update status
-                await this.Dispatcher.InvokeAsync(() => this.StatusText.Text = "Initializing...");
+                await this.UpdateStatus("Initializing...");
                 
                 // Simulate initialization tasks
                 await Task.Delay(500);
-                await this.Dispatcher.InvokeAsync(() => this.StatusText.Text = "Loading resources...");
+                await this.UpdateStatus("Loading resources...");
                 
                 await Task.Delay(500);
-                await this.Dispatcher.InvokeAsync(() => this.StatusText.Text = "Preparing application...");
+                await this.UpdateStatus("Preparing application...");
                 
                 await Task.Delay(500);
                 
@@ -128,17 +129,18 @@ namespace BallDragDrop.Views
             {
                 // Log the error
                 Console.WriteLine($"Error during initialization: {ex.Message}");
-                
+                await this.UpdateStatus("Error during initialization");
                 // Update status to show error
                 await this.Dispatcher.InvokeAsync(() => 
                 {
-                    this.StatusText.Text = "Error during initialization";
                     this.LoadingProgress.IsIndeterminate = false;
                     this.LoadingProgress.Value = 0;
                 });
             }
         }
-        
+        #endregion InitializeApplication
+
+        #region CheckIfReadyToClose
         /// <summary>
         /// Checks if the splash screen is ready to close
         /// </summary>
@@ -154,16 +156,19 @@ namespace BallDragDrop.Views
                 this.Close();
             }
         }
-        
+        #endregion CheckIfReadyToClose
+
+        #region UpdateStatus
         /// <summary>
         /// Updates the status text on the splash screen
         /// </summary>
         /// <param name="status">The new status text</param>
         /// <exception cref="ArgumentNullException">Thrown when status is null</exception>
-        public void UpdateStatus(string status)
+        public async Task UpdateStatus(string status)
         {
-            this.Dispatcher.InvokeAsync(() => this.StatusText.Text = status);
+            await this.Dispatcher.InvokeAsync(() => this.StatusText.Text = status);
         }
+        #endregion UpdateStatus
 
         #endregion Methods
     }
