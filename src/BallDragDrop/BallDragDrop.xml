@@ -2564,6 +2564,12 @@
             <param name="cursor">Cursor to apply</param>
             <returns>True if application was successful</returns>
         </member>
+        <member name="M:BallDragDrop.Services.CursorManager.TryApplyToCurrentWindowOnUIThread(System.Windows.Input.Cursor)">
+            <summary>
+            Attempts to apply cursor to the current active window, ensuring it runs on UI thread
+            </summary>
+            <param name="cursor">Cursor to apply</param>
+        </member>
         <member name="M:BallDragDrop.Services.CursorManager.SetSystemCursor">
             <summary>
             Sets the system default cursor
