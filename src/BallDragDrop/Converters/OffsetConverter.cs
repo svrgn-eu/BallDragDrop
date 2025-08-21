@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Windows.Data;
 
-namespace BallDragDrop.Views
+namespace BallDragDrop.Converters
 {
     /// <summary>
     /// Simple converter to offset a value by a specified amount

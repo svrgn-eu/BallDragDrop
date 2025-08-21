@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BallDragDrop.Views"
+        xmlns:converters="clr-namespace:BallDragDrop.Converters"
         xmlns:viewmodels="clr-namespace:BallDragDrop.ViewModels"
         mc:Ignorable="d"
         Title="Ball Drag and Drop" 
@@ -90,7 +91,7 @@
                     Canvas.Left="{Binding BallViewModel.Left, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                     Canvas.Top="{Binding BallViewModel.Top, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                     BorderThickness="{Binding BallViewModel.StateBorderThickness}"
-                    BorderBrush="{Binding BallViewModel.StateBorderColor, Converter={x:Static local:ColorToBrushConverter.Instance}}"
+                    BorderBrush="{Binding BallViewModel.StateBorderColor, Converter={x:Static converters:ColorToBrushConverter.Instance}}"
                     CornerRadius="{Binding BallViewModel.Radius}"
                     RenderTransformOrigin="0.5,0.5">
                 <Border.RenderTransform>
@@ -118,7 +119,7 @@
                     <Image.Effect>
                         <DropShadowEffect ShadowDepth="0" 
                                           Direction="0" 
-                                          Color="{Binding BallViewModel.StateGlowColor, Converter={x:Static local:ColorToColorConverter.Instance}}" 
+                                          Color="{Binding BallViewModel.StateGlowColor, Converter={x:Static converters:ColorToColorConverter.Instance}}" 
                                           Opacity="0.8" 
                                           BlurRadius="{Binding BallViewModel.StateGlowRadius}" 
                                           RenderingBias="Performance"/>
@@ -176,8 +177,8 @@
             <Ellipse x:Name="CenterPointIndicator"
                      Width="4"
                      Height="4"
-                     Canvas.Left="{Binding BallViewModel.X, Converter={x:Static local:OffsetConverter.Instance}, ConverterParameter=-2}"
-                     Canvas.Top="{Binding BallViewModel.Y, Converter={x:Static local:OffsetConverter.Instance}, ConverterParameter=-2}"
+                     Canvas.Left="{Binding BallViewModel.X, Converter={x:Static converters:OffsetConverter.Instance}, ConverterParameter=-2}"
+                     Canvas.Top="{Binding BallViewModel.Y, Converter={x:Static converters:OffsetConverter.Instance}, ConverterParameter=-2}"
                      Fill="Blue"
                      IsHitTestVisible="False">
                 <Ellipse.Style>
