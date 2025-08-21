@@ -9,6 +9,7 @@ stages:
   - build
   - code-quality
   - test
+  - github-sync
 build:
   tags:
   - c#
@@ -58,3 +59,26 @@ test:
   dependencies:
   - build
   - code-quality
+
+github-sync:
+  tags:
+  - c#
+  - windows
+  stage: github-sync
+  script:
+  - echo "Synchronizing source code to GitHub..."
+  - git remote add github https://$GITHUB_PAT@github.com/$GITHUB_REPO_OWNER/$GITHUB_REPO_NAME.git || git remote set-url github https://$GITHUB_PAT@github.com/$GITHUB_REPO_OWNER/$GITHUB_REPO_NAME.git
+  - git fetch github
+  - git checkout -B main
+  - git add .
+  - git commit -m "Sync from GitLab CI - Build $CI_PIPELINE_ID" || echo "No changes to commit"
+  - git push github main --force
+  - echo "Successfully synchronized to GitHub repository"
+  dependencies:
+  - build
+  - code-quality
+  - test
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
+      when: on_success
+    - when: never
