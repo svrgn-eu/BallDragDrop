@@ -66,7 +66,7 @@ namespace BallDragDrop.Tests
             double timeStep = 1.0 / 60.0; // 60 fps
             
             // Act
-            engine.UpdateBall(ball, timeStep, 0, 0, 400, 400);
+            engine.UpdateBall(ball, timeStep, 0, 0, 400, 400, BallState.Idle, null);
             
             // Assert
             Assert.IsTrue(ball.VelocityX < 100); // Velocity should decrease
@@ -83,7 +83,7 @@ namespace BallDragDrop.Tests
             double timeStep = 1.0 / 60.0; // 60 fps
             
             // Act
-            engine.UpdateBall(ball, timeStep, 0, 0, 400, 400);
+            engine.UpdateBall(ball, timeStep, 0, 0, 400, 400, BallState.Idle, null);
             
             // Assert
             Assert.AreEqual(0, ball.VelocityX); // X velocity should remain unchanged
@@ -100,7 +100,7 @@ namespace BallDragDrop.Tests
             double timeStep = 1.0 / 60.0;
             
             // Act
-            var result = engine.UpdateBall(ball, timeStep, 0, 0, 400, 400);
+            var result = engine.UpdateBall(ball, timeStep, 0, 0, 400, 400, BallState.Idle, null);
             
             // Assert
             Assert.IsFalse(result.IsMoving); // Ball should be stopped
@@ -318,7 +318,7 @@ namespace BallDragDrop.Tests
             var engine = new PhysicsEngine();
             
             // Act
-            engine.UpdateBall(null, 1.0 / 60.0, 0, 0, 400, 400);
+            engine.UpdateBall(null, 1.0 / 60.0, 0, 0, 400, 400, BallState.Idle, null);
             
             // Assert is handled by ExpectedException attribute
         }
