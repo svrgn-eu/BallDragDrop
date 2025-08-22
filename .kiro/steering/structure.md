@@ -18,7 +18,8 @@ Following the coding standards defined in `coding-standards.json`, all code must
 - **Models/** - Data models and business logic (BallModel, PhysicsEngine, etc.)
 - **Services/** - Application services and utilities
 - **ViewModels/** - MVVM view models
-- **Views/** - WPF views, user controls, and converters
+- **Views/** - WPF views and user controls
+- **Converters/** - XAML value converters (ColorToBrushConverter, OffsetConverter, etc.)
 - **Commands/** - Command implementations (RelayCommand, etc.)
 
 ### Additional Folders
