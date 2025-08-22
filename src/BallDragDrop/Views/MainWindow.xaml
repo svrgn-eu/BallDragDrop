@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BallDragDrop.Views"
-        xmlns:converters="clr-namespace:BallDragDrop.Views.Converters"
+        xmlns:converters="clr-namespace:BallDragDrop.Converters"
         xmlns:viewmodels="clr-namespace:BallDragDrop.ViewModels"
         mc:Ignorable="d"
         Title="Ball Drag and Drop" 

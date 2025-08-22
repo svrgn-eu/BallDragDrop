@@ -858,6 +858,99 @@
             Statistics for specific operation types
             </summary>
         </member>
+        <member name="T:BallDragDrop.Converters.ColorToBrushConverter">
+            <summary>
+            Converter to convert Color to SolidColorBrush for XAML binding
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Converters.ColorToBrushConverter.Instance">
+            <summary>
+            Singleton instance of the ColorToBrushConverter
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Converters.ColorToBrushConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts a Color to a SolidColorBrush
+            </summary>
+            <param name="value">The Color value to convert</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The parameter (not used)</param>
+            <param name="culture">The culture info</param>
+            <returns>A SolidColorBrush with the specified color</returns>
+        </member>
+        <member name="M:BallDragDrop.Converters.ColorToBrushConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts back (not implemented)
+            </summary>
+            <param name="value">The value to convert back</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The parameter</param>
+            <param name="culture">The culture info</param>
+            <returns>Not implemented</returns>
+            <exception cref="T:System.NotImplementedException">This method is not implemented</exception>
+        </member>
+        <member name="T:BallDragDrop.Converters.ColorToColorConverter">
+            <summary>
+            Converter to convert Color to Color for XAML binding (identity converter)
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Converters.ColorToColorConverter.Instance">
+            <summary>
+            Singleton instance of the ColorToColorConverter
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Converters.ColorToColorConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts a Color to a Color (identity conversion)
+            </summary>
+            <param name="value">The Color value to convert</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The parameter (not used)</param>
+            <param name="culture">The culture info</param>
+            <returns>The same Color value</returns>
+        </member>
+        <member name="M:BallDragDrop.Converters.ColorToColorConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts back (not implemented)
+            </summary>
+            <param name="value">The value to convert back</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The parameter</param>
+            <param name="culture">The culture info</param>
+            <returns>Not implemented</returns>
+            <exception cref="T:System.NotImplementedException">This method is not implemented</exception>
+        </member>
+        <member name="T:BallDragDrop.Converters.OffsetConverter">
+            <summary>
+            Simple converter to offset a value by a specified amount
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Converters.OffsetConverter.Instance">
+            <summary>
+            Singleton instance of the OffsetConverter
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Converters.OffsetConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts a value by adding the specified offset
+            </summary>
+            <param name="value">The value to convert</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The offset amount as a string</param>
+            <param name="culture">The culture info</param>
+            <returns>The value plus the offset, or the original value if conversion fails</returns>
+        </member>
+        <member name="M:BallDragDrop.Converters.OffsetConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts back (not implemented)
+            </summary>
+            <param name="value">The value to convert back</param>
+            <param name="targetType">The target type</param>
+            <param name="parameter">The parameter</param>
+            <param name="culture">The culture info</param>
+            <returns>Not implemented</returns>
+            <exception cref="T:System.NotImplementedException">This method is not implemented</exception>
+        </member>
         <member name="T:BallDragDrop.Models.AnimationFrame">
             <summary>
             Represents a single frame in an animation with memory management capabilities
@@ -5057,68 +5150,6 @@
             </summary>
             <param name="disposing">True if disposing managed resources</param>
         </member>
-        <member name="T:BallDragDrop.Views.ColorToBrushConverter">
-            <summary>
-            Converter to convert Color to SolidColorBrush for XAML binding
-            </summary>
-        </member>
-        <member name="F:BallDragDrop.Views.ColorToBrushConverter.Instance">
-            <summary>
-            Singleton instance of the ColorToBrushConverter
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Views.ColorToBrushConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
-            <summary>
-            Converts a Color to a SolidColorBrush
-            </summary>
-            <param name="value">The Color value to convert</param>
-            <param name="targetType">The target type</param>
-            <param name="parameter">The parameter (not used)</param>
-            <param name="culture">The culture info</param>
-            <returns>A SolidColorBrush with the specified color</returns>
-        </member>
-        <member name="M:BallDragDrop.Views.ColorToBrushConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
-            <summary>
-            Converts back (not implemented)
-            </summary>
-            <param name="value">The value to convert back</param>
-            <param name="targetType">The target type</param>
-            <param name="parameter">The parameter</param>
-            <param name="culture">The culture info</param>
-            <returns>Not implemented</returns>
-            <exception cref="T:System.NotImplementedException">This method is not implemented</exception>
-        </member>
-        <member name="T:BallDragDrop.Views.ColorToColorConverter">
-            <summary>
-            Converter to convert Color to Color for XAML binding (identity converter)
-            </summary>
-        </member>
-        <member name="F:BallDragDrop.Views.ColorToColorConverter.Instance">
-            <summary>
-            Singleton instance of the ColorToColorConverter
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Views.ColorToColorConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
-            <summary>
-            Converts a Color to a Color (identity conversion)
-            </summary>
-            <param name="value">The Color value to convert</param>
-            <param name="targetType">The target type</param>
-            <param name="parameter">The parameter (not used)</param>
-            <param name="culture">The culture info</param>
-            <returns>The same Color value</returns>
-        </member>
-        <member name="M:BallDragDrop.Views.ColorToColorConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
-            <summary>
-            Converts back (not implemented)
-            </summary>
-            <param name="value">The value to convert back</param>
-            <param name="targetType">The target type</param>
-            <param name="parameter">The parameter</param>
-            <param name="culture">The culture info</param>
-            <returns>Not implemented</returns>
-            <exception cref="T:System.NotImplementedException">This method is not implemented</exception>
-        </member>
         <member name="T:BallDragDrop.Views.MainWindow">
             <summary>
             Interaction logic for MainWindow.xaml
@@ -5491,37 +5522,6 @@
             <summary>
             InitializeComponent
             </summary>
-        </member>
-        <member name="T:BallDragDrop.Views.OffsetConverter">
-            <summary>
-            Simple converter to offset a value by a specified amount
-            </summary>
-        </member>
-        <member name="F:BallDragDrop.Views.OffsetConverter.Instance">
-            <summary>
-            Singleton instance of the OffsetConverter
-            </summary>
-        </member>
-        <member name="M:BallDragDrop.Views.OffsetConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
-            <summary>
-            Converts a value by adding the specified offset
-            </summary>
-            <param name="value">The value to convert</param>
-            <param name="targetType">The target type</param>
-            <param name="parameter">The offset amount as a string</param>
-            <param name="culture">The culture info</param>
-            <returns>The value plus the offset, or the original value if conversion fails</returns>
-        </member>
-        <member name="M:BallDragDrop.Views.OffsetConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
-            <summary>
-            Converts back (not implemented)
-            </summary>
-            <param name="value">The value to convert back</param>
-            <param name="targetType">The target type</param>
-            <param name="parameter">The parameter</param>
-            <param name="culture">The culture info</param>
-            <returns>Not implemented</returns>
-            <exception cref="T:System.NotImplementedException">This method is not implemented</exception>
         </member>
         <member name="T:BallDragDrop.Views.SplashScreen">
             <summary>
