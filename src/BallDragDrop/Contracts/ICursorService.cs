@@ -27,6 +27,11 @@ namespace BallDragDrop.Contracts
         /// <returns>Current cursor state description</returns>
         string GetCurrentCursorState();
 
+        /// <summary>
+        /// Clears the cursor override to restore default behavior
+        /// </summary>
+        void ClearCursorOverride();
+
         #endregion Methods
     }
 }

@@ -496,11 +496,8 @@ public partial class MainWindow : Window, IBallStateObserver
                 ballViewModel.MouseDownCommand.Execute(e);
                 
                 // Trigger hand state machine for grabbing
-                if (_handStateMachine.CanFire(HandTrigger.StartGrabbing))
-                {
-                    _handStateMachine.Fire(HandTrigger.StartGrabbing);
-                    _logService.LogDebug("Hand state machine: StartGrabbing triggered");
-                }
+                _handStateMachine.OnDragStart();
+                _logService.LogDebug("Hand state machine: OnDragStart triggered");
                 
                 // Initialize mouse tracking
                 _lastMousePosition = position;
@@ -596,11 +593,8 @@ public partial class MainWindow : Window, IBallStateObserver
                 ballViewModel.MouseUpCommand.Execute(e);
                 
                 // Trigger hand state machine for stopping grab
-                if (_handStateMachine.CanFire(HandTrigger.StopGrabbing))
-                {
-                    _handStateMachine.Fire(HandTrigger.StopGrabbing);
-                    _logService.LogDebug("Hand state machine: StopGrabbing triggered");
-                }
+                _handStateMachine.OnDragStop();
+                _logService.LogDebug("Hand state machine: OnDragStop triggered");
                 
                 // Release mouse capture
                 Mouse.Capture(null);
@@ -625,7 +619,10 @@ public partial class MainWindow : Window, IBallStateObserver
             // Use the BallViewModel's mouse enter command
             ballViewModel.MouseEnterCommand.Execute(e);
             
-            _logService.LogDebug("Mouse entered ball area");
+            // Trigger hand state machine for mouse over ball
+            _handStateMachine.OnMouseOverBall();
+            
+            _logService.LogDebug("Mouse entered ball area - HandStateMachine notified");
         }
     }
 
@@ -643,7 +640,10 @@ public partial class MainWindow : Window, IBallStateObserver
             // Use the BallViewModel's mouse leave command
             ballViewModel.MouseLeaveCommand.Execute(e);
             
-            _logService.LogDebug("Mouse left ball area");
+            // Trigger hand state machine for mouse leave ball
+            _handStateMachine.OnMouseLeaveBall();
+            
+            _logService.LogDebug("Mouse left ball area - HandStateMachine notified");
         }
     }
 

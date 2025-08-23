@@ -16,7 +16,6 @@
         SizeChanged="Window_SizeChanged"
         Loaded="Window_Loaded"
         Background="#F0F0F0"
-        Cursor="{Binding CurrentCursor}"
         RenderOptions.BitmapScalingMode="HighQuality"
         UseLayoutRounding="True">
     <!-- DataContext is set in code-behind -->
