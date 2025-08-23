@@ -252,6 +252,9 @@ namespace BallDragDrop.Bootstrapper
             // Register CursorImageLoader as singleton
             services.AddSingleton<CursorImageLoader>();
             
+            // Register TestCursorGenerator as singleton
+            services.AddSingleton<TestCursorGenerator>();
+            
             // Register ICursorService as singleton
             services.AddSingleton<ICursorService>(provider =>
                 new CursorManager(

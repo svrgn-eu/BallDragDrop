@@ -103,6 +103,8 @@ namespace BallDragDrop.Services
             {
                 _currentHandState = handState;
                 
+                _logService.LogInformation("CURSOR DEBUG: SetCursorForHandState called with {HandState}", handState);
+                
                 if (_currentConfiguration?.EnableCustomCursors != true)
                 {
                     _logService.LogDebug("Custom cursors disabled, using system cursor for hand state {HandState}", handState);
@@ -110,8 +112,10 @@ namespace BallDragDrop.Services
                     return;
                 }
 
-                // Use throttled cursor update to prevent flickering
-                _cursorUpdateThrottler?.Execute();
+                _logService.LogInformation("CURSOR DEBUG: Custom cursors enabled, calling UpdateCursorNow directly");
+                
+                // Call UpdateCursorNow directly to bypass throttling for debugging
+                UpdateCursorNow();
                 
                 _logService.LogDebug("Queued cursor update for hand state {HandState}", handState);
             }
@@ -431,7 +435,7 @@ namespace BallDragDrop.Services
         #region ApplyCursor
 
         /// <summary>
-        /// Applies the cursor to the main window with comprehensive error handling
+        /// Applies the cursor globally using Mouse.OverrideCursor with comprehensive error handling
         /// </summary>
         /// <param name="cursor">Cursor to apply</param>
         private void ApplyCursor(Cursor cursor)
@@ -451,17 +455,9 @@ namespace BallDragDrop.Services
                     {
                         try
                         {
-                            if (Application.Current?.MainWindow != null)
-                            {
-                                Application.Current.MainWindow.Cursor = cursor;
-                                _logService.LogDebug("Successfully applied cursor to main window");
-                            }
-                            else
-                            {
-                                _logService.LogWarning("Main window not available for cursor application");
-                                // Try to apply to current window if available
-                                TryApplyToCurrentWindowOnUIThread(cursor);
-                            }
+                            // Use Mouse.OverrideCursor for global cursor override
+                            Mouse.OverrideCursor = cursor;
+                            _logService.LogDebug("Successfully applied global cursor override: {CursorType}", cursor.GetType().Name);
                         }
                         catch (Exception ex)
                         {
@@ -473,7 +469,15 @@ namespace BallDragDrop.Services
                 {
                     _logService.LogWarning("Application dispatcher not available for cursor application");
                     // Fallback to direct application (may fail on non-UI threads)
-                    TryApplyToCurrentWindow(cursor);
+                    try
+                    {
+                        Mouse.OverrideCursor = cursor;
+                        _logService.LogDebug("Applied global cursor override directly: {CursorType}", cursor.GetType().Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        HandleCursorApplicationError(ex, _currentHandState);
+                    }
                 }
             }
             catch (InvalidOperationException ex)
@@ -539,10 +543,7 @@ namespace BallDragDrop.Services
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        if (Application.Current?.MainWindow != null)
-                        {
-                            Application.Current.MainWindow.Cursor = Cursors.Arrow;
-                        }
+                        Mouse.OverrideCursor = Cursors.Arrow;
                     });
                     return true;
                 }
@@ -637,6 +638,35 @@ namespace BallDragDrop.Services
             }
         }
 
+        /// <summary>
+        /// Clears the cursor override to restore default behavior
+        /// </summary>
+        public void ClearCursorOverride()
+        {
+            try
+            {
+                if (Application.Current?.Dispatcher != null)
+                {
+                    Application.Current.Dispatcher.BeginInvoke(() =>
+                    {
+                        try
+                        {
+                            Mouse.OverrideCursor = null;
+                            _logService.LogDebug("Cleared cursor override");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logService.LogError(ex, "Error clearing cursor override");
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logService.LogError(ex, "Error clearing cursor override");
+            }
+        }
+
         #endregion SetSystemCursor
 
         #region SetSystemCursorSafe
@@ -655,10 +685,7 @@ namespace BallDragDrop.Services
                     {
                         try
                         {
-                            if (Application.Current?.MainWindow != null)
-                            {
-                                Application.Current.MainWindow.Cursor = Cursors.Arrow;
-                            }
+                            Mouse.OverrideCursor = Cursors.Arrow;
                         }
                         catch
                         {

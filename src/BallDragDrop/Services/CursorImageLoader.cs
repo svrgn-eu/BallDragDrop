@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Interop;
 using BallDragDrop.Contracts;
 
 namespace BallDragDrop.Services
@@ -68,7 +69,7 @@ namespace BallDragDrop.Services
             
             try
             {
-                _logService.LogDebug("Starting PNG cursor load for path: {PngPath}", pngPath);
+                _logService.LogInformation("CURSOR LOADING: Starting PNG cursor load for path: {PngPath}", pngPath);
 
                 // Validate input parameters
                 if (fallbackCursor == null)
@@ -80,7 +81,7 @@ namespace BallDragDrop.Services
                 // Validate input path
                 if (string.IsNullOrEmpty(pngPath))
                 {
-                    _logService.LogWarning("PNG path is null or empty, using fallback cursor");
+                    _logService.LogWarning("CURSOR LOADING: PNG path is null or empty, using fallback cursor");
                     return fallbackCursor;
                 }
 
@@ -107,9 +108,11 @@ namespace BallDragDrop.Services
                 // Check file existence and accessibility
                 if (!File.Exists(fullPath))
                 {
-                    _logService.LogWarning("PNG file not found: {FullPath}, using fallback cursor", fullPath);
+                    _logService.LogWarning("CURSOR LOADING: PNG file not found: {FullPath}, using fallback cursor", fullPath);
                     return fallbackCursor;
                 }
+                
+                _logService.LogInformation("CURSOR LOADING: PNG file found: {FullPath}", fullPath);
 
                 // Validate file accessibility
                 try
@@ -155,35 +158,39 @@ namespace BallDragDrop.Services
                     return fallbackCursor;
                 }
 
+                _logService.LogInformation("CURSOR LOADING: File validation passed, size: {Size} bytes. Starting bitmap loading...", fileInfo.Length);
+
                 // Load the PNG image with error handling
                 BitmapImage bitmap;
                 try
                 {
+                    _logService.LogInformation("CURSOR LOADING: Calling LoadBitmapWithValidation...");
                     bitmap = LoadBitmapWithValidation(fullPath);
                     if (bitmap == null)
                     {
-                        _logService.LogError("LoadBitmapWithValidation returned null for: {FullPath}, using fallback cursor", fullPath);
+                        _logService.LogError("CURSOR LOADING: LoadBitmapWithValidation returned null for: {FullPath}, using fallback cursor", fullPath);
                         return fallbackCursor;
                     }
+                    _logService.LogInformation("CURSOR LOADING: Bitmap loaded successfully, proceeding to resize...");
                 }
                 catch (OutOfMemoryException ex)
                 {
-                    _logService.LogError(ex, "Out of memory loading PNG bitmap: {FullPath}, using fallback cursor", fullPath);
+                    _logService.LogError(ex, "CURSOR LOADING: Out of memory loading PNG bitmap: {FullPath}, using fallback cursor", fullPath);
                     return fallbackCursor;
                 }
                 catch (FileFormatException ex)
                 {
-                    _logService.LogError(ex, "Invalid PNG file format: {FullPath}, using fallback cursor", fullPath);
+                    _logService.LogError(ex, "CURSOR LOADING: Invalid PNG file format: {FullPath}, using fallback cursor", fullPath);
                     return fallbackCursor;
                 }
                 catch (NotSupportedException ex)
                 {
-                    _logService.LogError(ex, "Unsupported PNG format: {FullPath}, using fallback cursor", fullPath);
+                    _logService.LogError(ex, "CURSOR LOADING: Unsupported PNG format: {FullPath}, using fallback cursor", fullPath);
                     return fallbackCursor;
                 }
                 catch (Exception ex)
                 {
-                    _logService.LogError(ex, "Failed to load PNG bitmap: {FullPath}, using fallback cursor", fullPath);
+                    _logService.LogError(ex, "CURSOR LOADING: Failed to load PNG bitmap: {FullPath}, using fallback cursor", fullPath);
                     return fallbackCursor;
                 }
 
@@ -191,6 +198,7 @@ namespace BallDragDrop.Services
                 BitmapImage resizedBitmap;
                 try
                 {
+                    _logService.LogInformation("CURSOR LOADING: Starting image resize...");
                     resizedBitmap = ResizeImage(bitmap);
                     if (resizedBitmap == null)
                     {
@@ -212,6 +220,7 @@ namespace BallDragDrop.Services
                 // Convert to cursor
                 try
                 {
+                    _logService.LogInformation("CURSOR LOADING: Starting cursor conversion...");
                     var cursor = ConvertBitmapToCursor(resizedBitmap);
                     if (cursor == null)
                     {
@@ -258,7 +267,7 @@ namespace BallDragDrop.Services
             
             try
             {
-                _logService.LogDebug("Loading bitmap from: {FullPath}", fullPath);
+                _logService.LogInformation("CURSOR LOADING: LoadBitmapWithValidation - Loading bitmap from: {FullPath}", fullPath);
                 
                 bitmap = new BitmapImage();
                 
@@ -514,70 +523,15 @@ namespace BallDragDrop.Services
                         bitmap.PixelWidth, bitmap.PixelHeight, CursorSize, CursorSize);
                 }
 
-                // For WPF, we need to use a different approach to create custom cursors
-                // Since the Cursor constructor with Point is not available in WPF,
-                // we'll use the stream-based constructor
-                if (bitmap.StreamSource != null)
+                // Convert PNG bitmap to cursor format
+                try
                 {
-                    try
-                    {
-                        // Validate stream
-                        if (!bitmap.StreamSource.CanRead)
-                        {
-                            _logService.LogWarning("Bitmap stream source is not readable, using default cursor");
-                            return Cursors.Arrow;
-                        }
-
-                        if (!bitmap.StreamSource.CanSeek)
-                        {
-                            _logService.LogWarning("Bitmap stream source is not seekable, using default cursor");
-                            return Cursors.Arrow;
-                        }
-
-                        // Reset stream position
-                        bitmap.StreamSource.Position = 0;
-                        
-                        // Create cursor from stream
-                        var cursor = new Cursor(bitmap.StreamSource);
-                        
-                        _logService.LogDebug("Successfully converted bitmap to cursor");
-                        return cursor;
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        _logService.LogError(ex, "Invalid argument converting bitmap to cursor, using default cursor");
-                        return Cursors.Arrow;
-                    }
-                    catch (NotSupportedException ex)
-                    {
-                        _logService.LogError(ex, "Cursor format not supported, using default cursor");
-                        return Cursors.Arrow;
-                    }
-                    catch (IOException ex)
-                    {
-                        _logService.LogError(ex, "IO error converting bitmap to cursor, using default cursor");
-                        return Cursors.Arrow;
-                    }
-                    catch (OutOfMemoryException ex)
-                    {
-                        _logService.LogError(ex, "Out of memory converting bitmap to cursor, using default cursor");
-                        return Cursors.Arrow;
-                    }
+                    return CreateCursorFromBitmap(bitmap);
                 }
-                else
+                catch (Exception ex)
                 {
-                    _logService.LogWarning("Bitmap stream source is null, attempting alternative conversion");
-                    
-                    // Try alternative conversion method using RenderTargetBitmap
-                    try
-                    {
-                        return ConvertBitmapToCursorAlternative(bitmap);
-                    }
-                    catch (Exception altEx)
-                    {
-                        _logService.LogError(altEx, "Alternative bitmap to cursor conversion failed, using default cursor");
-                        return Cursors.Arrow;
-                    }
+                    _logService.LogError(ex, "Failed to create cursor from bitmap, using default cursor");
+                    return Cursors.Arrow;
                 }
             }
             catch (Exception ex)
@@ -589,54 +543,155 @@ namespace BallDragDrop.Services
 
         #endregion ConvertBitmapToCursor
 
-        #region ConvertBitmapToCursorAlternative
+        #region CreateCursorFromBitmap
 
         /// <summary>
-        /// Alternative method to convert bitmap to cursor when stream source is not available
+        /// Creates a cursor from a bitmap using a temporary file approach
         /// </summary>
         /// <param name="bitmap">Source bitmap</param>
         /// <returns>WPF Cursor</returns>
-        private Cursor ConvertBitmapToCursorAlternative(BitmapImage bitmap)
+        private Cursor CreateCursorFromBitmap(BitmapImage bitmap)
         {
             try
             {
-                _logService.LogDebug("Using alternative bitmap to cursor conversion method");
+                _logService.LogDebug("Creating cursor from bitmap using temporary file approach");
 
-                // Create a RenderTargetBitmap from the BitmapImage
-                var renderBitmap = new RenderTargetBitmap(
-                    bitmap.PixelWidth, bitmap.PixelHeight, 
-                    bitmap.DpiX, bitmap.DpiY, 
-                    PixelFormats.Pbgra32);
+                // Create a temporary cursor file
+                var tempCursorFile = Path.GetTempFileName();
+                tempCursorFile = Path.ChangeExtension(tempCursorFile, ".cur");
 
-                var drawingVisual = new DrawingVisual();
-                using (var drawingContext = drawingVisual.RenderOpen())
+                try
                 {
-                    drawingContext.DrawImage(bitmap, new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
+                    // Create cursor file data in memory
+                    var cursorData = CreateCursorFileFromBitmap(bitmap);
+                    
+                    // Write to temporary file
+                    File.WriteAllBytes(tempCursorFile, cursorData);
+                    
+                    // Create cursor from file
+                    var cursor = new Cursor(tempCursorFile);
+                    _logService.LogDebug("Successfully created cursor from bitmap using temporary file");
+                    return cursor;
                 }
-
-                renderBitmap.Render(drawingVisual);
-                renderBitmap.Freeze();
-
-                // Encode to PNG stream
-                var encoder = new PngBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
-
-                using (var stream = new MemoryStream())
+                finally
                 {
-                    encoder.Save(stream);
-                    stream.Position = 0;
-
-                    // Create cursor from stream
-                    return new Cursor(stream);
+                    // Clean up temporary file
+                    try
+                    {
+                        if (File.Exists(tempCursorFile))
+                        {
+                            File.Delete(tempCursorFile);
+                        }
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        _logService.LogWarning("Failed to clean up temporary cursor file: {TempFile}. Error: {Error}", 
+                            tempCursorFile, cleanupEx.Message);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                _logService.LogError(ex, "Alternative bitmap to cursor conversion failed");
-                throw;
+                _logService.LogError(ex, "Failed to create cursor from bitmap, using hand cursor");
+                return Cursors.Hand; // Use hand cursor as fallback to show it's working
             }
         }
 
-        #endregion ConvertBitmapToCursorAlternative
+        #endregion CreateCursorFromBitmap
+
+        #region CreateCursorFileFromBitmap
+
+        /// <summary>
+        /// Creates cursor file data from a bitmap
+        /// </summary>
+        /// <param name="bitmap">Source bitmap</param>
+        /// <returns>Cursor file data as byte array</returns>
+        private byte[] CreateCursorFileFromBitmap(BitmapImage bitmap)
+        {
+            // Create a RenderTargetBitmap to ensure consistent format
+            var renderBitmap = new RenderTargetBitmap(
+                CursorSize, CursorSize, 96, 96, PixelFormats.Pbgra32);
+
+            var drawingVisual = new DrawingVisual();
+            using (var drawingContext = drawingVisual.RenderOpen())
+            {
+                drawingContext.DrawImage(bitmap, new Rect(0, 0, CursorSize, CursorSize));
+            }
+
+            renderBitmap.Render(drawingVisual);
+            renderBitmap.Freeze();
+
+            // Convert to pixel data
+            var stride = CursorSize * 4; // 4 bytes per pixel (BGRA)
+            var pixelData = new byte[stride * CursorSize];
+            renderBitmap.CopyPixels(pixelData, stride, 0);
+
+            // Create cursor file structure
+            using (var stream = new MemoryStream())
+            using (var writer = new BinaryWriter(stream))
+            {
+                // Cursor file header (6 bytes)
+                writer.Write((ushort)0);    // Reserved (must be 0)
+                writer.Write((ushort)2);    // Type (2 = cursor)
+                writer.Write((ushort)1);    // Number of images
+
+                // Cursor directory entry (16 bytes)
+                writer.Write((byte)CursorSize);         // Width
+                writer.Write((byte)CursorSize);         // Height
+                writer.Write((byte)0);                  // Color count (0 for true color)
+                writer.Write((byte)0);                  // Reserved
+                writer.Write((ushort)(CursorSize / 2)); // Hotspot X (center)
+                writer.Write((ushort)(CursorSize / 2)); // Hotspot Y (center)
+
+                // Calculate sizes
+                var bitmapInfoSize = 40;
+                var imageDataSize = stride * CursorSize;
+                var maskDataSize = ((CursorSize + 31) / 32) * 4 * CursorSize;
+                var totalImageSize = bitmapInfoSize + imageDataSize + maskDataSize;
+
+                writer.Write((uint)totalImageSize);     // Size of image data
+                writer.Write((uint)(6 + 16));           // Offset to image data
+
+                // BITMAPINFOHEADER (40 bytes)
+                writer.Write((uint)40);                 // Header size
+                writer.Write((int)CursorSize);          // Width
+                writer.Write((int)(CursorSize * 2));    // Height (doubled for cursor)
+                writer.Write((ushort)1);                // Planes
+                writer.Write((ushort)32);               // Bits per pixel
+                writer.Write((uint)0);                  // Compression (BI_RGB)
+                writer.Write((uint)imageDataSize);      // Image size
+                writer.Write((int)0);                   // X pixels per meter
+                writer.Write((int)0);                   // Y pixels per meter
+                writer.Write((uint)0);                  // Colors used
+                writer.Write((uint)0);                  // Important colors
+
+                // Write pixel data (bottom-up, as required by bitmap format)
+                for (int y = CursorSize - 1; y >= 0; y--)
+                {
+                    var rowOffset = y * stride;
+                    writer.Write(pixelData, rowOffset, stride);
+                }
+
+                // Write AND mask (all zeros for full alpha support)
+                var maskBytes = new byte[maskDataSize];
+                writer.Write(maskBytes);
+
+                return stream.ToArray();
+            }
+        }
+
+        #endregion CreateCursorFileFromBitmap
+
+        #region DestroyIcon
+
+        /// <summary>
+        /// Windows API function to destroy an icon handle
+        /// </summary>
+        /// <param name="hIcon">Icon handle to destroy</param>
+        /// <returns>True if successful</returns>
+        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+        private static extern bool DestroyIcon(IntPtr hIcon);
+
+        #endregion DestroyIcon
     }
 }

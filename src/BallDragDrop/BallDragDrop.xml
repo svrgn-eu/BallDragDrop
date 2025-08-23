@@ -672,6 +672,11 @@
             </summary>
             <returns>Current cursor state description</returns>
         </member>
+        <member name="M:BallDragDrop.Contracts.ICursorService.ClearCursorOverride">
+            <summary>
+            Clears the cursor override to restore default behavior
+            </summary>
+        </member>
         <member name="T:BallDragDrop.Contracts.IExceptionHandlingService">
             <summary>
             Interface for enhanced exception handling service
@@ -742,6 +747,26 @@
         <member name="M:BallDragDrop.Contracts.IHandStateMachine.Reset">
             <summary>
             Resets hand state machine to default state
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IHandStateMachine.OnMouseOverBall">
+            <summary>
+            Handles mouse entering ball area
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IHandStateMachine.OnMouseLeaveBall">
+            <summary>
+            Handles mouse leaving ball area
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IHandStateMachine.OnDragStart">
+            <summary>
+            Handles drag operation start
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Contracts.IHandStateMachine.OnDragStop">
+            <summary>
+            Handles drag operation stop
             </summary>
         </member>
         <member name="T:BallDragDrop.Contracts.ILogService">
@@ -940,6 +965,24 @@
             <param name="culture">The culture info</param>
             <returns>Not implemented</returns>
             <exception cref="T:System.NotImplementedException">This method is not implemented</exception>
+        </member>
+        <member name="T:BallDragDrop.GenerateTestCursors">
+            <summary>
+            Utility class to generate test cursor images
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.GenerateTestCursors.GenerateAll">
+            <summary>
+            Generates all test cursor images
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.GenerateTestCursors.GenerateCursor(System.String,System.Drawing.Color,System.String)">
+            <summary>
+            Generates a single test cursor image
+            </summary>
+            <param name="outputPath">Output file path</param>
+            <param name="color">Cursor color</param>
+            <param name="text">Text to display</param>
         </member>
         <member name="T:BallDragDrop.Models.AnimationFrame">
             <summary>
@@ -2514,12 +2557,26 @@
             <param name="bitmap">Source bitmap</param>
             <returns>WPF Cursor</returns>
         </member>
-        <member name="M:BallDragDrop.Services.CursorImageLoader.ConvertBitmapToCursorAlternative(System.Windows.Media.Imaging.BitmapImage)">
+        <member name="M:BallDragDrop.Services.CursorImageLoader.CreateCursorFromBitmap(System.Windows.Media.Imaging.BitmapImage)">
             <summary>
-            Alternative method to convert bitmap to cursor when stream source is not available
+            Creates a cursor from a bitmap using a temporary file approach
             </summary>
             <param name="bitmap">Source bitmap</param>
             <returns>WPF Cursor</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorImageLoader.CreateCursorFileFromBitmap(System.Windows.Media.Imaging.BitmapImage)">
+            <summary>
+            Creates cursor file data from a bitmap
+            </summary>
+            <param name="bitmap">Source bitmap</param>
+            <returns>Cursor file data as byte array</returns>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorImageLoader.DestroyIcon(System.IntPtr)">
+            <summary>
+            Windows API function to destroy an icon handle
+            </summary>
+            <param name="hIcon">Icon handle to destroy</param>
+            <returns>True if successful</returns>
         </member>
         <member name="T:BallDragDrop.Services.CursorManager">
             <summary>
@@ -2623,7 +2680,7 @@
         </member>
         <member name="M:BallDragDrop.Services.CursorManager.ApplyCursor(System.Windows.Input.Cursor)">
             <summary>
-            Applies the cursor to the main window with comprehensive error handling
+            Applies the cursor globally using Mouse.OverrideCursor with comprehensive error handling
             </summary>
             <param name="cursor">Cursor to apply</param>
         </member>
@@ -2656,6 +2713,11 @@
         <member name="M:BallDragDrop.Services.CursorManager.SetSystemCursor">
             <summary>
             Sets the system default cursor
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.CursorManager.ClearCursorOverride">
+            <summary>
+            Clears the cursor override to restore default behavior
             </summary>
         </member>
         <member name="M:BallDragDrop.Services.CursorManager.SetSystemCursorSafe">
@@ -4276,6 +4338,37 @@
             <summary>
             Disposes the instance
             </summary>
+        </member>
+        <member name="T:BallDragDrop.Services.TestCursorGenerator">
+            <summary>
+            Generates test cursor images for debugging cursor system
+            </summary>
+        </member>
+        <member name="F:BallDragDrop.Services.TestCursorGenerator._logService">
+            <summary>
+            Log service for debugging
+            </summary>
+        </member>
+        <member name="M:BallDragDrop.Services.TestCursorGenerator.#ctor(BallDragDrop.Contracts.ILogService)">
+            <summary>
+            Initializes a new instance of the TestCursorGenerator class
+            </summary>
+            <param name="logService">Log service</param>
+        </member>
+        <member name="M:BallDragDrop.Services.TestCursorGenerator.GenerateTestCursors(System.String)">
+            <summary>
+            Generates test cursor images for all hand states
+            </summary>
+            <param name="outputDirectory">Directory to save cursor images</param>
+        </member>
+        <member name="M:BallDragDrop.Services.TestCursorGenerator.GenerateCursor(System.String,System.Drawing.Color,System.String,System.String)">
+            <summary>
+            Generates a single test cursor image
+            </summary>
+            <param name="filename">Output filename</param>
+            <param name="color">Cursor color</param>
+            <param name="text">Text to display on cursor</param>
+            <param name="outputDirectory">Output directory</param>
         </member>
         <member name="T:BallDragDrop.ViewModels.BallViewModel">
             <summary>

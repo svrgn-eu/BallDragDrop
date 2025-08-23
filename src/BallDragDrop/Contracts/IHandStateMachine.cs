@@ -46,6 +46,26 @@ namespace BallDragDrop.Contracts
         /// </summary>
         void Reset();
 
+        /// <summary>
+        /// Handles mouse entering ball area
+        /// </summary>
+        void OnMouseOverBall();
+
+        /// <summary>
+        /// Handles mouse leaving ball area
+        /// </summary>
+        void OnMouseLeaveBall();
+
+        /// <summary>
+        /// Handles drag operation start
+        /// </summary>
+        void OnDragStart();
+
+        /// <summary>
+        /// Handles drag operation stop
+        /// </summary>
+        void OnDragStop();
+
         #endregion Methods
     }
 }
