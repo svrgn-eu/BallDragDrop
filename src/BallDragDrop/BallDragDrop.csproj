@@ -60,7 +60,7 @@
 
     <!-- Configure whether to fail build on critical violations -->
     <!-- Set to true to enforce enhanced standards -->
-    <FailBuildOnCriticalViolations>false</FailBuildOnCriticalViolations>
+    <FailBuildOnCriticalViolations>true</FailBuildOnCriticalViolations>
 
     <!-- Enhanced standards enforcement -->
     <EnforceEnhancedStandards>true</EnforceEnhancedStandards>
