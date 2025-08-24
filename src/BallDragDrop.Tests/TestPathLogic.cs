@@ -47,7 +47,11 @@ namespace BallDragDrop.Tests.PathLogic
         }
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 }
 =======
 }
 >>>>>>> 8543fa9 (worked on error handling)
+=======
+}
+>>>>>>> 33eb80a4646536a20cb7efdc9b2ca6c879a9d0c7

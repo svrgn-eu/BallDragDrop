@@ -83,10 +83,5 @@ github-sync:
   - test
   rules:
     - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
-      when: on_success
-<<<<<<< HEAD
-    - when: never
-=======
-    - when: never
+    - when: on_success
   allow_failure: false
->>>>>>> 33eb80a (worked on pipelines)

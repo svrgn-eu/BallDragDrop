@@ -73,6 +73,29 @@ public partial class App : Application
         // Show splash screen and initialize application
         ShowSplashScreenAndInitialize();
     }
+<<<<<<< HEAD
+=======
+    
+    /// <summary>
+    /// Simple exception handler for dispatcher exceptions
+    /// </summary>
+    private void App_DispatcherUnhandledException_Simple(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        Console.WriteLine($"DISPATCHER EXCEPTION: {e.Exception}");
+        MessageBox.Show($"Application Error: {e.Exception.Message}\n\nStack trace:\n{e.Exception.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        e.Handled = true;
+    }
+    
+    /// <summary>
+    /// Simple exception handler for unhandled exceptions
+    /// </summary>
+    private void CurrentDomain_UnhandledException_Simple(object sender, UnhandledExceptionEventArgs e)
+    {
+        var exception = e.ExceptionObject as Exception;
+        Console.WriteLine($"UNHANDLED EXCEPTION: {exception}");
+        MessageBox.Show($"Fatal Error: {exception?.Message}\n\nStack trace:\n{exception?.StackTrace}", "Fatal Error", MessageBoxButton.OK, MessageBoxImage.Error);
+    }
+>>>>>>> 33eb80a4646536a20cb7efdc9b2ca6c879a9d0c7
 
     #endregion Event Handlers
 
