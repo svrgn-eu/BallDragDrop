@@ -5632,11 +5632,6 @@
             Event that is raised when initialization is complete
             </summary>
         </member>
-        <member name="M:BallDragDrop.Views.SplashScreen.#ctor">
-            <summary>
-            Initializes a new instance of the SplashScreen class
-            </summary>
-        </member>
         <member name="F:BallDragDrop.Views.SplashScreen._minimumDisplayTimer">
             <summary>
             Timer for minimum display time
@@ -5652,9 +5647,21 @@
             Flag to track if minimum display time has elapsed
             </summary>
         </member>
+        <member name="M:BallDragDrop.Views.SplashScreen.#ctor">
+            <summary>
+            Initializes a new instance of the SplashScreen class
+            </summary>
+        </member>
         <member name="M:BallDragDrop.Views.SplashScreen.Window_Loaded(System.Object,System.Windows.RoutedEventArgs)">
             <summary>
             Event handler for window loaded event
+            </summary>
+            <param name="sender">The source of the event</param>
+            <param name="e">Event data</param>
+        </member>
+        <member name="M:BallDragDrop.Views.SplashScreen.MinimumDisplayTimer_Tick(System.Object,System.EventArgs)">
+            <summary>
+            Event handler for minimum display timer tick
             </summary>
             <param name="sender">The source of the event</param>
             <param name="e">Event data</param>
@@ -5664,13 +5671,6 @@
             Initializes the application
             </summary>
             <returns>A task representing the asynchronous initialization operation</returns>
-        </member>
-        <member name="M:BallDragDrop.Views.SplashScreen.MinimumDisplayTimer_Tick(System.Object,System.EventArgs)">
-            <summary>
-            Event handler for minimum display timer tick
-            </summary>
-            <param name="sender">The source of the event</param>
-            <param name="e">Event data</param>
         </member>
         <member name="M:BallDragDrop.Views.SplashScreen.CheckIfReadyToClose">
             <summary>
