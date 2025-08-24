@@ -17,7 +17,8 @@ build:
   stage: build
   script:
   - echo "Release build..."
-  - dotnet build "src/$PROJECT_NAME.sln" --nologo -c Release /p:Platform="Any CPU"
+  #- dotnet build "src/$PROJECT_NAME.sln" --nologo -c Release /p:Platform="Any CPU"
+  - dotnet build "src/$PROJECT_NAME/$PROJECT_NAME.csproj" --nologo -c Release /p:Platform="Any CPU"
   artifacts:
     paths:
       - src/$PROJECT_RESULTS_NAME/bin/Release/**
