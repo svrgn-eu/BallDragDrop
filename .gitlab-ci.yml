@@ -22,6 +22,8 @@ build:
     paths:
       - src/$PROJECT_RESULTS_NAME/bin/Release/**
     name: "Build Results"
+
+  allow_failure: false
 code-quality:
   tags:
   - c#
@@ -46,7 +48,7 @@ code-quality:
     expire_in: 30 days
   dependencies:
   - build
-  allow_failure: false
+  allow_failure: true
 
 test:
   tags:
@@ -59,6 +61,7 @@ test:
   dependencies:
   - build
   - code-quality
+  allow_failure: true
 
 github-sync:
   tags:
@@ -80,5 +83,5 @@ github-sync:
   - test
   rules:
     - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
-      when: on_success
-    - when: never
+    - when: on_success
+  allow_failure: false

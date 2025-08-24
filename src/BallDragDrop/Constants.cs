@@ -71,6 +71,36 @@ namespace BallDragDrop
         /// </summary>
         public const string CONFIG_FILE_NAME = "appsettings.json";
 
+        /// <summary>
+        /// Default path to the default cursor PNG file
+        /// </summary>
+        public const string DEFAULT_CURSOR_PATH = "Resources/Cursors/default.png";
+        
+        /// <summary>
+        /// Default path to the hover cursor PNG file
+        /// </summary>
+        public const string DEFAULT_HOVER_CURSOR_PATH = "Resources/Cursors/hover.png";
+        
+        /// <summary>
+        /// Default path to the grabbing cursor PNG file
+        /// </summary>
+        public const string DEFAULT_GRABBING_CURSOR_PATH = "Resources/Cursors/grabbing.png";
+        
+        /// <summary>
+        /// Default path to the releasing cursor PNG file
+        /// </summary>
+        public const string DEFAULT_RELEASING_CURSOR_PATH = "Resources/Cursors/releasing.png";
+        
+        /// <summary>
+        /// Default cursor update debounce time in milliseconds
+        /// </summary>
+        public const int DEFAULT_CURSOR_DEBOUNCE_TIME_MS = 16;
+        
+        /// <summary>
+        /// Default releasing cursor duration in milliseconds
+        /// </summary>
+        public const int DEFAULT_CURSOR_RELEASING_DURATION_MS = 200;
+
         #endregion Configuration Constants
 
         #region Performance Constants

@@ -49,7 +49,7 @@
                 <MenuItem Header="_Load GIF Animation..." Click="LoadGifAnimation_Click" />
                 <MenuItem Header="_Load Aseprite Animation..." Click="LoadAsepriteAnimation_Click" />
                 <Separator />
-                <MenuItem Header="Show _Bounding Box" IsCheckable="True" IsChecked="{Binding BallViewModel.ShowBoundingBox, Mode=OneWay}" Click="ToggleBoundingBox_Click" />
+                <MenuItem Header="Show _Bounding Box" IsCheckable="True" IsChecked="{Binding ShowBoundingBox}" Click="ToggleBoundingBox_Click" />
             </MenuItem>
         </Menu>
 
@@ -61,6 +61,10 @@
             </StatusBarItem>
             <StatusBarItem MinWidth="100">
                 <TextBlock Text="{Binding StatusBarViewModel.Status, FallbackValue='Status: [Loading...]'}" 
+                          FontWeight="Bold" Padding="5,2" />
+            </StatusBarItem>
+            <StatusBarItem MinWidth="100">
+                <TextBlock Text="{Binding StatusBarViewModel.HandState, StringFormat='Hand: {0}', FallbackValue='Hand: Default'}" 
                           FontWeight="Bold" Padding="5,2" />
             </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right" MinWidth="150">
@@ -112,6 +116,8 @@
                        RenderOptions.ClearTypeHint="Enabled"
                        MouseDown="BallImage_MouseDown"
                        MouseUp="BallImage_MouseUp"
+                       MouseEnter="BallImage_MouseEnter"
+                       MouseLeave="BallImage_MouseLeave"
                        Stretch="Uniform"
                        CacheMode="BitmapCache"
                        SnapsToDevicePixels="True"

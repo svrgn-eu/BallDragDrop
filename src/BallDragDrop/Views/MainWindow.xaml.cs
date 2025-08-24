@@ -2,14 +2,10 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using System.Windows.Data;
-using System.Globalization;
 using BallDragDrop.Bootstrapper;
-using BallDragDrop.Services;
 using BallDragDrop.Contracts;
 using BallDragDrop.Models;
 using BallDragDrop.ViewModels;
@@ -44,6 +40,11 @@ public partial class MainWindow : Window, IBallStateObserver
     /// </summary>
     private readonly BallStateConfiguration _ballStateConfiguration;
 
+    /// <summary>
+    /// Hand state machine for cursor management
+    /// </summary>
+    private readonly IHandStateMachine _handStateMachine;
+
     #endregion Fields
 
     #region Construction
@@ -61,6 +62,9 @@ public partial class MainWindow : Window, IBallStateObserver
         // Get ball state configuration from dependency injection
         this._ballStateConfiguration = ServiceBootstrapper.GetService<BallStateConfiguration>();
         
+        // Get hand state machine from dependency injection
+        this._handStateMachine = ServiceBootstrapper.GetService<IHandStateMachine>();
+        
         // Initialize physics engine
         this._physicsEngine = new Models.PhysicsEngine();
         this._lastPhysicsUpdate = DateTime.Now;
@@ -73,6 +77,10 @@ public partial class MainWindow : Window, IBallStateObserver
         this.SizeChanged += this.Window_SizeChanged;
         this.Loaded += this.Window_Loaded;
         this.Closed += this.MainWindow_Closed;
+        
+        // Set up canvas mouse event handlers for hand state machine
+        this.MainCanvas.MouseEnter += this.OnCanvasMouseEnter;
+        this.MainCanvas.MouseLeave += this.OnCanvasMouseLeave;
         
         // Subscribe to CompositionTarget.Rendering for physics updates
         CompositionTarget.Rendering += this.CompositionTarget_Rendering;
@@ -393,6 +401,53 @@ public partial class MainWindow : Window, IBallStateObserver
         
         _logService.LogDebug("DataContext set successfully");
         
+        // Initialize cursor based on initial ball position and state
+        // Use a timer to ensure this runs after the UI is fully loaded and rendered
+        var initTimer = new DispatcherTimer();
+        initTimer.Interval = TimeSpan.FromMilliseconds(100); // Small delay to ensure everything is ready
+        initTimer.Tick += (s, e) =>
+        {
+            try
+            {
+                initTimer.Stop(); // Stop the timer after first execution
+                
+                var currentMousePosition = Mouse.GetPosition(MainCanvas);
+                _logService.LogDebug("Initializing cursor at mouse position: ({X:F2}, {Y:F2})", currentMousePosition.X, currentMousePosition.Y);
+                
+                // Update the ball's last mouse position and trigger cursor update
+                mainViewModel.BallViewModel.SetLastMousePosition(currentMousePosition);
+                
+                // Explicitly initialize the hand state machine cursor
+                // This ensures the default cursor is set at startup
+                try
+                {
+                    var cursorService = ServiceBootstrapper.GetService<ICursorService>();
+                    if (cursorService != null)
+                    {
+                        _logService.LogDebug("Setting initial cursor for default hand state");
+                        cursorService.SetCursorForHandState(HandState.Default);
+                        _logService.LogDebug("Initial cursor set successfully via cursor service");
+                    }
+                    else
+                    {
+                        _logService.LogWarning("Cursor service not available for initial cursor setup");
+                    }
+                }
+                catch (Exception cursorEx)
+                {
+                    _logService.LogError(cursorEx, "Error setting initial cursor via cursor service");
+                }
+                
+                _logService.LogDebug("Initial cursor initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                _logService.LogError(ex, "Error initializing cursor");
+                initTimer.Stop(); // Make sure to stop timer even on error
+            }
+        };
+        initTimer.Start();
+        
         // Enable hardware rendering if supported
         if (RenderCapability.Tier > 0)
         {
@@ -487,6 +542,10 @@ public partial class MainWindow : Window, IBallStateObserver
                 // Use the BallViewModel's mouse command to properly trigger state machine
                 ballViewModel.MouseDownCommand.Execute(e);
                 
+                // Trigger hand state machine for grabbing
+                _handStateMachine.OnDragStart();
+                _logService.LogDebug("Hand state machine: OnDragStart triggered");
+                
                 // Initialize mouse tracking
                 _lastMousePosition = position;
                 _lastMouseUpdateTime = DateTime.Now;
@@ -580,12 +639,58 @@ public partial class MainWindow : Window, IBallStateObserver
                 // The BallViewModel will handle state transitions, MainWindow handles physics
                 ballViewModel.MouseUpCommand.Execute(e);
                 
+                // Trigger hand state machine for stopping grab
+                _handStateMachine.OnDragStop();
+                _logService.LogDebug("Hand state machine: OnDragStop triggered");
+                
                 // Release mouse capture
                 Mouse.Capture(null);
                 
                 // Update cursor
                 UpdateCursorForPosition(ballViewModel, position);
             }
+        }
+    }
+
+    /// <summary>
+    /// Event handler for mouse enter on the ball image
+    /// </summary>
+    /// <param name="sender">The source of the event</param>
+    /// <param name="e">Event data</param>
+    private void BallImage_MouseEnter(object sender, MouseEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel mainViewModel)
+        {
+            var ballViewModel = mainViewModel.BallViewModel;
+            
+            // Use the BallViewModel's mouse enter command
+            ballViewModel.MouseEnterCommand.Execute(e);
+            
+            // Trigger hand state machine for mouse over ball
+            _handStateMachine.OnMouseOverBall();
+            
+            _logService.LogDebug("Mouse entered ball area - HandStateMachine notified");
+        }
+    }
+
+    /// <summary>
+    /// Event handler for mouse leave on the ball image
+    /// </summary>
+    /// <param name="sender">The source of the event</param>
+    /// <param name="e">Event data</param>
+    private void BallImage_MouseLeave(object sender, MouseEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel mainViewModel)
+        {
+            var ballViewModel = mainViewModel.BallViewModel;
+            
+            // Use the BallViewModel's mouse leave command
+            ballViewModel.MouseLeaveCommand.Execute(e);
+            
+            // Trigger hand state machine for mouse leave ball
+            _handStateMachine.OnMouseLeaveBall();
+            
+            _logService.LogDebug("Mouse left ball area - HandStateMachine notified");
         }
     }
 
@@ -740,6 +845,57 @@ public partial class MainWindow : Window, IBallStateObserver
         _performanceMonitor.EndFrameTime();
     }
 
+    /// <summary>
+    /// Event handler for mouse entering the canvas
+    /// </summary>
+    /// <param name="sender">The source of the event</param>
+    /// <param name="e">Event data</param>
+    private void OnCanvasMouseEnter(object sender, MouseEventArgs e)
+    {
+        try
+        {
+            // Get the mouse position relative to the canvas
+            var position = e.GetPosition(MainCanvas);
+            
+            // Check if mouse is over ball and trigger appropriate hand state
+            if (IsMouseOverBall(position))
+            {
+                // Only trigger hover if we can fire the MouseOverBall trigger
+                if (_handStateMachine.CanFire(HandTrigger.MouseOverBall))
+                {
+                    _handStateMachine.Fire(HandTrigger.MouseOverBall);
+                    _logService.LogDebug("Hand state machine: MouseOverBall triggered at ({X:F2}, {Y:F2})", position.X, position.Y);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logService.LogError(ex, "Error in OnCanvasMouseEnter");
+        }
+    }
+
+    /// <summary>
+    /// Event handler for mouse leaving the canvas
+    /// </summary>
+    /// <param name="sender">The source of the event</param>
+    /// <param name="e">Event data</param>
+    private void OnCanvasMouseLeave(object sender, MouseEventArgs e)
+    {
+        try
+        {
+            // When mouse leaves canvas, always trigger MouseLeaveBall if possible
+            if (_handStateMachine.CanFire(HandTrigger.MouseLeaveBall))
+            {
+                _handStateMachine.Fire(HandTrigger.MouseLeaveBall);
+                _logService.LogDebug("Hand state machine: MouseLeaveBall triggered (mouse left canvas)");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logService.LogError(ex, "Error in OnCanvasMouseLeave");
+        }
+    }
+
     #endregion Event Handlers
 
     #region Helper Methods
@@ -760,6 +916,33 @@ public partial class MainWindow : Window, IBallStateObserver
         
         // Use invariant culture to avoid locale-specific formatting issues
         return value.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// Determines if the mouse position is over the ball element
+    /// </summary>
+    /// <param name="position">The mouse position relative to the canvas</param>
+    /// <returns>True if the mouse is over the ball, false otherwise</returns>
+    private bool IsMouseOverBall(Point position)
+    {
+        try
+        {
+            // Get the MainWindowViewModel from the DataContext
+            if (DataContext is MainWindowViewModel mainViewModel)
+            {
+                var ballViewModel = mainViewModel.BallViewModel;
+                
+                // Use the ball model's ContainsPoint method to check if position is within ball
+                return ballViewModel._ballModel.ContainsPoint(position.X, position.Y);
+            }
+            
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logService.LogError(ex, "Error in IsMouseOverBall");
+            return false;
+        }
     }
 
     #endregion Helper Methods

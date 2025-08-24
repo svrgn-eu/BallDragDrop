@@ -172,6 +172,7 @@ namespace BallDragDrop.Bootstrapper
                 new BallViewModel(
                     provider.GetRequiredService<ILogService>(),
                     provider.GetRequiredService<IBallStateMachine>(),
+                    provider.GetRequiredService<IHandStateMachine>(),
                     null, // ImageService will be created internally
                     provider.GetRequiredService<IConfigurationService>()));
 
@@ -223,6 +224,51 @@ namespace BallDragDrop.Bootstrapper
         {
             // Register PerformanceMonitor as singleton with 60 FPS target
             services.AddSingleton<PerformanceMonitor>(provider => new PerformanceMonitor(60));
+            
+            // Register cursor services
+            RegisterCursorServices(services);
+        }
+
+        /// <summary>
+        /// Registers cursor-related services for dependency injection
+        /// </summary>
+        private static void RegisterCursorServices(IServiceCollection services)
+        {
+            // Register CursorConfiguration as singleton with default settings
+            services.AddSingleton<CursorConfiguration>(provider =>
+            {
+                var configurationService = provider.GetRequiredService<IConfigurationService>();
+                return configurationService.GetCursorConfiguration();
+            });
+            
+            // Register CursorImageLoader as singleton
+            services.AddSingleton<CursorImageLoader>();
+            
+            // Register TestCursorGenerator as singleton
+            services.AddSingleton<TestCursorGenerator>();
+            
+            // Register ICursorService as singleton
+            services.AddSingleton<ICursorService>(provider =>
+                new CursorManager(
+                    provider.GetRequiredService<IConfigurationService>(),
+                    provider.GetRequiredService<ILogService>(),
+                    provider.GetRequiredService<CursorImageLoader>(),
+                    provider.GetRequiredService<CursorConfiguration>()));
+            
+            // Register IHandStateMachine as singleton with proper dependency resolution
+            services.AddSingleton<IHandStateMachine>(provider =>
+            {
+                var handStateMachine = new HandStateMachine(
+                    provider.GetRequiredService<ILogService>(),
+                    provider.GetRequiredService<ICursorService>(),
+                    provider.GetRequiredService<CursorConfiguration>());
+                
+                // Register hand state machine as observer of ball state machine
+                var ballStateMachine = provider.GetRequiredService<IBallStateMachine>();
+                ballStateMachine.Subscribe(handStateMachine);
+                
+                return handStateMachine;
+            });
         }
 
         /// <summary>
