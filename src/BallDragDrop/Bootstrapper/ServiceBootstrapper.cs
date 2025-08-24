@@ -237,16 +237,8 @@ namespace BallDragDrop.Bootstrapper
             // Register CursorConfiguration as singleton with default settings
             services.AddSingleton<CursorConfiguration>(provider =>
             {
-                return new CursorConfiguration
-                {
-                    EnableCustomCursors = true,
-                    DefaultCursorPath = "Resources/Cursors/default.png",
-                    HoverCursorPath = "Resources/Cursors/hover.png",
-                    GrabbingCursorPath = "Resources/Cursors/grabbing.png",
-                    ReleasingCursorPath = "Resources/Cursors/releasing.png",
-                    DebounceTimeMs = 16,
-                    ReleasingDurationMs = 200
-                };
+                var configurationService = provider.GetRequiredService<IConfigurationService>();
+                return configurationService.GetCursorConfiguration();
             });
             
             // Register CursorImageLoader as singleton

@@ -401,6 +401,53 @@ public partial class MainWindow : Window, IBallStateObserver
         
         _logService.LogDebug("DataContext set successfully");
         
+        // Initialize cursor based on initial ball position and state
+        // Use a timer to ensure this runs after the UI is fully loaded and rendered
+        var initTimer = new DispatcherTimer();
+        initTimer.Interval = TimeSpan.FromMilliseconds(100); // Small delay to ensure everything is ready
+        initTimer.Tick += (s, e) =>
+        {
+            try
+            {
+                initTimer.Stop(); // Stop the timer after first execution
+                
+                var currentMousePosition = Mouse.GetPosition(MainCanvas);
+                _logService.LogDebug("Initializing cursor at mouse position: ({X:F2}, {Y:F2})", currentMousePosition.X, currentMousePosition.Y);
+                
+                // Update the ball's last mouse position and trigger cursor update
+                mainViewModel.BallViewModel.SetLastMousePosition(currentMousePosition);
+                
+                // Explicitly initialize the hand state machine cursor
+                // This ensures the default cursor is set at startup
+                try
+                {
+                    var cursorService = ServiceBootstrapper.GetService<ICursorService>();
+                    if (cursorService != null)
+                    {
+                        _logService.LogDebug("Setting initial cursor for default hand state");
+                        cursorService.SetCursorForHandState(HandState.Default);
+                        _logService.LogDebug("Initial cursor set successfully via cursor service");
+                    }
+                    else
+                    {
+                        _logService.LogWarning("Cursor service not available for initial cursor setup");
+                    }
+                }
+                catch (Exception cursorEx)
+                {
+                    _logService.LogError(cursorEx, "Error setting initial cursor via cursor service");
+                }
+                
+                _logService.LogDebug("Initial cursor initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                _logService.LogError(ex, "Error initializing cursor");
+                initTimer.Stop(); // Make sure to stop timer even on error
+            }
+        };
+        initTimer.Start();
+        
         // Enable hardware rendering if supported
         if (RenderCapability.Tier > 0)
         {
