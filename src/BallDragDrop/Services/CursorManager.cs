@@ -327,7 +327,7 @@ namespace BallDragDrop.Services
             if (_currentConfiguration == null)
             {
                 _logService.LogWarning("No cursor configuration available, using system cursor");
-                return Cursors.Arrow;
+                return GetFallbackCursorForHandState(handState);
             }
 
             var cursorPath = GetCursorPathForHandState(handState);
@@ -335,10 +335,10 @@ namespace BallDragDrop.Services
             if (string.IsNullOrEmpty(cursorPath))
             {
                 _logService.LogWarning("No cursor path configured for hand state {HandState}, using system cursor", handState);
-                return Cursors.Arrow;
+                return GetFallbackCursorForHandState(handState);
             }
 
-            return LoadCursorWithFallback(cursorPath, Cursors.Arrow);
+            return LoadCursorWithFallback(cursorPath, GetFallbackCursorForHandState(handState));
         }
 
         #endregion LoadCursorFromConfiguration
@@ -431,6 +431,27 @@ namespace BallDragDrop.Services
         }
 
         #endregion GetCursorPathForHandState
+
+        #region GetFallbackCursorForHandState
+
+        /// <summary>
+        /// Gets the appropriate fallback cursor for the specified hand state
+        /// </summary>
+        /// <param name="handState">Hand state</param>
+        /// <returns>Appropriate fallback cursor</returns>
+        private Cursor GetFallbackCursorForHandState(HandState handState)
+        {
+            return handState switch
+            {
+                HandState.Hover => Cursors.Hand,
+                HandState.Grabbing => Cursors.Hand,
+                HandState.Releasing => Cursors.Hand,
+                HandState.Default => Cursors.Arrow,
+                _ => Cursors.Arrow
+            };
+        }
+
+        #endregion GetFallbackCursorForHandState
 
         #region ApplyCursor
 

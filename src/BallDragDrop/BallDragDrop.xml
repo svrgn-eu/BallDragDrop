@@ -2688,6 +2688,13 @@
             <param name="handState">Hand state</param>
             <returns>Cursor path or empty string if not configured</returns>
         </member>
+        <member name="M:BallDragDrop.Services.CursorManager.GetFallbackCursorForHandState(BallDragDrop.Models.HandState)">
+            <summary>
+            Gets the appropriate fallback cursor for the specified hand state
+            </summary>
+            <param name="handState">Hand state</param>
+            <returns>Appropriate fallback cursor</returns>
+        </member>
         <member name="M:BallDragDrop.Services.CursorManager.ApplyCursor(System.Windows.Input.Cursor)">
             <summary>
             Applies the cursor globally using Mouse.OverrideCursor with comprehensive error handling
@@ -4882,6 +4889,12 @@
             <summary>
             Updates the cursor based on the current state
             </summary>
+        </member>
+        <member name="M:BallDragDrop.ViewModels.BallViewModel.SetLastMousePosition(System.Windows.Point)">
+            <summary>
+            Sets the last mouse position and updates the cursor accordingly
+            </summary>
+            <param name="position">The mouse position to set</param>
         </member>
         <member name="M:BallDragDrop.ViewModels.BallViewModel.OnMouseEnter(System.Windows.Input.MouseEventArgs)">
             <summary>

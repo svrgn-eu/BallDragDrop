@@ -2,6 +2,8 @@
 
 A WPF demonstration application showcasing physics-based ball movement with drag, drop, and realistic bouncing behavior. The application features smooth animations with hardware acceleration, responsive window resizing, and performance optimizations for interactive ball physics simulation.
 
+This demo has been created only using [Kiro](https://kiro.dev/)'s spec driven development (and a bit of vibe coding for bugs). Here you can find the full [resumee](./AICodingResumee.md).
+
 ## Features
 
 - **Interactive Mechanics**: Drag and drop a ball within a window with intuitive mouse controls

@@ -2244,6 +2244,16 @@ namespace BallDragDrop.ViewModels
         }
 
         /// <summary>
+        /// Sets the last mouse position and updates the cursor accordingly
+        /// </summary>
+        /// <param name="position">The mouse position to set</param>
+        public void SetLastMousePosition(Point position)
+        {
+            _lastMousePosition = position;
+            UpdateCursor();
+        }
+
+        /// <summary>
         /// Handles mouse enter events for ball-specific hover detection
         /// </summary>
         /// <param name="e">Mouse event arguments</param>
