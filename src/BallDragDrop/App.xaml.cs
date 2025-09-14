@@ -153,13 +153,11 @@ public partial class App : Application
             
             // Add debug output
             _logService?.LogDebug("MainWindow created successfully");
-            Console.WriteLine("MainWindow created successfully");
             
             _mainWindow.Show();
             
             // Add debug output
             _logService?.LogDebug("MainWindow.Show() called successfully");
-            Console.WriteLine("MainWindow.Show() called successfully");
             
             // Force the window to be visible and on top
             _mainWindow.Activate();
@@ -170,7 +168,6 @@ public partial class App : Application
             
             // Add debug output
             _logService?.LogDebug("Application startup completed");
-            Console.WriteLine("Application startup completed");
         }
         catch (Exception ex)
         {
@@ -179,7 +176,6 @@ public partial class App : Application
             
             // Add debug output
             _logService?.LogError(ex, "Error creating main window");
-            Console.WriteLine($"Error creating main window: {ex}");
             
             // Show error message to the user
             MessageBox.Show(
